@@ -317,7 +317,7 @@ function findProductMention(message: string) {
         (lower.includes("nest") || lower.includes("lms") || lower.includes("course"))) ||
       (p.id === "lookfinesse" &&
         (lower.includes("marketplace") || lower.includes("fashion"))) ||
-      (p.id === "cadence" && lower.includes("rhythm")) ||
+      (p.id === "cadenceapp" && lower.includes("rhythm")) ||
       (p.id === "confirent" && lower.includes("rent"))
   );
 }

@@ -181,7 +181,7 @@ export function summarizeAnalytics(store: AnalyticsStore): AnalyticsSummary {
     .sort((a, b) => b.clicks - a.clicks)
     .slice(0, 8);
 
-  const wings = ["lookfinesse", "confilearn", "cadence", "confirent"];
+  const wings = ["lookfinesse", "confilearn", "cadenceapp", "confirent", "triviayard", "confitrade"];
   const wingActivity = wings.map((wing) => ({
     wing,
     events: events.filter(

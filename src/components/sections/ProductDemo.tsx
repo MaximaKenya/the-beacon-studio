@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { trackEvent } from "@/lib/analytics";
 
-type DemoProductId = "lookfinesse" | "confilearn" | "cadence" | "confirent";
+type DemoProductId = "lookfinesse" | "confilearn" | "cadenceapp" | "confirent" | "triviayard" | "confitrade";
 
 type Slide = {
   id: string;
@@ -358,7 +358,7 @@ function slidesFor(id: DemoProductId): Slide[] {
       return LookFinesseSlides();
     case "confilearn":
       return ConfiLearnSlides();
-    case "cadence":
+    case "cadenceapp":
       return CadenceSlides();
     case "confirent":
       return ConfiRentSlides();
