@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" role="img" aria-label="ConfiLearn">
+  <defs>
+    <linearGradient id="sn-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0F172A"/>
+      <stop offset="55%" stop-color="#1E293B"/>
+      <stop offset="100%" stop-color="#0B1220"/>
+    </linearGradient>
+    <linearGradient id="sn-accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#38BDF8"/>
+      <stop offset="100%" stop-color="#818CF8"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="500" fill="url(#sn-bg)"/>
+  <circle cx="620" cy="120" r="90" fill="#38BDF8" opacity="0.12"/>
+  <circle cx="160" cy="380" r="120" fill="#818CF8" opacity="0.1"/>
+  <path d="M260 290c40-70 100-110 140-110s100 40 140 110c-28 18-78 34-140 34s-112-16-140-34z" fill="none" stroke="url(#sn-accent)" stroke-width="10" stroke-linecap="round"/>
+  <path d="M300 270c28-48 70-74 100-74s72 26 100 74" fill="none" stroke="#94A3B8" stroke-width="4" opacity="0.55"/>
+  <text x="80" y="120" fill="#F8FAFC" font-family="Georgia, serif" font-size="56" font-weight="700">ConfiLearn</text>
+  <text x="80" y="168" fill="#94A3B8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="22">Learn brilliantly</text>
+</svg>

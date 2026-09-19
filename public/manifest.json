@@ -1,0 +1,16 @@
+{
+  "name": "The Beacon Studio",
+  "short_name": "Beacon",
+  "description": "Cloud product suite and custom software studio based in Nairobi, Kenya.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#07070f",
+  "theme_color": "#2dd4bf",
+  "icons": [
+    {
+      "src": "/icon",
+      "sizes": "32x32",
+      "type": "image/png"
+    }
+  ]
+}

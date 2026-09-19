@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 64" fill="none" role="img" aria-label="The Beacon Studio wordmark">
+  <!-- Beacon Dot mark -->
+  <g transform="translate(4, 16)">
+    <path d="M11 4H21A7 7 0 0 1 28 11V21A7 7 0 0 1 21 28H11A7 7 0 0 1 4 21V11A7 7 0 0 1 11 4Z" fill="#0f172a"/>
+    <path d="M10.1 8.1h3.7v15.8H10.1V8.1Z" fill="#0d9488"/>
+    <path d="M13.8 15.45h3.15c3.55 0 5.95 2 5.95 4.75 0 2.95-2.5 5.05-6.35 5.05H13.8V15.45Z" fill="#0d9488"/>
+    <path d="M16.55 18.2c1.7 0 2.75.95 2.75 2.25s-1.05 2.25-2.75 2.25H13.8v-4.5h2.75Z" fill="#0f172a"/>
+    <circle cx="17.35" cy="11.95" r="4.45" fill="#0d9488"/>
+  </g>
+  <!-- Wordmark — Plus Jakarta–like proportions; replace with live font in Canva if desired -->
+  <text x="52" y="34" font-family="Plus Jakarta Sans, system-ui, sans-serif" font-size="22" font-weight="700" letter-spacing="-0.6" fill="#0f172a">The Beacon</text>
+  <text x="52" y="50" font-family="Plus Jakarta Sans, system-ui, sans-serif" font-size="9" font-weight="600" letter-spacing="2.4" fill="#0d9488">STUDIO</text>
+</svg>

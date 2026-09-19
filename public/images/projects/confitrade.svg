@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" role="img" aria-label="ConfiRent">
+  <defs>
+    <linearGradient id="r-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1A1520"/>
+      <stop offset="100%" stop-color="#0D0A10"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="500" fill="url(#r-bg)"/>
+  <rect x="520" y="160" width="160" height="200" rx="12" fill="none" stroke="#F59E0B" stroke-width="4" opacity="0.7"/>
+  <path d="M500 180 L600 110 L700 180" fill="none" stroke="#FBBF24" stroke-width="5" stroke-linejoin="round"/>
+  <circle cx="600" cy="250" r="18" fill="none" stroke="#FCD34D" stroke-width="3"/>
+  <text x="80" y="120" fill="#F8FAFC" font-family="Georgia, serif" font-size="56" font-weight="700">ConfiRent</text>
+  <text x="80" y="168" fill="#A8A29E" font-family="ui-sans-serif, system-ui, sans-serif" font-size="22">Coming soon</text>
+</svg>
