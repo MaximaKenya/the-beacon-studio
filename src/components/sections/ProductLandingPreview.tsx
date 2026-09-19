@@ -219,7 +219,7 @@ function CadenceAppHome() {
             {blocks.map((b) => (
               <div key={b.label} className="flex flex-1 flex-col items-center gap-1.5">
                 <div
-                  className="w-full rounded-t-md bg-gradient-to-t from-accent/70 to-accent-amber/35"
+                  className="w-full rounded-t-md bg-gradient-to-t from-accent to-accent/55"
                   style={{ height: b.h }}
                 />
                 <span className="text-[10px] font-medium text-foreground">{b.label}</span>

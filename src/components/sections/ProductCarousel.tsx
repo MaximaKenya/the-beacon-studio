@@ -185,7 +185,7 @@ export function ProductCarousel() {
         </AnimatePresence>
       </div>
 
-      <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
+      <div className="mt-5 flex flex-wrap items-center justify-between gap-3 pb-2">
         <div className="flex items-center gap-2">
           <button
             type="button"
@@ -222,7 +222,7 @@ export function ProductCarousel() {
         </div>
       </div>
 
-      <ul className="mt-4 hidden flex-wrap gap-2 sm:flex" aria-label="Jump to product">
+      <ul className="mt-4 flex flex-wrap gap-2" aria-label="Jump to product">
         {products.map((item, i) => (
           <li key={item.id}>
             <button
