@@ -307,6 +307,10 @@ function formatProducts(): string {
     .join("\n• ");
 }
 
+function formatProductPageLinks(): string {
+  return products.map((p) => `[${p.name}](/products/${p.id})`).join(", ");
+}
+
 function findProductMention(message: string) {
   const lower = message.toLowerCase();
   return products.find(
@@ -318,7 +322,8 @@ function findProductMention(message: string) {
       (p.id === "lookfinesse" &&
         (lower.includes("marketplace") || lower.includes("fashion"))) ||
       (p.id === "cadenceapp" && lower.includes("rhythm")) ||
-      (p.id === "confirent" && lower.includes("rent"))
+      (p.id === "confirent" && lower.includes("rent")) ||
+      (p.id === "triviayard" && (lower.includes("trivia") || lower.includes("entertainment")))
   );
 }
 
@@ -354,7 +359,7 @@ function buildReply(intent: Intent): string {
       return `${brand.name} takes on custom projects — apps, SaaS, APIs, redesigns. Status: ${currently.status.toLowerCase()}. Fastest paths: [Start a Project](/#services), [Book a Call](/#book) (${booking.hoursStart}–${booking.hoursEnd} EAT), or email ${email}. ${siteConfig.servicesPricingNote}`;
 
     case "products":
-      return `${brand.name}'s product suite:\n• ${formatProducts()}\n\nProduct pages: [LookFinesse](/products/lookfinesse), [ConfiLearn](/products/confilearn), [CadenceApp](/products/cadence), [ConfiRent](/products/confirent). Custom work? Ask about [services](/#services) or [Start a Project](/#services).`;
+      return `${brand.name}'s product suite:\n• ${formatProducts()}\n\nProduct pages: ${formatProductPageLinks()}. Custom work? Ask about [services](/#services) or [Start a Project](/#services).`;
 
     case "services":
       return `What ${brand.name} builds for clients:\n• ${formatServices()}\n${siteConfig.servicesPricingNote}\nSee [Services](/#services), [Start a Project](/#services), or [Book a Call](/#book) — email ${email} works too.`;
@@ -457,7 +462,7 @@ export function getKnowledgeResponse(userMessage: string): KnowledgeResponse {
 
   if (confidence < 0.25) {
     return {
-      reply: `I'm ${assistant.name}, ${brand.name}'s studio assistant. Ask about [LookFinesse](/products/lookfinesse), [ConfiLearn](/products/confilearn), [CadenceApp](/products/cadence), [ConfiRent](/products/confirent), [pricing](/#pricing), [portal](/portal/login), or how to get in touch (${email}).`,
+      reply: `I'm ${assistant.name}, ${brand.name}'s studio assistant. Ask about ${formatProductPageLinks()}, [pricing](/#pricing), [portal](/portal/login), or how to get in touch (${email}).`,
       confidence: 0.3,
       intent: "fallback",
       source: "knowledge-base",

@@ -1,9 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { siteConfig } from "@/data/site";
+import { productOpenLinkAttrs } from "@/lib/product-links";
 import { ScrollReveal } from "@/components/ui/ScrollReveal";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { useFeatures } from "@/providers/FeatureProvider";
@@ -14,6 +14,7 @@ type Goal =
   | "teach"
   | "schedule"
   | "rent"
+  | "play"
   | "custom"
   | "unsure";
 
@@ -26,6 +27,7 @@ const QUESTIONS: {
   { id: "teach", label: "Teach or train people", hint: "Courses, schools, tutors" },
   { id: "schedule", label: "Keep a team on rhythm", hint: "Planning & shipping cadence" },
   { id: "rent", label: "Rentals / listings with trust", hint: "Coming soon — ConfiRent" },
+  { id: "play", label: "Live trivia / audience play", hint: "Coming soon — TriviaYard" },
   { id: "custom", label: "Something custom for my org", hint: "SME, church, NGO, school, shop" },
   { id: "unsure", label: "I’m not sure yet", hint: "We’ll recommend a path" },
 ];
@@ -56,15 +58,22 @@ function recommend(goal: Goal): Rec {
     case "schedule":
       return {
         title: "CadenceApp",
-        body: "Early Beacon product for team rhythm and shipping cadence. Explore the page, or start a custom build if you need ops tooling now.",
+        body: "Planning and ops rhythm for teams that need to ship on schedule. Explore the page or GitHub, or start a custom build if you need ops tooling now.",
         productId: "cadenceapp",
         cta: "product",
       };
     case "rent":
       return {
         title: "ConfiRent (coming soon)",
-        body: "Rentals with clarity between hosts and renters. Details land when the repo is ready — meanwhile we can scope a custom rental MVP.",
+        body: "Rental ops with clearer trust between hosts and renters. Details land as the product ships — meanwhile we can scope a custom rental MVP.",
         productId: "confirent",
+        cta: "product",
+      };
+    case "play":
+      return {
+        title: "TriviaYard (coming soon)",
+        body: "Live trivia and audience play for communities, venues, and brands. Explore the page, or start a custom entertainment build if you need something sooner.",
+        productId: "triviayard",
         cta: "product",
       };
     case "custom":
@@ -86,6 +95,10 @@ export function ProductRecommender() {
   const [goal, setGoal] = useState<Goal | null>(null);
   const { openIntake, openBooking } = useFeatures();
   const rec = useMemo(() => (goal ? recommend(goal) : null), [goal]);
+  const recProduct = rec?.productId
+    ? siteConfig.products.find((p) => p.id === rec.productId)
+    : undefined;
+  const recOpen = recProduct ? productOpenLinkAttrs(recProduct) : null;
 
   return (
     <section id="recommend" className="relative py-24 lg:py-32">
@@ -137,20 +150,22 @@ export function ProductRecommender() {
                 </h3>
                 <p className="mt-2 text-sm leading-relaxed text-muted">{rec.body}</p>
                 <div className="mt-5 flex flex-wrap gap-3">
-                  {rec.cta === "product" && rec.productId && (
-                    <Link
-                      href={`/products/${rec.productId}`}
+                  {rec.cta === "product" && recProduct && recOpen && (
+                    <a
+                      href={recOpen.href}
+                      target={recOpen.target}
+                      rel={recOpen.rel}
                       onClick={() =>
                         trackEvent("recommender_cta", {
                           type: "product",
-                          product: rec.productId!,
+                          product: recProduct.id,
                         })
                       }
                       className="inline-flex h-11 items-center gap-2 rounded-xl bg-accent px-5 text-sm font-semibold text-background hover:bg-accent-hover"
                     >
-                      Open {siteConfig.products.find((p) => p.id === rec.productId)?.name ?? "product"}
+                      Open {recProduct.name}
                       <ArrowRight className="h-4 w-4" />
-                    </Link>
+                    </a>
                   )}
                   {rec.cta === "intake" && (
                     <button

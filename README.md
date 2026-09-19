@@ -32,7 +32,7 @@ Favicon, Apple icon, PDF headers, Header, Footer, Hero, Admin, and Portal all us
 
 ### Product suite
 
-Order: **LookFinesse** (flagship) → **ConfiLearn** (LMS) → **CadenceApp** → **ConfiRent** → **TriviaYard** → **ConfiTrade**.
+Order: **LookFinesse** (flagship) → **ConfiLearn** (LMS) → **CadenceApp** → **ConfiRent** → **TriviaYard**.
 
 ## Quick start
 
@@ -203,7 +203,7 @@ All PDFs use Beacon mark / wordmark in the header. Timestamps: **Africa/Nairobi*
 | **Movable Glow FAB** | Marketing pages (`FeatureLayer`) | Drag to reposition; `localStorage` key `beacon-glow-fab-pos`; z-index 250; hidden on `/admin` and `/portal` |
 | **Chat knowledge base** | Glow panel | On-site answers for products, pricing, booking, founder — works without OpenAI |
 | **OpenAI chat** | `POST /api/chat` | Optional `OPENAI_API_KEY`; Glow calls this with KB fallback |
-| **Product recommender** | Glow (“Which product fits…?”) | KB routes to LookFinesse / ConfiLearn / CadenceApp / ConfiRent |
+| **Product recommender** | Glow (“Which product fits…?”) | KB routes to LookFinesse / ConfiLearn / CadenceApp / ConfiRent / TriviaYard |
 | **Brief improver** | Start a Project wizard | `POST /api/brief/improve` — polishes intake briefs |
 | **Ask Glow** | Product detail pages | Quick product Qs open Glow with a prefilled prompt |
 
@@ -224,7 +224,7 @@ All PDFs use Beacon mark / wordmark in the header. Timestamps: **Africa/Nairobi*
 ## Site highlights
 
 - Hero balances **suite of cloud apps** + **custom builds** (Explore products / Start a project / Book a call)
-- Equal product card grid + constellation (no edge clipping) + per-product UI slideshows
+- Homepage product carousel with landing-style previews (LookFinesse, ConfiLearn, CadenceApp, ConfiRent, TriviaYard)
 - Polaroid-style founder photo (no oval frames)
 - Cool blue-slate light theme with mesh depth
 - 30% deposits via Stripe or M-Pesa

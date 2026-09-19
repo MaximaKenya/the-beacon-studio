@@ -216,7 +216,7 @@ export type ReliabilityItem = {
 /**
  * Products array — add unlimited entries; suite UI scales from this.
  *
- * Order: LookFinesse (flagship) → ConfiLearn (LMS) → CadenceApp → ConfiRent → TriviaYard → ConfiTrade.
+ * Order: LookFinesse (flagship) → ConfiLearn (LMS) → CadenceApp → ConfiRent → TriviaYard.
  * Update liveUrl only when a public deploy URL exists in the product README.
  *
  * LMS naming (ex-LuminousLMS): primary brand is ConfiLearn.
@@ -230,9 +230,9 @@ const products = [
     name: "LookFinesse",
     tagline: "Sell fashion, beauty & fitness online — with Kenya-ready payments.",
     description:
-      "Marketplace for creators and vendors: shop, bookings, ads, and M-Pesa + Stripe so you can take payments and grow without building commerce from scratch.",
+      "A creator marketplace for fashion, beauty, and fitness: shop, bookings, ads, and Kenya-ready payments (M-Pesa + Stripe) so vendors can take money and grow without building commerce from scratch.",
     longDescription:
-      "LookFinesse is The Beacon Studio's flagship creator marketplace: social feed, shop, vendor dashboards, ads, and payments (M-Pesa + Stripe). Built for the African creator economy with a mobile-first Next.js + Supabase commerce surface.",
+      "LookFinesse is The Beacon Studio's flagship creator marketplace for fashion, beauty, and fitness — social feed, shop, vendor dashboards, ads, and payments (M-Pesa + Stripe). Built for the African creator economy with a mobile-first Next.js + Supabase commerce surface.",
     tags: ["Marketplace", "Social Commerce", "Next.js", "Supabase"],
     status: "beta" as ProductStatus,
     operationalStatus: "building" as OperationalStatus,
@@ -245,9 +245,9 @@ const products = [
     name: "ConfiLearn",
     tagline: "Run live classes and courses — tutors get paid via M-Pesa.",
     description:
-      "LMS for tutors and learners: live sessions, on-demand courses, streaks, XP, and certificates — so you can monetize teaching without stitching tools together.",
+      "An LMS for live classes and courses. Tutors run sessions, learners take courses, and tutors are paid via M-Pesa — teaching without stitching tools together.",
     longDescription:
-      "ConfiLearn pairs verified tutors with learners: guided courses, live sessions, community feed, leaderboards, and a tutor studio for authoring. A creator-economy LMS shaped for African learners and educators — TanStack Start, React, Supabase, and Cloudflare.",
+      "ConfiLearn is a learning platform for live classes and on-demand courses. Tutors get a studio for authoring, learners get progress, streaks, XP, and certificates, and payouts go via M-Pesa. Shaped for African learners and educators — TanStack Start, React, Supabase, and Cloudflare.",
     tags: ["EdTech", "LMS", "TanStack Start", "Supabase"],
     status: "beta" as ProductStatus,
     operationalStatus: "building" as OperationalStatus,
@@ -261,10 +261,10 @@ const products = [
     name: "CadenceApp",
     tagline: "Planning rhythm for teams that need to ship on schedule.",
     description:
-      "Early suite product for ops and planning — public repo is live; surface and stack details tighten as we ship.",
+      "Planning and ops rhythm for teams that need to ship on schedule — keep the week visible, keep work moving, and see what’s due before it slips.",
     longDescription:
-      "CadenceApp is an early Beacon Studio product. The public GitHub repo currently ships a minimal README with no package/stack declared yet — copy and status will tighten as the codebase grows.",
-    tags: ["Ops", "Planning", "Early"],
+      "CadenceApp is Beacon’s planning and ops rhythm for teams that need to ship on schedule. It is early: the public GitHub repo is live while the product surface is still taking shape. Use it when you want cadence, not another noisy task dump.",
+    tags: ["Ops", "Planning", "Shipping"],
     status: "coming-soon" as ProductStatus,
     operationalStatus: "building" as OperationalStatus,
     liveUrl: "",
@@ -278,9 +278,9 @@ const products = [
     name: "ConfiRent",
     tagline: "Rental ops with clearer trust between hosts and renters.",
     description:
-      "Coming soon — a rental product focused on confidence and clarity. Full details when the repo is ready.",
+      "Coming soon — rental operations software that makes trust clearer between hosts and renters: listings, deposits, and handoffs without the usual fog.",
     longDescription:
-      "ConfiRent is reserved in the Beacon suite as a coming-soon rental product. Naming is locked; full description, stack, screenshots, and links will be filled in once the local repo is uploaded — do not invent feature details before then.",
+      "ConfiRent is Beacon’s coming-soon rental ops product. The idea is clearer trust between hosts and renters — listings you can stand behind, deposits you can follow, and handoffs that don’t disappear into chat threads. Stack, screenshots, and links land when the repo is ready.",
     tags: ["Rentals", "Coming Soon"],
     status: "coming-soon" as ProductStatus,
     operationalStatus: "building" as OperationalStatus,
@@ -293,30 +293,15 @@ const products = [
     name: "TriviaYard",
     tagline: "Live trivia and play that keeps audiences coming back.",
     description:
-      "Coming soon — entertainment and trivia experiences for communities and brands. Details lock in as the product ships.",
+      "Coming soon — live trivia and audience play for communities, venues, and brands. Entertainment software that gets people playing together.",
     longDescription:
-      "TriviaYard is a Beacon Studio wing for live trivia and audience play. Naming is locked; full description, stack, screenshots, and links will be filled in as the product takes shape — do not invent feature details before then.",
+      "TriviaYard is Beacon’s coming-soon wing for live trivia and audience entertainment. Host a round, keep the room playing, and give communities a reason to come back. Full stack, screenshots, and links will land as the product ships.",
     tags: ["Entertainment", "Trivia", "Coming Soon"],
     status: "coming-soon" as ProductStatus,
     operationalStatus: "building" as OperationalStatus,
     liveUrl: "",
     docsUrl: "",
     image: "/images/projects/triviayard.svg",
-  },
-  {
-    id: "confitrade",
-    name: "ConfiTrade",
-    tagline: "Trading tools with clearer risk and execution confidence.",
-    description:
-      "Coming soon — a trading wing focused on clarity and confidence. Full details when the product surface is ready.",
-    longDescription:
-      "ConfiTrade is reserved in the Beacon suite as a coming-soon trading product. Naming is locked; full description, stack, screenshots, and links will be filled in once the product is further along — do not invent feature details before then.",
-    tags: ["Trading", "Coming Soon"],
-    status: "coming-soon" as ProductStatus,
-    operationalStatus: "building" as OperationalStatus,
-    liveUrl: "",
-    docsUrl: "",
-    image: "/images/projects/confitrade.svg",
   },
 ] satisfies Product[];
 
@@ -394,7 +379,7 @@ Based in Nairobi (EAT). Available for remote builds worldwide.`,
     twitterHandle: "@yourusername",
     title: "The Beacon Studio — Cloud Products & Custom Software",
     description:
-      "LookFinesse, ConfiLearn, CadenceApp, ConfiRent — plus custom software development. Nairobi product studio with client portal, branded quotes & receipts, 30% deposits (Stripe/M-Pesa), admin ops, and Glow AI.",
+      "LookFinesse, ConfiLearn, CadenceApp, ConfiRent, TriviaYard — plus custom software development. Nairobi product studio with client portal, branded quotes & receipts, 30% deposits (Stripe/M-Pesa), admin ops, and Glow AI.",
     keywords: [
       "The Beacon Studio",
       "Beacon",
@@ -403,6 +388,7 @@ Based in Nairobi (EAT). Available for remote builds worldwide.`,
       "ConfiLearn",
       "CadenceApp",
       "ConfiRent",
+      "TriviaYard",
 
       "custom software development",
       "cloud apps",
@@ -440,7 +426,7 @@ Based in Nairobi (EAT). Available for remote builds worldwide.`,
   currently: {
     status: "Open for custom builds",
     statusType: "available" as "available" | "busy" | "building",
-    building: "LookFinesse + ConfiLearn betas, CadenceApp next · ConfiRent coming soon",
+    building: "LookFinesse + ConfiLearn betas, CadenceApp next · ConfiRent & TriviaYard coming soon",
 
     focus: ["Next.js", "TypeScript", "Cloud SaaS"],
   },
@@ -472,7 +458,6 @@ Based in Nairobi (EAT). Available for remote builds worldwide.`,
 
   navigation: [
     { id: "products", label: "Products" },
-    { id: "demo", label: "Demo" },
     { id: "services", label: "Services" },
     { id: "pricing", label: "Pricing" },
     { id: "about", label: "About" },
@@ -501,8 +486,8 @@ Based in Nairobi (EAT). Available for remote builds worldwide.`,
       id: "product-suite",
       title: "Product suite & integrations",
       description:
-        "Adopt or extend LookFinesse, ConfiLearn, CadenceApp, ConfiRent, TriviaYard, or ConfiTrade — or wire them into your stack with the same studio craft.",
-      tags: ["LookFinesse", "ConfiLearn", "CadenceApp", "ConfiRent", "TriviaYard", "ConfiTrade"],
+        "Adopt or extend LookFinesse, ConfiLearn, CadenceApp, ConfiRent, or TriviaYard — or wire them into your stack with the same studio craft.",
+      tags: ["LookFinesse", "ConfiLearn", "CadenceApp", "ConfiRent", "TriviaYard"],
     },
     {
       id: "ops-payments",
@@ -799,7 +784,7 @@ Based in Nairobi (EAT). Available for remote builds worldwide.`,
       {
         id: "suite",
         label: "Something that works with Beacon products",
-        description: "Connect or extend LookFinesse, ConfiLearn, CadenceApp, ConfiRent, TriviaYard, or ConfiTrade",
+        description: "Connect or extend LookFinesse, ConfiLearn, CadenceApp, ConfiRent, or TriviaYard",
       },
       {
         id: "other",
@@ -979,7 +964,7 @@ Based in Nairobi (EAT). Available for remote builds worldwide.`,
     enabled: true,
     name: "Glow",
     greeting:
-      "Hey — I'm Glow, The Beacon Studio's assistant. Ask about LookFinesse, ConfiLearn, CadenceApp, ConfiRent, TriviaYard, ConfiTrade, pricing, deposits, the portal, or how to start a project.",
+      "Hey — I'm Glow, The Beacon Studio's assistant. Ask about LookFinesse, ConfiLearn, CadenceApp, ConfiRent, TriviaYard, pricing, deposits, the portal, or how to start a project.",
     suggestedQuestions: [
       "What is ConfiLearn?",
       "How do deposits work?",
