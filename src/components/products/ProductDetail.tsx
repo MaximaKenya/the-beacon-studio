@@ -13,6 +13,7 @@ import { useFeatures } from "@/providers/FeatureProvider";
 import { trackEvent } from "@/lib/analytics";
 import { AskGlowPrompt } from "@/components/features/AskGlowPrompt";
 import { StickyProductCTA } from "@/components/features/StickyProductCTA";
+import { screensForProduct } from "@/data/product-screens";
 import { mailtoHref, phoneHref, trackCallClick, trackEmailClick } from "@/lib/contact-actions";
 
 const statusLabel: Record<ProductStatus, string> = {
@@ -39,6 +40,7 @@ export function ProductDetail({
   const { openIntake, openBooking, openNewsletter, openChat } = useFeatures();
   const isLive = Boolean(product.liveUrl);
   const isComingSoon = product.status === "coming-soon" || !isLive;
+  const shots = screensForProduct(product.id).filter((s) => s.src);
 
   return (
     <div className="relative px-6 pb-28 pt-28 lg:px-8 lg:pt-32">
@@ -196,16 +198,36 @@ export function ProductDetail({
           </div>
 
           <div className="space-y-6">
-            <div className="overflow-hidden rounded-2xl border border-border bg-surface/40 p-6">
-              <Image
-                src={product.image}
-                alt={product.name}
-                width={800}
-                height={500}
-                className="mx-auto h-auto max-h-64 w-full object-contain"
-                priority
-              />
-            </div>
+            {shots.length > 0 ? (
+              <div className="space-y-4">
+                {shots.map((shot) => (
+                  <div
+                    key={shot.id}
+                    className="overflow-hidden rounded-2xl border border-border bg-surface/40"
+                  >
+                    <Image
+                      src={shot.src!}
+                      alt={shot.alt}
+                      width={1440}
+                      height={900}
+                      className="h-auto w-full object-cover object-top"
+                      priority={shot === shots[0]}
+                    />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="overflow-hidden rounded-2xl border border-border bg-surface/40 p-6">
+                <Image
+                  src={product.image}
+                  alt={product.name}
+                  width={800}
+                  height={500}
+                  className="mx-auto h-auto max-h-64 w-full object-contain"
+                  priority
+                />
+              </div>
+            )}
 
             <AskGlowPrompt
               productName={product.name}

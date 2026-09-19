@@ -12,7 +12,7 @@ export function ProductSuite() {
           <SectionHeading
             label="Product Suite"
             title={`${productCount} products. One studio.`}
-            description="Each slide is a landing-style preview of what the software does. Open a product to visit its public URL, GitHub repo, or page on this site."
+            description="Real product screens, scrolling as a studio reel. Hover a frame to read what it does. Open a product to visit its public URL, GitHub repo, or page on this site."
           />
         </ScrollReveal>
 
