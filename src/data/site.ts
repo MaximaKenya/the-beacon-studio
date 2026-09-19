@@ -217,7 +217,12 @@ export type ReliabilityItem = {
  * Products array — add unlimited entries; suite UI scales from this.
  *
  * Order: LookFinesse (flagship) → ConfiLearn (LMS) → CadenceApp → ConfiRent → TriviaYard.
- * Update liveUrl only when a public deploy URL exists in the product README.
+ * Update liveUrl only when a public deploy URL exists and returns HTTP 200.
+ * 2026-09-19 curl (Heroku router "No such app" 404 — do not hard-code):
+ *   https://lookfinesseapp.herokuapp.com/
+ *   https://lookfinesseke.herokuapp.com/
+ *   https://triviayard.herokuapp.com/
+ * Company site (not a wing; 200 OK): seo.siteUrl below.
  *
  * LMS naming (ex-LuminousLMS): primary brand is ConfiLearn.
  * ConfiLearn chosen; Nest avoided due to NestJS collision.
@@ -374,7 +379,7 @@ Based in Nairobi (EAT). Available for remote builds worldwide.`,
   heroVideo: "" as string,
 
   seo: {
-    siteUrl: "https://yourdomain.com",
+    siteUrl: "https://the-beacon-studio-0def818a6eaf.herokuapp.com",
     ogImage: "/og-image.png",
     twitterHandle: "@yourusername",
     title: "The Beacon Studio — Cloud Products & Custom Software",
