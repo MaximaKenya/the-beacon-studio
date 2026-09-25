@@ -235,7 +235,7 @@ const products = [
       "LookFinesse is The Beacon Studio's flagship creator marketplace for fashion, beauty, and fitness — social feed, shop, vendor dashboards, ads, and payments (M-Pesa + Stripe). Built for the African creator economy with a mobile-first Next.js + Supabase commerce surface.",
     tags: ["Marketplace", "Social Commerce", "Next.js", "Supabase"],
     status: "live" as ProductStatus,
-    operationalStatus: "building" as OperationalStatus,
+    operationalStatus: "operational" as OperationalStatus,
     liveUrl: "https://lookfinesseke-0cf56b906a55.herokuapp.com/",
     docsUrl: "",
     image: "/images/projects/lookfinesse.svg",
@@ -298,7 +298,7 @@ const products = [
       "TriviaYard is Beacon’s coming-soon wing for live trivia and audience entertainment. Host a round, keep the room playing, and give communities a reason to come back. Full stack, screenshots, and links will land as the product ships.",
     tags: ["Entertainment", "Trivia", "Coming Soon"],
     status: "live" as ProductStatus,
-    operationalStatus: "building" as OperationalStatus,
+    operationalStatus: "operational" as OperationalStatus,
     liveUrl: "https://triviayard-9cf8a6eb71ba.herokuapp.com/",
     docsUrl: "",
     image: "/images/projects/triviayard.svg",
@@ -344,6 +344,7 @@ Based in Nairobi (EAT). Available for remote builds worldwide.`,
 
 Based in Nairobi (EAT). Available for remote builds worldwide.`,
 
+  /** TODO(go-live): replace email, phone, LinkedIn, Twitter before public launch */
   email: "hello@example.com",
   /** Kenya E.164 — edit to your real number */
   phone: "+254700000000",
@@ -374,7 +375,7 @@ Based in Nairobi (EAT). Available for remote builds worldwide.`,
   heroVideo: "" as string,
 
   seo: {
-    siteUrl: "https://yourdomain.com",
+    siteUrl: "https://the-beacon-studio-0def818a6eaf.herokuapp.com",
     ogImage: "/og-image.png",
     twitterHandle: "@yourusername",
     title: "The Beacon Studio — Cloud Products & Custom Software",
@@ -426,7 +427,7 @@ Based in Nairobi (EAT). Available for remote builds worldwide.`,
   currently: {
     status: "Open for custom builds",
     statusType: "available" as "available" | "busy" | "building",
-    building: "LookFinesse + ConfiLearn betas, CadenceApp next · ConfiRent & TriviaYard coming soon",
+    building: "LookFinesse + TriviaYard live · ConfiLearn & CadenceApp next · ConfiRent coming soon",
 
     focus: ["Next.js", "TypeScript", "Cloud SaaS"],
   },
@@ -441,7 +442,7 @@ Based in Nairobi (EAT). Available for remote builds worldwide.`,
   social: [
     {
       name: "GitHub",
-      href: "https://github.com/yourusername",
+      href: "https://github.com/MaximaKenya",
       icon: "github" as const,
     },
     {
@@ -1105,7 +1106,7 @@ Based in Nairobi (EAT). Available for remote builds worldwide.`,
   achievements: [] as string[],
 
   nowPlaying: [
-    { id: "np-1", type: "Building", label: "LookFinesse & ConfiLearn betas" },
+    { id: "np-1", type: "Building", label: "LookFinesse & TriviaYard live · ConfiLearn beta" },
     { id: "np-2", type: "Open", label: "Custom client builds" },
     { id: "np-3", type: "Focus", label: "Cloud SaaS & TypeScript" },
   ],
