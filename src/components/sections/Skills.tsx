@@ -57,7 +57,7 @@ function SkillShape({ shape, accent }: { shape?: string; accent?: string }) {
 
 export function Skills() {
   return (
-    <section id="skills" className="section-wash-skills relative overflow-hidden py-24 lg:py-32">
+    <section id="skills" className="section-wash-skills relative overflow-hidden py-28 lg:py-40">
       <SectionShapes preset="skills" />
 
       <div className="relative mx-auto max-w-6xl px-6 lg:px-8">

@@ -5,9 +5,18 @@ type SectionHeadingProps = {
   title: string;
   description?: string;
   accent?: string;
+  /** Landing pages pass h1. Homepage sections stay h2 under the hero. */
+  as?: "h1" | "h2";
 };
 
-export function SectionHeading({ label, title, description, accent }: SectionHeadingProps) {
+export function SectionHeading({
+  label,
+  title,
+  description,
+  accent,
+  as = "h2",
+}: SectionHeadingProps) {
+  const Title = as;
   return (
     <div className="relative mb-14 max-w-2xl">
       <div className="mb-3 inline-flex items-center gap-2 font-mono text-xs uppercase tracking-[0.25em] text-accent">
@@ -15,17 +24,17 @@ export function SectionHeading({ label, title, description, accent }: SectionHea
         {label}
       </div>
 
-      <h2 className="font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl lg:text-5xl">
+      <Title className="font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl lg:text-5xl">
         {title}
         {accent && (
           <span className="ml-2 inline-block text-accent-warm" aria-hidden>
             {accent}
           </span>
         )}
-      </h2>
+      </Title>
 
       {description && (
-        <p className="mt-5 text-base leading-relaxed text-muted lg:text-lg">{description}</p>
+        <p className="mt-5 max-w-xl text-base leading-loose text-muted lg:text-lg">{description}</p>
       )}
     </div>
   );

@@ -14,13 +14,13 @@ export function BookingSection() {
   if (!siteConfig.booking.enabled) return null;
 
   return (
-    <section id="book" className="border-t border-border bg-surface/20 py-24 lg:py-32">
+    <section id="book" className="border-t border-border bg-surface/20 py-28 lg:py-40">
       <div className="mx-auto max-w-6xl px-6 lg:px-8">
         <ScrollReveal>
           <SectionHeading
             label="Schedule"
-            title="Book a Call"
-            description="Book a 30-minute call to scope your build or product. Slots in East Africa Time (EAT)."
+            title="Book a call"
+            description="A short call in East Africa Time, including a 20-minute automation audit."
           />
         </ScrollReveal>
 

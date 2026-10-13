@@ -186,12 +186,28 @@ export type PricingTier = {
   featured?: boolean;
   /** Optional Stripe Price id env key hint (see .env.example) */
   stripePriceEnv?: string;
+  /** Studio builds vs AI automation offer ladder */
+  group?: "studio" | "automation";
+  /** No online deposit — price is quoted after discovery */
+  quoteOnly?: boolean;
 };
 
 export type FaqItem = {
   id: string;
   question: string;
   answer: string;
+};
+
+export type AutomationStep = {
+  id: string;
+  title: string;
+  description: string;
+};
+
+export type AutomationUseCase = {
+  id: string;
+  industry: string;
+  line: string;
 };
 
 export type TrustLogo = {
@@ -230,10 +246,10 @@ const products = [
     name: "LookFinesse",
     tagline: "Sell fashion, beauty & fitness online — with Kenya-ready payments.",
     description:
-      "A creator marketplace for fashion, beauty, and fitness: shop, bookings, ads, and Kenya-ready payments (M-Pesa + Stripe) so vendors can take money and grow without building commerce from scratch.",
+      "Shop, bookings, and Kenya-ready payments for fashion, beauty, and fitness creators.",
     longDescription:
       "LookFinesse is The Beacon Studio's flagship creator marketplace for fashion, beauty, and fitness — social feed, shop, vendor dashboards, ads, and payments (M-Pesa + Stripe). Built for the African creator economy with a mobile-first Next.js + Supabase commerce surface.",
-    tags: ["Marketplace", "Social Commerce", "Next.js", "Supabase"],
+    tags: ["Marketplace", "M-Pesa", "Next.js"],
     status: "live" as ProductStatus,
     operationalStatus: "operational" as OperationalStatus,
     liveUrl: "https://lookfinesseke-0cf56b906a55.herokuapp.com/",
@@ -245,10 +261,10 @@ const products = [
     name: "ConfiLearn",
     tagline: "Run live classes and courses — tutors get paid via M-Pesa.",
     description:
-      "An LMS for live classes and courses. Tutors run sessions, learners take courses, and tutors are paid via M-Pesa — teaching without stitching tools together.",
+      "Live classes and courses, with tutor payouts via M-Pesa.",
     longDescription:
       "ConfiLearn is a learning platform for live classes and on-demand courses. Tutors get a studio for authoring, learners get progress, streaks, XP, and certificates, and payouts go via M-Pesa. Shaped for African learners and educators — TanStack Start, React, Supabase, and Cloudflare.",
-    tags: ["EdTech", "LMS", "TanStack Start", "Supabase"],
+    tags: ["EdTech", "Live classes", "M-Pesa"],
     status: "beta" as ProductStatus,
     operationalStatus: "building" as OperationalStatus,
     liveUrl: "",
@@ -260,11 +276,10 @@ const products = [
     id: "cadenceapp",
     name: "CadenceApp",
     tagline: "Planning rhythm for teams that need to ship on schedule.",
-    description:
-      "Planning and ops rhythm for teams that need to ship on schedule — keep the week visible, keep work moving, and see what’s due before it slips.",
+    description: "Keep the week visible so work ships on schedule.",
     longDescription:
       "CadenceApp is Beacon’s planning and ops rhythm for teams that need to ship on schedule. It is early: the public GitHub repo is live while the product surface is still taking shape. Use it when you want cadence, not another noisy task dump.",
-    tags: ["Ops", "Planning", "Shipping"],
+    tags: ["Ops", "Planning"],
     status: "coming-soon" as ProductStatus,
     operationalStatus: "building" as OperationalStatus,
     liveUrl: "",
@@ -277,11 +292,10 @@ const products = [
     id: "confirent",
     name: "ConfiRent",
     tagline: "Rental ops with clearer trust between hosts and renters.",
-    description:
-      "Coming soon — rental operations software that makes trust clearer between hosts and renters: listings, deposits, and handoffs without the usual fog.",
+    description: "Coming soon — listings, deposits, and handoffs with clearer trust.",
     longDescription:
       "ConfiRent is Beacon’s coming-soon rental ops product. The idea is clearer trust between hosts and renters — listings you can stand behind, deposits you can follow, and handoffs that don’t disappear into chat threads. Stack, screenshots, and links land when the repo is ready.",
-    tags: ["Rentals", "Coming Soon"],
+    tags: ["Rentals", "Coming soon"],
     status: "coming-soon" as ProductStatus,
     operationalStatus: "building" as OperationalStatus,
     liveUrl: "",
@@ -292,11 +306,10 @@ const products = [
     id: "triviayard",
     name: "TriviaYard",
     tagline: "Live trivia and play that keeps audiences coming back.",
-    description:
-      "Coming soon — live trivia and audience play for communities, venues, and brands. Entertainment software that gets people playing together.",
+    description: "Live trivia and audience play for communities, venues, and brands.",
     longDescription:
       "TriviaYard is Beacon’s coming-soon wing for live trivia and audience entertainment. Host a round, keep the room playing, and give communities a reason to come back. Full stack, screenshots, and links will land as the product ships.",
-    tags: ["Entertainment", "Trivia", "Coming Soon"],
+    tags: ["Trivia", "Live play"],
     status: "live" as ProductStatus,
     operationalStatus: "operational" as OperationalStatus,
     liveUrl: "https://triviayard-9cf8a6eb71ba.herokuapp.com/",
@@ -319,7 +332,7 @@ export const siteConfig = {
     /** Unique lockup — differentiates from similarly named creative agencies */
     lockup: "cloud products & custom software",
     description:
-      "The Beacon Studio is a Nairobi software product studio. Use our cloud apps or hire us to build yours — clear pricing, weekly demos, and software you can own.",
+      "The Beacon Studio is a Nairobi software product studio. Cloud apps, custom builds, and AI automation for repetitive work.",
     /** Footer / legal disambiguation (not a film or media production company) */
     disambiguation:
       "A software product studio in Nairobi — cloud apps and custom builds. Not affiliated with film or media production companies of a similar name.",
@@ -329,9 +342,7 @@ export const siteConfig = {
     name: "Maximillian",
     shortName: "Max",
     role: "Founder & Product Builder",
-    bio: `I'm Max, founder of The Beacon Studio. I build cloud products and custom software for founders and teams — clear scope, weekly demos, and TypeScript you can own.
-
-Based in Nairobi (EAT). Available for remote builds worldwide.`,
+    bio: `I'm Max, founder of The Beacon Studio. I build cloud products and custom software from Nairobi (EAT), for teams anywhere.`,
     location: "Nairobi, Kenya",
     timezone: "Africa/Nairobi",
   },
@@ -340,9 +351,7 @@ Based in Nairobi (EAT). Available for remote builds worldwide.`,
   name: "The Beacon Studio",
   role: "Software Product Studio",
   tagline: "Cloud products & custom software.",
-  bio: `I'm Max, founder of The Beacon Studio. I build cloud products and custom software for founders and teams — clear scope, weekly demos, and TypeScript you can own.
-
-Based in Nairobi (EAT). Available for remote builds worldwide.`,
+  bio: `I'm Max, founder of The Beacon Studio. I build cloud products and custom software from Nairobi (EAT), for teams anywhere.`,
 
   /** TODO(go-live): replace email, phone, LinkedIn, Twitter before public launch */
   email: "hello@example.com",
@@ -380,7 +389,7 @@ Based in Nairobi (EAT). Available for remote builds worldwide.`,
     twitterHandle: "@yourusername",
     title: "The Beacon Studio — Cloud Products & Custom Software",
     description:
-      "LookFinesse, ConfiLearn, CadenceApp, ConfiRent, TriviaYard — plus custom software development. Nairobi product studio with client portal, branded quotes & receipts, 30% deposits (Stripe/M-Pesa), admin ops, and Glow AI.",
+      "Cloud apps, custom software, and AI automation for organizations in Kenya — WhatsApp automation, missed-call follow-up, lead capture, and routine admin. Nairobi product studio.",
     keywords: [
       "The Beacon Studio",
       "Beacon",
@@ -390,7 +399,6 @@ Based in Nairobi (EAT). Available for remote builds worldwide.`,
       "CadenceApp",
       "ConfiRent",
       "TriviaYard",
-
       "custom software development",
       "cloud apps",
       "SaaS studio Kenya",
@@ -398,6 +406,9 @@ Based in Nairobi (EAT). Available for remote builds worldwide.`,
       "product studio",
       "hire software developer Kenya",
       "custom SaaS development",
+      "AI automation Kenya",
+      "WhatsApp automation",
+      "lead follow-up automation",
     ],
   },
 
@@ -408,26 +419,24 @@ Based in Nairobi (EAT). Available for remote builds worldwide.`,
   },
 
   /** Benefit-led hero — suite of cloud apps + custom builds */
-  heroHeadline: "Cloud apps you can use — custom software when you need it built.",
+  heroHeadline: "Cloud apps, custom software, and automation.",
   /** Short supporting line under suite chips (chips render via SuiteLine). */
-  heroSubhead:
-    "Clear pricing, 30% deposits (Stripe / M-Pesa), and a dedicated client portal — Nairobi / EAT.",
+  heroSubhead: "Use our products, hire us to build, or automate the repetitive work. Nairobi / EAT.",
 
   /**
    * What clients gain — shown in Services and related CTAs.
    */
   clientGains: [
-    "Faster launch with weekly demos and scoped milestones",
-    "Live progress in a branded client portal",
-    "Branded quotations & receipts — kick off with a fair 30% deposit",
-    "Direct studio messaging + Glow AI for quick product & pricing answers",
-    "Cloud product suite you can adopt, or custom software when you need it built",
+    "Weekly demos and a scoped plan",
+    "Live progress in your client portal",
+    "Direct messaging, plus Glow for quick answers",
+    "Cloud apps, custom builds, or one automated workflow",
   ],
 
   currently: {
     status: "Open for custom builds",
     statusType: "available" as "available" | "busy" | "building",
-    building: "LookFinesse + TriviaYard live · ConfiLearn & CadenceApp next · ConfiRent coming soon",
+    building: "LookFinesse and TriviaYard live",
 
     focus: ["Next.js", "TypeScript", "Cloud SaaS"],
   },
@@ -459,6 +468,7 @@ Based in Nairobi (EAT). Available for remote builds worldwide.`,
 
   navigation: [
     { id: "products", label: "Products" },
+    { id: "automation", label: "Automation" },
     { id: "services", label: "Services" },
     { id: "pricing", label: "Pricing" },
     { id: "about", label: "About" },
@@ -477,32 +487,35 @@ Based in Nairobi (EAT). Available for remote builds worldwide.`,
 
   services: [
     {
+      id: "ai-automation",
+      title: "AI Automation",
+      description:
+        "Automate enquiries, missed-call follow-ups, and routine admin — the personal service stays.",
+      tags: ["WhatsApp", "Lead follow-up", "Reminders"],
+    },
+    {
       id: "custom-apps",
       title: "Custom apps & SaaS",
-      description:
-        "MVP to multi-tenant product — weekly demos, a branded client portal for progress, and TypeScript you own from day one.",
-      tags: ["Next.js", "TypeScript", "PostgreSQL", "Portal"],
+      description: "MVP to a product your team can own, with weekly demos.",
+      tags: ["Next.js", "TypeScript", "Portal"],
     },
     {
       id: "product-suite",
-      title: "Product suite & integrations",
-      description:
-        "Adopt or extend LookFinesse, ConfiLearn, CadenceApp, ConfiRent, or TriviaYard — or wire them into your stack with the same studio craft.",
-      tags: ["LookFinesse", "ConfiLearn", "CadenceApp", "ConfiRent", "TriviaYard"],
+      title: "Product suite",
+      description: "Adopt or extend LookFinesse, ConfiLearn, CadenceApp, ConfiRent, or TriviaYard.",
+      tags: ["LookFinesse", "ConfiLearn", "CadenceApp"],
     },
     {
       id: "ops-payments",
-      title: "Quotes, deposits & messaging",
-      description:
-        "Branded quotations & receipts, 30% deposits (Stripe / M-Pesa), 1:1 portal messaging with the studio, plus Glow AI for quick answers on-site.",
-      tags: ["Quotes", "30% deposits", "Messaging", "Glow AI"],
+      title: "Quotes & messaging",
+      description: "Branded quotes, portal messaging, and Glow for quick answers.",
+      tags: ["Quotes", "Messaging", "Glow"],
     },
     {
       id: "launch",
       title: "Launch partnerships",
-      description:
-        "Discovery → build sprints → handoff, with portal milestones and optional retainer so you keep shipping after launch.",
-      tags: ["Discovery", "Portal", "Retainer"],
+      description: "Discovery, build sprints, then handoff or a retainer.",
+      tags: ["Discovery", "Handoff", "Retainer"],
     },
   ] satisfies Service[],
 
@@ -511,8 +524,7 @@ Based in Nairobi (EAT). Available for remote builds worldwide.`,
       id: "fixed",
       name: "Fixed scope",
       headline: "Clear brief. Clear price.",
-      description:
-        "Best when you know the outcome — an MVP, a redesign, or a defined feature set. We lock scope, timeline, and a fixed studio fee.",
+      description: "A locked scope, timeline, and fee for a known outcome.",
       bestFor: "MVPs, launches, bounded rebuilds",
       highlights: ["Scoped discovery", "Milestone demos", "Fixed fee"],
     },
@@ -520,8 +532,7 @@ Based in Nairobi (EAT). Available for remote builds worldwide.`,
       id: "retainer",
       name: "Retainer",
       headline: "Ongoing craft on tap.",
-      description:
-        "A monthly partnership for product velocity — features, polish, and ops support without restarting procurement every sprint.",
+      description: "Monthly capacity for features, polish, and support.",
       bestFor: "Growing products & continuous delivery",
       highlights: ["Reserved capacity", "Priority response", "Flexible backlog"],
     },
@@ -529,8 +540,7 @@ Based in Nairobi (EAT). Available for remote builds worldwide.`,
       id: "equity",
       name: "Equity-friendly",
       headline: "Aligned upside for the right builds.",
-      description:
-        "Select early-stage projects where The Beacon Studio can take a reduced cash fee plus equity. Selective — we partner when the product and team fit.",
+      description: "Reduced cash plus equity, when the product and team fit.",
       bestFor: "Early founders with strong product fit",
       highlights: ["Hybrid cash + equity", "Deep partnership", "By invitation"],
     },
@@ -557,6 +567,7 @@ Based in Nairobi (EAT). Available for remote builds worldwide.`,
       cta: "Start your build",
       ctaAction: "intake",
       stripePriceEnv: "STRIPE_PRICE_SPRINT_DEPOSIT",
+      group: "studio",
     },
     {
       id: "product-build",
@@ -575,6 +586,7 @@ Based in Nairobi (EAT). Available for remote builds worldwide.`,
       ctaAction: "intake",
       featured: true,
       stripePriceEnv: "STRIPE_PRICE_PRODUCT_DEPOSIT",
+      group: "studio",
     },
     {
       id: "retainer",
@@ -592,6 +604,57 @@ Based in Nairobi (EAT). Available for remote builds worldwide.`,
       cta: "Call us",
       ctaAction: "booking",
       stripePriceEnv: "STRIPE_PRICE_RETAINER_DEPOSIT",
+      group: "studio",
+    },
+    {
+      id: "automation-pilot",
+      name: "Automation Pilot",
+      headline: "One workflow, in 2–3 weeks.",
+      fromPrice: "From $1,350",
+      fromAmount: 1350,
+      unit: "one workflow · 2–3 weeks",
+      includes: [
+        "One workflow on your tools",
+        "Agreed test runs",
+        "Fixed delivery date",
+        "Clear success criteria",
+      ],
+      cta: "Start a pilot",
+      ctaAction: "intake",
+      group: "automation",
+    },
+    {
+      id: "automation-retainer",
+      name: "Automation Retainer",
+      headline: "Keep that workflow healthy.",
+      fromPrice: "From $450",
+      fromAmount: 450,
+      unit: "per month",
+      includes: [
+        "Monitoring and error handling",
+        "Backups",
+        "Monthly reporting",
+        "Agreed improvements",
+      ],
+      cta: "Book a call",
+      ctaAction: "booking",
+      group: "automation",
+    },
+    {
+      id: "automation-custom",
+      name: "Multi-workflow",
+      headline: "Several workflows, quoted after discovery.",
+      fromPrice: "From $4,500",
+      fromAmount: 4500,
+      unit: "quoted after discovery",
+      includes: [
+        "More than one workflow",
+        "Mapped to your tools",
+        "Final quote after discovery",
+      ],
+      cta: "Book a discovery call",
+      ctaAction: "booking",
+      group: "automation",
     },
   ] satisfies PricingTier[],
 
@@ -623,62 +686,54 @@ Based in Nairobi (EAT). Available for remote builds worldwide.`,
   },
 
   pricingDisclaimer:
-    "Estimates in USD — final quotes are scoped per project after a short discovery call. Ranges are floors for typical SME work (Kenya & global), not fixed menus. Product suite access is invite / request-based while apps are in private beta.",
+    "USD floors, not a fixed menu. A 30% deposit (Stripe or M-Pesa) reserves the work. Final quotes follow a short discovery call.",
 
   productAccessNote:
     "Product suite: request access — no public seat pricing until each app is live.",
 
   comparison: {
-    title: "Build with us vs DIY vs agency",
-    description:
-      "A clear positioning table — so you know what you’re buying before the call.",
+    title: "Us, DIY, or an agency",
+    description: "What you get before the call.",
     rows: [
       {
         id: "speed",
         capability: "Time to first ship",
         withUs: "Weeks, with weekly demos",
         diy: "Months of context-switching",
-        agency: "Long kickoffs & handoffs",
-      },
-      {
-        id: "craft",
-        capability: "Product craft",
-        withUs: "Founder-engineer depth",
-        diy: "Depends on your bandwidth",
-        agency: "Varies by bench & juniors",
+        agency: "Long kickoffs",
       },
       {
         id: "cost",
         capability: "Cost clarity",
-        withUs: "Scoped ranges up front",
-        diy: "Salary + opportunity cost",
-        agency: "Often opaque retainers",
-      },
-      {
-        id: "stack",
-        capability: "Modern stack",
-        withUs: "Next.js, TypeScript, cloud",
-        diy: "Whatever you already know",
-        agency: "Often legacy defaults",
+        withUs: "Ranges up front",
+        diy: "Salary and opportunity cost",
+        agency: "Often opaque",
       },
       {
         id: "ownership",
         capability: "Code ownership",
         withUs: "Yours from day one",
         diy: "Yours",
-        agency: "Sometimes locked-in",
+        agency: "Sometimes locked in",
+      },
+      {
+        id: "fit",
+        capability: "Who it suits",
+        withUs: "Founders who want a studio",
+        diy: "Teams with spare engineers",
+        agency: "Large, layered programs",
       },
     ] satisfies ComparisonRow[],
   },
 
   reliability: {
-    title: "Security & reliability",
-    description: "How we operate — timezone, response, and the stack we trust.",
+    title: "How we operate",
+    description: "Timezone, response, and delivery.",
     items: [
-      { id: "tz", label: "Timezone", value: "Africa/Nairobi (EAT)" },
-      { id: "sla", label: "Response SLA", value: "≤ 1 business day" },
-      { id: "stack", label: "Core stack", value: "Next.js · TypeScript · Postgres" },
-      { id: "deploy", label: "Delivery", value: "Weekly demos · production deploys" },
+      { id: "tz", label: "Timezone", value: "Nairobi (EAT)" },
+      { id: "sla", label: "Response", value: "Within 1 business day" },
+      { id: "stack", label: "Stack", value: "Next.js · TypeScript" },
+      { id: "deploy", label: "Delivery", value: "Weekly demos" },
     ] satisfies ReliabilityItem[],
   },
 
@@ -687,37 +742,45 @@ Based in Nairobi (EAT). Available for remote builds worldwide.`,
       id: "faq-1",
       question: "What does The Beacon Studio actually build?",
       answer:
-        "Two things: our own cloud product suite, and custom software for founders and teams — MVPs, SaaS, APIs, redesigns, and launch partnerships. Same craft standard for both.",
+        "Cloud apps, custom software, and AI automation for repetitive work. Same studio either way.",
     },
     {
       id: "faq-2",
       question: "How does pricing work?",
       answer:
-        "We publish transparent USD ranges for Sprint, Product build, and Retainer. Every engagement is scoped after a short discovery call — estimates are floors, not fake SaaS seat prices. Final quotes follow a clear brief.",
+        "Published USD floors for studio builds and automation. A short discovery call turns the floor into a quote.",
+    },
+    {
+      id: "faq-automation-custom",
+      question: "How does AI automation customization work?",
+      answer:
+        "Every organization is different, so it starts with a short discovery call: how do you handle enquiries, missed calls, and follow-ups today? We then map one workflow and build it on your tools — WhatsApp, SMS, email, web chat, voice or missed-call, CRM or Google Sheets, and M-Pesa.",
+    },
+    {
+      id: "faq-automation-after",
+      question: "What happens after the automation pilot?",
+      answer:
+        "You can stop there, or move to a retainer from $450/month for monitoring, error handling, backups, reporting, and agreed improvements. Extra workflows start from $4,500 and are quoted after discovery.",
     },
     {
       id: "faq-3",
       question: "Can I get access to the product suite?",
-      answer:
-        "Yes — request access on any product card. Apps ship in waves; while they’re in private beta we don’t sell public seats. You’ll get notified when your product is ready.",
+      answer: "Request access on a product card. We’ll tell you when that app is ready.",
     },
     {
       id: "faq-4",
       question: "Where are you based, and do you work remotely?",
-      answer:
-        "The Beacon Studio is based in Nairobi, Kenya (EAT). We work with founders worldwide over async + booked calls. Response SLA is one business day.",
+      answer: "Nairobi (EAT), working with teams worldwide. We reply within one business day.",
     },
     {
       id: "faq-5",
       question: "What stack do you use?",
-      answer:
-        "TypeScript, Next.js, React, Node, PostgreSQL, and modern cloud deploy (Vercel and friends). We pick tools that stay maintainable — not trends for their own sake.",
+      answer: "TypeScript, Next.js, React, Node, and PostgreSQL.",
     },
     {
       id: "faq-6",
       question: "How do we start?",
-      answer:
-        "Use Get a launch plan (intake wizard) or Call us for a 30–45 minute discovery. Glow (our studio assistant) can also answer quick questions about products and engagement models.",
+      answer: "Start a project or book a call. Glow can answer quick questions first.",
     },
   ] satisfies FaqItem[],
 
@@ -725,33 +788,35 @@ Based in Nairobi (EAT). Available for remote builds worldwide.`,
     {
       id: "discover",
       step: 1,
-      title: "Scope in days, not months",
-      description:
-        "Short discovery call → clear outcomes, timeline, and price range so you know what you’re buying before we write code.",
+      title: "Scope it",
+      description: "A short call, then a clear outcome, timeline, and range.",
     },
     {
       id: "build",
       step: 2,
-      title: "Build with weekly demos",
-      description:
-        "See progress every week. You keep the repo. Fewer surprises, lower delivery risk.",
+      title: "Build it",
+      description: "Weekly demos. You keep the repo.",
     },
     {
       id: "launch",
       step: 3,
-      title: "Launch & own the product",
-      description:
-        "Production deploy, handoff docs, or a retainer so you keep shipping — with deposit / invoice options when you’re ready.",
+      title: "Launch it",
+      description: "Go live, hand off, or keep a retainer.",
     },
   ] satisfies HowItWorksStep[],
 
-  servicesPricingNote:
-    "Projects typically start from a scoped MVP engagement. Final pricing is by project — start a project intake or book a call for a clear estimate.",
+  servicesPricingNote: "Final price follows a short discovery call.",
 
   /** Multi-step "Start a Project" wizard options — plain language for SMEs & orgs */
   intake: {
     enabled: true,
     projectTypes: [
+      {
+        id: "ai-automation",
+        label: "AI automation",
+        description:
+          "Enquiries, missed-call follow-ups, lead capture, reminders, and routine admin",
+      },
       {
         id: "business-site",
         label: "A website for my business",
@@ -884,8 +949,7 @@ Based in Nairobi (EAT). Available for remote builds worldwide.`,
    * cost ≈ baseCost * complexityMultiplier
    */
   estimator: {
-    disclaimer:
-      "Rough timeline and cost range only — not a quote. Final scope and price come after a short discovery call.",
+    disclaimer: "A rough range, not a quote. Discovery sets the real price.",
     projectTypes: [
       {
         id: "mvp",
@@ -941,8 +1005,7 @@ Based in Nairobi (EAT). Available for remote builds worldwide.`,
   newsletter: {
     enabled: true,
     title: "Product & studio updates",
-    description:
-      "Occasional launch notes and build tips for founders. No spam — unsubscribe anytime.",
+    description: "Occasional launch notes. Unsubscribe anytime.",
     ctaText: "Subscribe",
     delayMs: 18000,
     scrollTriggerPercent: 55,
@@ -957,19 +1020,76 @@ Based in Nairobi (EAT). Available for remote builds worldwide.`,
     hoursEnd: "17:00",
     meetingTypes: [
       { id: "intro", label: "Intro Call", duration: 30 },
+      { id: "automation-audit", label: "Automation audit", duration: 20 },
       { id: "project", label: "Project Discussion", duration: 45 },
     ],
+  },
+
+  /**
+   * AI Automation — homepage section, /automation, pricing group, and Glow.
+   * One workflow first; multi-workflow is quoted after discovery.
+   */
+  automation: {
+    headline: "Automate the repetitive work.",
+    supporting:
+      "Enquiries, missed calls, lead capture, reminders, and routine admin — without replacing the personal service clients expect.",
+    cta: "Book a free 20-min automation audit",
+    toolsLine: "WhatsApp, SMS, email, web chat, voice, CRM or Google Sheets, and M-Pesa.",
+    steps: [
+      {
+        id: "discover",
+        title: "Discover",
+        description: "How do you handle enquiries, missed calls, and follow-ups today?",
+      },
+      {
+        id: "pilot",
+        title: "Pilot",
+        description: "We map one workflow and build it on the tools you already use.",
+      },
+      {
+        id: "retainer",
+        title: "Retainer",
+        description: "We monitor it, handle errors, and improve it each month.",
+      },
+    ] satisfies AutomationStep[],
+    useCases: [
+      {
+        id: "real-estate",
+        industry: "Real estate",
+        line: "Answer property questions, capture tenant or buyer requirements, and alert agents.",
+      },
+      {
+        id: "clinics",
+        industry: "Clinics",
+        line: "Bookings and reminders.",
+      },
+      {
+        id: "schools",
+        industry: "Schools",
+        line: "Fee and admission enquiries.",
+      },
+      {
+        id: "retail",
+        industry: "Retail & restaurants",
+        line: "Orders and WhatsApp replies.",
+      },
+      {
+        id: "smes",
+        industry: "SMEs & professional services",
+        line: "Lead follow-up and invoicing reminders.",
+      },
+    ] satisfies AutomationUseCase[],
   },
 
   assistant: {
     enabled: true,
     name: "Glow",
     greeting:
-      "Hey — I'm Glow, The Beacon Studio's assistant. Ask about LookFinesse, ConfiLearn, CadenceApp, ConfiRent, TriviaYard, pricing, deposits, the portal, or how to start a project.",
+      "Hey — I'm Glow. Ask about AI automation, our cloud apps, pricing, or how to start a project.",
     suggestedQuestions: [
+      "What is AI automation?",
+      "How does an automation pilot work?",
       "What is ConfiLearn?",
-      "How do deposits work?",
-      "How do I use the portal?",
       "How do I start a project?",
     ],
   },

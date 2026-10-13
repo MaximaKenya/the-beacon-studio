@@ -11,13 +11,13 @@ export function EngagementModels() {
   const { openIntake, openBooking } = useFeatures();
 
   return (
-    <section id="engagement" className="section-wash-about relative overflow-hidden py-24 lg:py-32">
+    <section id="engagement" className="section-wash-about relative overflow-hidden py-28 lg:py-40">
       <div className="relative mx-auto max-w-6xl px-6 lg:px-8">
         <ScrollReveal>
           <SectionHeading
             label="Engagement"
             title="How we partner"
-            description="Three studio postures — pick the shape that fits your stage. Details land after a short discovery."
+            description="Three ways to work together. Details land after a short call."
           />
         </ScrollReveal>
 

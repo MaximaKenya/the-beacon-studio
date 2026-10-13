@@ -18,13 +18,13 @@ export function ShippingFeed() {
   const entries = siteConfig.changelog;
 
   return (
-    <section id="shipped" className="relative py-20 lg:py-28">
+    <section id="shipped" className="relative py-24 lg:py-36">
       <div className="mx-auto max-w-6xl px-6 lg:px-8">
         <ScrollReveal>
           <SectionHeading
             label="Changelog"
             title="Recently shipped"
-            description="What the studio has been building. Add entries in site.ts as you release."
+            description="A short log of what the studio has released."
           />
         </ScrollReveal>
 

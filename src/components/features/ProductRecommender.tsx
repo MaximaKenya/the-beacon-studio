@@ -101,13 +101,13 @@ export function ProductRecommender() {
   const recOpen = recProduct ? productOpenLinkAttrs(recProduct) : null;
 
   return (
-    <section id="recommend" className="relative py-24 lg:py-32">
+    <section id="recommend" className="relative py-28 lg:py-40">
       <div className="mx-auto max-w-6xl px-6 lg:px-8">
         <ScrollReveal>
           <SectionHeading
             label="AI product guide"
             title="What do you need?"
-            description="A short quiz — we recommend a Beacon product or a custom build. No account required."
+            description="Pick a goal. We’ll point you to a product or a custom build."
           />
         </ScrollReveal>
 

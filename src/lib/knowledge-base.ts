@@ -23,7 +23,8 @@ export type Intent =
   | "pricing"
   | "portal"
   | "faq"
-  | "deposits";
+  | "deposits"
+  | "automation";
 
 type IntentRule = {
   intent: Intent;
@@ -98,6 +99,23 @@ const INTENT_RULES: IntentRule[] = [
     ],
     patterns: [/what (products|apps)/i, /product suite/i],
     weight: 1.4,
+  },
+  {
+    intent: "automation",
+    keywords: [
+      "automation",
+      "automate",
+      "whatsapp",
+      "missed call",
+      "missed-call",
+      "follow-up",
+      "follow up",
+      "lead capture",
+      "reminder",
+      "audit",
+    ],
+    patterns: [/ai automation/i, /automation (pilot|retainer|audit)/i, /whatsapp automation/i],
+    weight: 1.7,
   },
   {
     intent: "services",
@@ -360,6 +378,12 @@ function buildReply(intent: Intent): string {
 
     case "products":
       return `${brand.name}'s product suite:\n• ${formatProducts()}\n\nProduct pages: ${formatProductPageLinks()}. Custom work? Ask about [services](/#services) or [Start a Project](/#services).`;
+
+    case "automation": {
+      const offer = siteConfig.automation;
+      const tiers = pricingTiers.filter((tier) => tier.group === "automation");
+      return `${offer.headline} ${offer.supporting}\n\nDiscover → Pilot → Retainer:\n• ${offer.steps.map((step) => `${step.title}: ${step.description}`).join("\n• ")}\n\nTools: ${offer.toolsLine}\n\nPricing:\n• ${tiers.map((tier) => `${tier.name}: ${tier.fromPrice} ${tier.unit}`).join("\n• ")}\n\n[Book a free 20-min automation audit](/#book) or [start a project](/#services) and choose AI automation. Outreach page: [AI Automation](/automation).`;
+    }
 
     case "services":
       return `What ${brand.name} builds for clients:\n• ${formatServices()}\n${siteConfig.servicesPricingNote}\nSee [Services](/#services), [Start a Project](/#services), or [Book a Call](/#book) — email ${email} works too.`;

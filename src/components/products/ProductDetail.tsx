@@ -87,7 +87,7 @@ export function ProductDetail({
             )}
 
             <ul className="mt-8 flex flex-wrap gap-2" aria-label="Tags">
-              {product.tags.map((tag) => (
+              {product.tags.slice(0, 3).map((tag) => (
                 <li
                   key={tag}
                   className="rounded-md border border-border/70 bg-surface/60 px-3 py-1.5 font-mono text-[11px] text-muted"

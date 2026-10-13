@@ -48,7 +48,7 @@ const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const BOOK_TIMEOUT_MS = 15_000;
 
 export function BookingModal() {
-  const { bookingOpen, closeBooking } = useFeatures();
+  const { bookingOpen, closeBooking, bookingMeetingType } = useFeatures();
   const reducedMotion = useReducedMotion();
   const trapRef = useFocusTrap(bookingOpen);
   const [step, setStep] = useState<Step>("calendar");
@@ -58,6 +58,14 @@ export function BookingModal() {
   const [meetingType, setMeetingType] = useState<string>(
     siteConfig.booking.meetingTypes[0]?.id ?? ""
   );
+
+  useEffect(() => {
+    if (!bookingOpen) {
+      setMeetingType(siteConfig.booking.meetingTypes[0]?.id ?? "");
+      return;
+    }
+    if (bookingMeetingType) setMeetingType(bookingMeetingType);
+  }, [bookingOpen, bookingMeetingType]);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");

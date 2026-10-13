@@ -12,7 +12,7 @@ export function NotesPreview() {
   if (!notes.length) return null;
 
   return (
-    <section id="notes" className="section-wash-projects relative overflow-hidden py-24 lg:py-32">
+    <section id="notes" className="section-wash-projects relative overflow-hidden py-28 lg:py-40">
       <FloatingShapes
         shapes={[
           { type: "squiggle", top: "20%", left: "5%", size: 32, color: "var(--accent-violet)", duration: 8 },

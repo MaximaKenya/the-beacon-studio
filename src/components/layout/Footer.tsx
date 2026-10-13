@@ -126,11 +126,11 @@ export function Footer() {
             <p className="font-mono text-[10px] uppercase tracking-widest text-muted">Studio</p>
             <ul className="mt-3 space-y-2">
               {[
-                { href: "#services", label: "Services" },
-                { href: "#engagement", label: "Engage" },
-                { href: "#estimator", label: "Timeline estimate" },
-                { href: "#work", label: "Work" },
-                { href: "#book", label: "Book a call" },
+                { href: pathname === "/" ? "#automation" : "/automation", label: "Automation" },
+                { href: pathname === "/" ? "#services" : "/#services", label: "Services" },
+                { href: pathname === "/" ? "#pricing" : "/#pricing", label: "Pricing" },
+                { href: pathname === "/" ? "#work" : "/#work", label: "Work" },
+                { href: pathname === "/" ? "#book" : "/#book", label: "Book a call" },
               ].map((link) => (
                 <li key={link.href}>
                   <a
@@ -157,10 +157,9 @@ export function Footer() {
             <p className="font-mono text-[10px] uppercase tracking-widest text-muted">Company</p>
             <ul className="mt-3 space-y-2">
               {[
-                { href: "#about", label: "About" },
-                { href: "#shipped", label: "Changelog" },
-                { href: "#stack", label: "Stack" },
-                { href: "#contact", label: "Contact" },
+                { href: pathname === "/" ? "#about" : "/#about", label: "About" },
+                { href: pathname === "/" ? "#faq" : "/#faq", label: "FAQ" },
+                { href: pathname === "/" ? "#contact" : "/#contact", label: "Contact" },
                 { href: "/portal/login", label: "Client portal" },
               ].map((link) => (
                 <li key={link.href}>

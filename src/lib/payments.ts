@@ -54,7 +54,7 @@ export function computeCheckoutAmount(
   currency: string;
 } | null {
   const tier = siteConfig.pricingTiers.find((t) => t.id === tierId);
-  if (!tier) return null;
+  if (!tier || tier.fromAmount <= 0 || ("quoteOnly" in tier && tier.quoteOnly)) return null;
   const depositPercent = getDepositPercent();
   const amountMajor =
     mode === "deposit"

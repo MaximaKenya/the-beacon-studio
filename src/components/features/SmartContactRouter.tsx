@@ -21,7 +21,7 @@ export function SmartContactRouter({ message }: { message: string }) {
       title: "Sounds like a call would be great",
       description: "Book a time directly — pick a slot that works for you.",
       action: "Book a call",
-      onClick: openBooking,
+      onClick: () => openBooking(),
       color: "text-accent",
     },
     email: {

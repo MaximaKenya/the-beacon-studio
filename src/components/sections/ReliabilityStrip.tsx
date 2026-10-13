@@ -13,7 +13,7 @@ export function ReliabilityStrip() {
   return (
     <section
       id="reliability"
-      className="border-y border-border bg-surface/60 py-16 lg:py-20"
+      className="border-y border-border bg-surface/60 py-20 lg:py-28"
     >
       <div className="mx-auto max-w-6xl px-6 lg:px-8">
         <ScrollReveal>

@@ -10,13 +10,13 @@ import { mailtoHref, phoneHref, trackCallClick, trackEmailClick } from "@/lib/co
 
 export function Contact() {
   return (
-    <section id="contact" className="relative border-t border-border bg-surface/20 py-24 lg:py-32">
+    <section id="contact" className="relative border-t border-border bg-surface/20 py-28 lg:py-40">
       <div className="relative mx-auto max-w-6xl px-6 lg:px-8">
         <ScrollReveal variant="fade-down">
           <SectionHeading
             label="Contact"
-            title="Start a project"
-            description={`Tell us what you're building — ${siteConfig.brand.name} will get back within 1–2 business days (EAT).`}
+            title="Say hello"
+            description="We reply within one to two business days (EAT)."
           />
         </ScrollReveal>
 

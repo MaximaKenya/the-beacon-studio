@@ -29,13 +29,13 @@ export function HowItWorks() {
   }));
 
   return (
-    <section id="process" className="relative overflow-hidden py-24 lg:py-32">
+    <section id="process" className="relative overflow-hidden py-28 lg:py-40">
       <div className="relative mx-auto max-w-6xl px-6 lg:px-8">
         <ScrollReveal>
           <SectionHeading
             label="How it works"
-            title="Brief → build → live"
-            description="Weekly demos. Clear pricing. Less risk."
+            title="Brief, build, live"
+            description="A short path from the first call to launch."
           />
         </ScrollReveal>
 

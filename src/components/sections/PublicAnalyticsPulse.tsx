@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { ScrollReveal } from "@/components/ui/ScrollReveal";
-import { SuiteLine } from "@/components/brand/SuiteLine";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { siteConfig } from "@/data/site";
 import { parseResponseJson } from "@/lib/safe-json";
@@ -149,14 +148,10 @@ export function PublicAnalyticsPulse() {
         <ScrollReveal>
           <SectionHeading
             label="Studio pulse"
-            title="This week at a glance"
-            description="Public, privacy-safe signals — no emails, revenue, or personal data."
+            title="This week"
+            description="Public counts only. No emails or personal data."
           />
         </ScrollReveal>
-
-        <div className="mt-6">
-          <SuiteLine size="sm" align="left" linkProducts />
-        </div>
 
         <div className="mt-10 grid gap-5 lg:grid-cols-3">
           <motion.div

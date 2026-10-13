@@ -68,14 +68,15 @@ export async function POST(request: Request) {
     bookings.unshift(booking);
     await writeJsonFile("bookings.json", bookings);
 
-    const meetingLabel =
-      siteConfig.booking.meetingTypes.find((m) => m.id === meetingType)?.label ??
-      meetingType;
+    const meeting =
+      siteConfig.booking.meetingTypes.find((m) => m.id === meetingType) ??
+      siteConfig.booking.meetingTypes.find((m) => m.label === meetingType);
+    const meetingLabel = meeting?.label ?? meetingType;
 
     const ics = generateICS({
       date,
       time,
-      durationMinutes: siteConfig.booking.slotDuration,
+      durationMinutes: meeting?.duration ?? siteConfig.booking.slotDuration,
       title: `${meetingLabel} with ${siteConfig.brand.name}`,
       description: message || `${meetingLabel} booked via The Beacon Studio.`,
       organizerEmail: siteConfig.email,
