@@ -24,7 +24,7 @@ export const metadata: Metadata = {
 export default function AutomationPage() {
   return (
     <div className="pt-16">
-      <AutomationOffer />
+      <AutomationOffer titleAs="h1" />
     </div>
   );
 }

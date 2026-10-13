@@ -10,9 +10,11 @@ import { trackEvent } from "@/lib/analytics";
 type AutomationOfferProps = {
   /** Homepage anchor. The /automation page uses the same id. */
   id?: string;
+  /** Outreach page is the document title. Homepage stays an h2 under the hero. */
+  titleAs?: "h1" | "h2";
 };
 
-export function AutomationOffer({ id = "automation" }: AutomationOfferProps) {
+export function AutomationOffer({ id = "automation", titleAs = "h2" }: AutomationOfferProps) {
   const { automation } = siteConfig;
   const { openBooking, openIntake } = useFeatures();
 
@@ -21,6 +23,7 @@ export function AutomationOffer({ id = "automation" }: AutomationOfferProps) {
       <div className="relative mx-auto max-w-6xl px-6 lg:px-8">
         <ScrollReveal>
           <SectionHeading
+            as={titleAs}
             label="Automation"
             title={automation.headline}
             description={automation.supporting}
