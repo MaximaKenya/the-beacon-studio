@@ -609,10 +609,10 @@ export const siteConfig = {
     {
       id: "automation-pilot",
       name: "Automation Pilot",
-      headline: "One workflow, delivered in 2–3 weeks.",
-      fromPrice: "From $300",
-      fromAmount: 300,
-      unit: "2–3 weeks",
+      headline: "One workflow, in 2–3 weeks.",
+      fromPrice: "From $1,350",
+      fromAmount: 1350,
+      unit: "one workflow · 2–3 weeks",
       includes: [
         "One workflow on your tools",
         "Agreed test runs",
@@ -627,8 +627,8 @@ export const siteConfig = {
       id: "automation-retainer",
       name: "Automation Retainer",
       headline: "Keep that workflow healthy.",
-      fromPrice: "From $150",
-      fromAmount: 150,
+      fromPrice: "From $450",
+      fromAmount: 450,
       unit: "per month",
       includes: [
         "Monitoring and error handling",
@@ -642,20 +642,19 @@ export const siteConfig = {
     },
     {
       id: "automation-custom",
-      name: "Custom",
-      headline: "Several workflows, scoped together.",
-      fromPrice: "Quote",
-      fromAmount: 0,
-      unit: "after discovery",
+      name: "Multi-workflow",
+      headline: "Several workflows, quoted after discovery.",
+      fromPrice: "From $4,500",
+      fromAmount: 4500,
+      unit: "quoted after discovery",
       includes: [
         "More than one workflow",
         "Mapped to your tools",
-        "Quoted after the discovery call",
+        "Final quote after discovery",
       ],
       cta: "Book a discovery call",
       ctaAction: "booking",
       group: "automation",
-      quoteOnly: true,
     },
   ] satisfies PricingTier[],
 
@@ -761,7 +760,7 @@ export const siteConfig = {
       id: "faq-automation-after",
       question: "What happens after the automation pilot?",
       answer:
-        "You can stop there, or move to a monthly retainer for monitoring, error handling, backups, reporting, and agreed improvements. Extra workflows are quoted after discovery.",
+        "You can stop there, or move to a retainer from $450/month for monitoring, error handling, backups, reporting, and agreed improvements. Extra workflows start from $4,500 and are quoted after discovery.",
     },
     {
       id: "faq-3",

@@ -92,7 +92,7 @@ export function Pricing() {
                         {tier.cta}
                         <ArrowRight className="h-4 w-4" />
                       </button>
-                      {!tier.quoteOnly && tier.fromAmount > 0 && (
+                      {tier.fromAmount > 0 && !("quoteOnly" in tier && tier.quoteOnly) && (
                         <PayButton
                           tierId={tier.id}
                           mode="deposit"
