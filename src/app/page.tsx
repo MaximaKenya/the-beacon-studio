@@ -1,6 +1,7 @@
 import { Hero } from "@/components/sections/Hero";
 import { SuiteStatusStrip } from "@/components/sections/SuiteStatusStrip";
 import { ProductSuite } from "@/components/sections/ProductSuite";
+import { AutomationOffer } from "@/components/sections/AutomationOffer";
 import { ShippingFeed } from "@/components/sections/ShippingFeed";
 import { TechStackShowcase } from "@/components/sections/TechStackShowcase";
 import { Services } from "@/components/sections/Services";
@@ -37,6 +38,8 @@ export default function Home() {
       <div className="mx-auto max-w-6xl px-6 py-6 lg:px-8">
         <ReactionWidget placement="inline" />
       </div>
+      <SectionDivider variant="fade" />
+      <AutomationOffer />
       <SectionDivider variant="rule" />
       <ProductRecommender />
       <SectionDivider variant="hairline" />

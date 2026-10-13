@@ -11,7 +11,7 @@ export function Testimonials() {
   if (siteConfig.testimonials.length === 0) return null;
 
   return (
-    <section aria-label="Testimonials" className="relative overflow-hidden py-24 lg:py-32">
+    <section aria-label="Testimonials" className="relative overflow-hidden py-28 lg:py-40">
       <div
         className="pointer-events-none absolute inset-0 bg-gradient-to-br from-accent/[0.04] via-transparent to-accent-violet/[0.05]"
         aria-hidden
@@ -20,8 +20,8 @@ export function Testimonials() {
         <ScrollReveal variant="fade-up">
           <SectionHeading
             label="Testimonials"
-            title="Trusted by teams we've built with"
-            description="Kind words from collaborators — replace placeholders with real client quotes."
+            title="From people we’ve built with"
+            description="Short notes from collaborators."
           />
         </ScrollReveal>
 

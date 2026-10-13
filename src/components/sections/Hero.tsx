@@ -61,20 +61,6 @@ export function Hero() {
           <BeaconWordmark size="lg" variant="full" />
         </motion.div>
 
-        <motion.p
-          className="mb-4 font-mono text-xs uppercase tracking-[0.28em] text-muted"
-          {...(reducedMotion ? {} : { variants: itemVariants })}
-        >
-          {siteConfig.brand.name} — {siteConfig.brand.lockup}
-        </motion.p>
-
-        <motion.p
-          className="mb-5 text-sm font-medium text-accent"
-          {...(reducedMotion ? {} : { variants: itemVariants })}
-        >
-          Software product studio · Nairobi · EAT
-        </motion.p>
-
         <motion.h1
           className="font-display text-3xl font-bold leading-[1.12] tracking-tight text-foreground sm:text-4xl lg:text-5xl"
           {...(reducedMotion ? {} : { variants: itemVariants })}
@@ -90,7 +76,7 @@ export function Hero() {
         </motion.div>
 
         <motion.p
-          className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-muted lg:text-lg"
+          className="mx-auto mt-6 max-w-xl text-base leading-loose text-muted lg:text-lg"
           {...(reducedMotion ? {} : { variants: itemVariants })}
         >
           {siteConfig.heroSubhead}

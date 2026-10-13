@@ -39,13 +39,13 @@ export function ScopeEstimator() {
   }, [typeId, complexityId, projectTypes, complexities]);
 
   return (
-    <section id="estimator" className="relative py-20 lg:py-28">
+    <section id="estimator" className="relative py-24 lg:py-36">
       <div className="mx-auto max-w-6xl px-6 lg:px-8">
         <ScrollReveal>
           <SectionHeading
             label="Estimator"
-            title="Rough timeline & cost"
-            description="Project type × complexity → a ballpark schedule and USD range. Not a quote."
+            title="A rough range"
+            description="Type and complexity give a ballpark. Not a quote."
           />
         </ScrollReveal>
 
@@ -111,9 +111,8 @@ export function ScopeEstimator() {
                     {formatUsd(estimate.costFrom)}–{formatUsd(estimate.costTo)}
                     <span className="ml-2 text-sm font-medium text-muted">USD</span>
                   </p>
-                  <p className="mt-2 text-sm text-muted">
-                    Midpoint ~{estimate.weeks} weeks. Cost scales with complexity —
-                    discovery may adjust both.
+                  <p className="mt-3 text-sm leading-relaxed text-muted">
+                    About {estimate.weeks} weeks. Discovery can change both.
                   </p>
                 </>
               ) : (

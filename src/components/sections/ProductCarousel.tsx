@@ -110,11 +110,10 @@ export function ProductCarousel() {
         <h3 className="mt-4 font-display text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
           {product.name}
         </h3>
-        <p className="mt-2 text-sm font-medium text-foreground sm:text-base">{product.tagline}</p>
-        <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted">{product.description}</p>
+        <p className="mt-3 max-w-2xl text-base leading-relaxed text-muted">{product.tagline}</p>
 
         <ul className="mt-5 flex flex-wrap gap-2" aria-label={`${product.name} tags`}>
-          {product.tags.map((tag) => (
+          {product.tags.slice(0, 3).map((tag) => (
             <li
               key={tag}
               className="rounded-2xl border border-border/70 bg-background/40 px-2.5 py-1 font-mono text-[11px] text-muted"

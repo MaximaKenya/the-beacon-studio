@@ -25,7 +25,7 @@ export function SectionHeading({ label, title, description, accent }: SectionHea
       </h2>
 
       {description && (
-        <p className="mt-5 text-base leading-relaxed text-muted lg:text-lg">{description}</p>
+        <p className="mt-5 max-w-xl text-base leading-loose text-muted lg:text-lg">{description}</p>
       )}
     </div>
   );

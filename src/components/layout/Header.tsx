@@ -13,7 +13,14 @@ import { AnimatedIcon } from "@/components/ui/AnimatedIcon";
 import { mailtoHref, phoneHref, trackCallClick, trackEmailClick } from "@/lib/contact-actions";
 
 /** Primary nav stays single-line; overflow items live in More */
-const PRIMARY_NAV_IDS = new Set(["products", "services", "pricing", "about", "book"]);
+const PRIMARY_NAV_IDS = new Set([
+  "products",
+  "automation",
+  "services",
+  "pricing",
+  "about",
+  "book",
+]);
 
 export function Header() {
   const pathname = usePathname();
@@ -27,6 +34,7 @@ export function Header() {
 
   const primaryNav = siteConfig.navigation.filter((l) => PRIMARY_NAV_IDS.has(l.id));
   const moreNav = siteConfig.navigation.filter((l) => !PRIMARY_NAV_IDS.has(l.id));
+  const sectionHref = (id: string) => (pathname === "/" ? `#${id}` : `/#${id}`);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -71,7 +79,7 @@ export function Header() {
     >
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-3 px-4 sm:px-6 lg:h-16 lg:px-8">
         <a
-          href="#hero"
+          href={pathname === "/" ? "#hero" : "/"}
           className="shrink-0 transition-opacity hover:opacity-90"
           aria-label={`${siteConfig.brand.name} home`}
         >
@@ -103,7 +111,7 @@ export function Header() {
             return (
               <a
                 key={link.id}
-                href={`#${link.id}`}
+                href={sectionHref(link.id)}
                 className={navLinkClass(isActive)}
                 aria-current={isActive ? "page" : undefined}
               >
@@ -136,7 +144,7 @@ export function Header() {
                     <a
                       key={link.id}
                       role="menuitem"
-                      href={`#${link.id}`}
+                      href={sectionHref(link.id)}
                       onClick={() => setMoreOpen(false)}
                       className="block whitespace-nowrap rounded-lg px-3 py-2 text-sm text-muted hover:bg-background hover:text-foreground"
                     >
@@ -239,7 +247,7 @@ export function Header() {
                   </button>
                 ) : (
                   <a
-                    href={`#${link.id}`}
+                    href={sectionHref(link.id)}
                     className="block rounded-lg px-3 py-3 text-lg text-muted transition-colors hover:bg-surface hover:text-foreground"
                     onClick={() => setMobileOpen(false)}
                   >

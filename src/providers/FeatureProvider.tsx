@@ -15,16 +15,18 @@ type FeatureContextValue = {
   chatInitialMessage: string | null;
   shortcutsOpen: boolean;
   intakeOpen: boolean;
+  intakeProjectType: string | null;
+  bookingMeetingType: string | null;
   productDrawerOpen: boolean;
   selectedProductId: string | null;
   openNewsletter: () => void;
   closeNewsletter: () => void;
-  openBooking: () => void;
+  openBooking: (meetingTypeId?: string) => void;
   closeBooking: () => void;
   openChat: (initialMessage?: string) => void;
   closeChat: () => void;
   setShortcutsOpen: (open: boolean) => void;
-  openIntake: () => void;
+  openIntake: (projectTypeId?: string) => void;
   closeIntake: () => void;
   openProductDrawer: (productId: string) => void;
   closeProductDrawer: () => void;
@@ -45,6 +47,8 @@ export function FeatureProvider({ children }: { children: ReactNode }) {
   const [chatInitialMessage, setChatInitialMessage] = useState<string | null>(null);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [intakeOpen, setIntakeOpen] = useState(false);
+  const [intakeProjectType, setIntakeProjectType] = useState<string | null>(null);
+  const [bookingMeetingType, setBookingMeetingType] = useState<string | null>(null);
   const [productDrawerOpen, setProductDrawerOpen] = useState(false);
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
 
@@ -54,6 +58,8 @@ export function FeatureProvider({ children }: { children: ReactNode }) {
     setChatOpen(false);
     setChatInitialMessage(null);
     setIntakeOpen(false);
+    setIntakeProjectType(null);
+    setBookingMeetingType(null);
     setProductDrawerOpen(false);
     setSelectedProductId(null);
   }, []);
@@ -64,10 +70,14 @@ export function FeatureProvider({ children }: { children: ReactNode }) {
   }, [closeOverlays]);
   const closeNewsletter = useCallback(() => setNewsletterOpen(false), []);
 
-  const openBooking = useCallback(() => {
-    closeOverlays();
-    setBookingOpen(true);
-  }, [closeOverlays]);
+  const openBooking = useCallback(
+    (meetingTypeId?: string) => {
+      closeOverlays();
+      setBookingMeetingType(meetingTypeId ?? null);
+      setBookingOpen(true);
+    },
+    [closeOverlays]
+  );
   const closeBooking = useCallback(() => setBookingOpen(false), []);
 
   const openChat = useCallback(
@@ -83,10 +93,14 @@ export function FeatureProvider({ children }: { children: ReactNode }) {
     setChatInitialMessage(null);
   }, []);
 
-  const openIntake = useCallback(() => {
-    closeOverlays();
-    setIntakeOpen(true);
-  }, [closeOverlays]);
+  const openIntake = useCallback(
+    (projectTypeId?: string) => {
+      closeOverlays();
+      setIntakeProjectType(projectTypeId ?? null);
+      setIntakeOpen(true);
+    },
+    [closeOverlays]
+  );
   const closeIntake = useCallback(() => setIntakeOpen(false), []);
 
   const openProductDrawer = useCallback(
@@ -111,6 +125,8 @@ export function FeatureProvider({ children }: { children: ReactNode }) {
         chatInitialMessage,
         shortcutsOpen,
         intakeOpen,
+        intakeProjectType,
+        bookingMeetingType,
         productDrawerOpen,
         selectedProductId,
         openNewsletter,

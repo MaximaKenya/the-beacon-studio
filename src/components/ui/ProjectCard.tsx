@@ -112,7 +112,7 @@ export function ProjectCard({ project, index }: ProjectCardProps) {
         <p className="mt-2 flex-1 text-sm leading-relaxed text-muted">{project.description}</p>
 
         <ul className="mt-4 flex flex-wrap gap-2" aria-label="Technologies used">
-          {project.tags.map((tag) => (
+          {project.tags.slice(0, 3).map((tag) => (
             <li
               key={tag}
               className="rounded-md border border-border bg-background/50 px-2.5 py-1 font-mono text-xs text-muted"

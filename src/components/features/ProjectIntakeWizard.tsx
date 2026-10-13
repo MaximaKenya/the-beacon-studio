@@ -26,7 +26,7 @@ type PortalBootstrap = {
 };
 
 export function ProjectIntakeWizard() {
-  const { intakeOpen, closeIntake } = useFeatures();
+  const { intakeOpen, closeIntake, intakeProjectType } = useFeatures();
   const trapRef = useFocusTrap(intakeOpen);
 
   const [step, setStep] = useState<Step>(0);
@@ -58,6 +58,10 @@ export function ProjectIntakeWizard() {
       document.body.style.overflow = "";
     };
   }, [intakeOpen, closeIntake]);
+
+  useEffect(() => {
+    if (intakeOpen && intakeProjectType) setProjectType(intakeProjectType);
+  }, [intakeOpen, intakeProjectType]);
 
   useEffect(() => {
     if (!intakeOpen) {

@@ -38,7 +38,7 @@ function roleIcon(role: string): LucideIcon {
 
 export function Experience() {
   return (
-    <section id="experience" className="relative border-y border-border bg-surface/20 py-24 lg:py-32">
+    <section id="experience" className="relative border-y border-border bg-surface/20 py-28 lg:py-40">
       <SectionShapes preset="experience" />
 
       <div className="relative mx-auto max-w-6xl px-6 lg:px-8">

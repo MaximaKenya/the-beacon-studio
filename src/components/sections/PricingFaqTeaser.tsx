@@ -14,7 +14,7 @@ export function PricingFaqTeaser() {
   return (
     <section
       aria-label="Pricing FAQ"
-      className="relative border-t border-border/50 bg-surface/30 py-16 lg:py-20"
+      className="relative border-t border-border/50 bg-surface/30 py-20 lg:py-28"
     >
       <div className="mx-auto max-w-6xl px-6 lg:px-8">
         <ScrollReveal>
@@ -24,7 +24,7 @@ export function PricingFaqTeaser() {
                 Before you decide
               </p>
               <h2 className="mt-2 font-display text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
-                Quick answers on pricing & process
+                A few quick answers
               </h2>
             </div>
             <Link

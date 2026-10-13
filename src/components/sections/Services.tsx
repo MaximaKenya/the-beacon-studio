@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, Layers, Rocket, Server, Sparkles } from "lucide-react";
+import { ArrowRight, Bot, Layers, MessageSquare, Rocket, Sparkles } from "lucide-react";
 import { siteConfig } from "@/data/site";
 import { ScrollReveal, StaggerChild } from "@/components/ui/ScrollReveal";
 import { SectionHeading } from "@/components/ui/SectionHeading";
@@ -9,8 +9,8 @@ import { useFeatures } from "@/providers/FeatureProvider";
 import { AnimatedIcon, IconWrapper } from "@/components/ui/AnimatedIcon";
 import { SoftImageCarousel } from "@/components/ui/SoftImageCarousel";
 
-const icons = [Layers, Sparkles, Server, Rocket] as const;
-const accents = ["cyan", "violet", "coral", "amber"] as const;
+const icons = [Bot, Layers, Sparkles, MessageSquare, Rocket] as const;
+const accents = ["cyan", "violet", "coral", "amber", "cyan"] as const;
 
 export function Services() {
   const { openBooking, openIntake } = useFeatures();
@@ -28,15 +28,15 @@ export function Services() {
   ];
 
   return (
-    <section id="services" className="section-wash-skills relative overflow-hidden py-24 lg:py-32">
+    <section id="services" className="section-wash-skills relative overflow-hidden py-28 lg:py-40">
       <div className="relative mx-auto max-w-6xl px-6 lg:px-8">
         <div className="grid gap-12 lg:grid-cols-[1.15fr_0.85fr] lg:gap-16 lg:items-start">
           <div>
             <ScrollReveal variant="fade-down">
               <SectionHeading
                 label="Services"
-                title="We build for clients"
-                description="Custom apps, suite products, payments & portal — same craft as the cloud suite."
+                title="Work we take on"
+                description="Automation first, then custom apps and the product suite."
               />
             </ScrollReveal>
 
@@ -58,7 +58,7 @@ export function Services() {
                           {service.description}
                         </p>
                         <ul className="mt-3 flex flex-wrap gap-2" aria-label="Related skills">
-                          {service.tags.map((tag) => (
+                          {service.tags.slice(0, 3).map((tag) => (
                             <li
                               key={tag}
                               className="rounded-xl border border-border px-2.5 py-0.5 font-mono text-[11px] text-muted"
@@ -80,8 +80,8 @@ export function Services() {
               <p className="font-mono text-[10px] uppercase tracking-widest text-accent">
                 What you gain
               </p>
-              <h3 className="mt-2 font-display text-2xl font-semibold tracking-tight text-foreground">
-                Ready to build?
+              <h3 className="mt-3 font-display text-2xl font-semibold tracking-tight text-foreground">
+                Ready to start?
               </h3>
               <ul className="mt-4 space-y-2.5 text-sm text-muted">
                 {siteConfig.clientGains.map((gain) => (

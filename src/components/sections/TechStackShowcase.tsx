@@ -22,13 +22,13 @@ export function TechStackShowcase() {
   }, [filter]);
 
   return (
-    <section id="stack" className="relative py-20 lg:py-28">
+    <section id="stack" className="relative py-24 lg:py-36">
       <div className="mx-auto max-w-6xl px-6 lg:px-8">
         <ScrollReveal>
           <SectionHeading
             label="Stack"
-            title="Technologies we ship with"
-            description="Filter by layer. Click a product link to open suite details."
+            title="What we ship with"
+            description="Filter by layer. Product names link to each app."
           />
         </ScrollReveal>
 

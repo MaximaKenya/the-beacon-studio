@@ -11,14 +11,37 @@ export function Comparison() {
   const { title, description, rows } = siteConfig.comparison;
 
   return (
-    <section id="compare" className="relative overflow-hidden py-24 lg:py-32">
+    <section id="compare" className="relative overflow-hidden py-28 lg:py-40">
       <div className="relative mx-auto max-w-6xl px-6 lg:px-8">
         <ScrollReveal>
-          <SectionHeading label="Compare" title={title} description={description} />
+          <SectionHeading label="Compare"             title={title}
+            description={description}
+          />
         </ScrollReveal>
 
         <ScrollReveal delay={0.08}>
-          <div className="mt-2 overflow-x-auto rounded-2xl border border-border bg-surface/80">
+          <ul className="space-y-4 md:hidden">
+            {rows.map((row) => (
+              <li key={row.id} className="rounded-3xl border border-border bg-surface/80 p-6">
+                <p className="font-display text-lg font-semibold text-foreground">{row.capability}</p>
+                <dl className="mt-4 space-y-3 text-sm leading-relaxed">
+                  <div>
+                    <dt className="text-accent">With {siteConfig.brand.shortName}</dt>
+                    <dd className="text-foreground">{row.withUs}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-muted">DIY</dt>
+                    <dd className="text-foreground">{row.diy}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-muted">Typical agency</dt>
+                    <dd className="text-foreground">{row.agency}</dd>
+                  </div>
+                </dl>
+              </li>
+            ))}
+          </ul>
+          <div className="mt-2 hidden overflow-x-auto rounded-2xl border border-border bg-surface/80 md:block">
             <table className="w-full min-w-[640px] border-collapse text-left text-sm">
               <thead>
                 <tr className="border-b border-border bg-surface-elevated/60">

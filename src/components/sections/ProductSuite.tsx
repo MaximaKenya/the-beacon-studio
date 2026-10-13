@@ -1,25 +1,18 @@
 import { productCount } from "@/data/site";
 import { ScrollReveal } from "@/components/ui/ScrollReveal";
 import { SectionHeading } from "@/components/ui/SectionHeading";
-import { SuiteLine } from "@/components/brand/SuiteLine";
 import { ProductCarousel } from "@/components/sections/ProductCarousel";
 
 export function ProductSuite() {
   return (
-    <section id="products" className="section-wash-projects relative overflow-hidden py-24 lg:py-32">
+    <section id="products" className="section-wash-projects relative overflow-hidden py-28 lg:py-40">
       <div className="relative mx-auto max-w-6xl px-6 lg:px-8">
         <ScrollReveal variant="slide-left">
           <SectionHeading
             label="Product Suite"
             title={`${productCount} products. One studio.`}
-            description="Real product screens, scrolling as a studio reel. Hover a frame to read what it does. Open a product to visit its public URL, GitHub repo, or page on this site."
+            description="Hover a frame, then open the live app, repo, or page."
           />
-        </ScrollReveal>
-
-        <ScrollReveal delay={0.04}>
-          <div className="mt-6">
-            <SuiteLine size="md" align="left" />
-          </div>
         </ScrollReveal>
 
         <ScrollReveal delay={0.08}>

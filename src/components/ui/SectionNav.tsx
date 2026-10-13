@@ -1,17 +1,19 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { siteConfig } from "@/data/site";
 import { useActiveSection } from "@/hooks/useActiveSection";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useFeatures } from "@/providers/FeatureProvider";
 
 export function SectionNav() {
+  const pathname = usePathname();
   const sectionIds = siteConfig.navigation.map((s) => s.id);
   const active = useActiveSection(sectionIds);
   const reducedMotion = useReducedMotion();
   const { openBooking } = useFeatures();
 
-  if (reducedMotion) return null;
+  if (reducedMotion || pathname !== "/") return null;
 
   return (
     <nav

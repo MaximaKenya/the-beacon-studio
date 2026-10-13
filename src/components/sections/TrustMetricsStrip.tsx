@@ -30,8 +30,8 @@ export function TrustMetricsStrip() {
             </StaggerChild>
           ))}
         </ScrollReveal>
-        <p className="mt-6 text-center text-xs text-muted md:text-left">
-          Nairobi product studio · clear scope · weekly demos · {siteConfig.payments.depositPercent ?? 30}% deposits
+        <p className="mt-8 text-center text-sm leading-relaxed text-muted md:text-left">
+          Nairobi product studio
         </p>
       </div>
     </section>

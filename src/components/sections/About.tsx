@@ -22,13 +22,13 @@ export function About() {
     .filter(Boolean);
 
   return (
-    <section id="about" className="section-wash-about relative overflow-hidden py-24 lg:py-32">
+    <section id="about" className="section-wash-about relative overflow-hidden py-28 lg:py-40">
       <div className="relative mx-auto max-w-6xl px-6 lg:px-8">
         <ScrollReveal variant="slide-right">
           <SectionHeading
             label="Founder"
-            title="Meet the founder"
-            description="Nairobi / EAT · products you can use · custom builds when you need them."
+            title="Meet Max"
+            description="Founder of The Beacon Studio. Nairobi / EAT."
           />
         </ScrollReveal>
 

@@ -77,7 +77,14 @@ export function CommandPaletteProvider({ children }: { children: ReactNode }) {
       group: "Navigation",
       icon: <Command className="h-4 w-4" aria-hidden />,
       action: () => {
-        document.getElementById(section.id)?.scrollIntoView({ behavior: "smooth" });
+        const target = document.getElementById(section.id);
+        if (target) {
+          target.scrollIntoView({ behavior: "smooth" });
+        } else if (section.id === "automation") {
+          window.location.href = "/automation";
+        } else {
+          window.location.href = `/#${section.id}`;
+        }
         setOpen(false);
       },
       keywords: section.label.toLowerCase(),
