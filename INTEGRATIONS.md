@@ -17,7 +17,8 @@ Copy `.env.example` → `.env.local` and fill values for your environment.
 | **OpenAI** | Glow assistant + brief improver | Optional |
 | **ADMIN_PASSWORD** | `/admin` login | **Required** |
 | **PORTAL_SECRET** | Portal JWT / OTP signing | Recommended (falls back to `ADMIN_PASSWORD` in dev) |
-| **Analytics** | Local `data/analytics.json` (future: PostHog / Vercel) | Built-in |
+| **Postgres** (`DATABASE_URL`) | Durable contacts, intakes, bookings, projects, messages, reviews, portal threads, payments, analytics | Required on Heroku |
+| **Analytics** | Stored with the active backend (Postgres, or `data/analytics.json` locally) | Built-in |
 
 ---
 
@@ -138,16 +139,41 @@ PORTAL_SECRET=change-me-portal    # JWT + OTP HMAC (falls back to ADMIN_PASSWORD
 
 ---
 
-## 6. Analytics
+## 6. Durable storage (Postgres)
 
-**Current:** events + vibe reactions persist to `data/analytics.json` via `POST /api/analytics`. Admin reads them at `/admin`.
+**Env**
+
+```bash
+# Neon free tier — pooled host, TLS required
+DATABASE_URL=postgresql://USER:PASSWORD@ep-example-pooler.region.aws.neon.tech/neondb?sslmode=require
+# Optional. Default 5, sized for one Heroku Node 22 web dyno.
+PG_POOL_MAX=5
+```
+
+When `DATABASE_URL` is set, `readJsonFile` / `writeJsonFile` (`src/lib/storage.ts`) read and write one Postgres `json` document per file name (`app_documents`). The `json` column keeps array order and object key order. Callers (admin inbox, portal replies, reviews, booking, intake, payments) stay on that API. The table is created on startup and on first use (`CREATE TABLE IF NOT EXISTS`).
+
+When `DATABASE_URL` is unset, those calls keep using `data/*.json`.
+
+Import existing JSON once:
+
+```bash
+npm run db:migrate-files
+```
+
+`GET /api/health` reports `"storage": "postgres"` or `"storage": "file"`. The admin screen shows the same indicator.
+
+---
+
+## 7. Analytics
+
+**Current:** events + vibe reactions persist through the storage adapter (Postgres when `DATABASE_URL` is set, otherwise `data/analytics.json`) via `POST /api/analytics`. Admin reads them at `/admin`.
 
 **Future options (not wired yet):**
 
 - **PostHog** — product analytics + session replay
 - **Vercel Analytics** — Web Vitals on Vercel deploys
 
-Keep local file storage for ops inbox; add a third-party beacon later without blocking launches.
+Ops data stays in the storage adapter. Add a third-party beacon later without blocking launches.
 
 ---
 
@@ -251,10 +277,10 @@ sequenceDiagram
 
 ## Data files (local ops)
 
-All under `data/` (gitignored in production deploys — persist via volume or migrate to a DB later):
+With `DATABASE_URL` unset, the same documents live under `data/` as JSON. With `DATABASE_URL` set they live in Postgres (`app_documents`) and Heroku restarts do not wipe them. Import a `data/` directory once with `npm run db:migrate-files`.
 
 - `contacts.json`, `subscribers.json`, `bookings.json`, `intakes.json`
-- `payments.json`, `projects.json`, `clients.json`, `messages.json`
-- `quotations.json`, `receipts.json`, `analytics.json`
+- `payments.json`, `projects.json` (reviews live on each project), `clients.json`, `messages.json` (portal threads)
+- `quotations.json`, `receipts.json`, `portal-codes.json`, `analytics.json`
 
-Admin inbox: `/admin` → **Needs attention** + per-panel drawers (bookings, intakes, contacts, subscribers, payments, vibe reactions).
+Admin inbox: `/admin` → **Needs attention** + per-panel drawers (bookings, intakes, contacts, subscribers, payments, vibe reactions). The header shows whether storage is Postgres or JSON files.

@@ -10,7 +10,8 @@
     "build": "next build --webpack",
     "heroku-postbuild": "npm run build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "db:migrate-files": "tsx scripts/migrate-files.ts"
   },
   "dependencies": {
     "framer-motion": "^12.23.12",
@@ -18,12 +19,15 @@
     "jspdf": "^4.2.1",
     "lucide-react": "^0.525.0",
     "next": "16.2.9",
+    "pg": "^8.23.1",
     "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "react-dom": "19.2.4",
+    "tsx": "^4.23.15"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
+    "@types/pg": "^8.23.1",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
