@@ -8,7 +8,7 @@ import type { ReactNode } from "react";
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
       <div className="fixed inset-x-0 top-0 z-[60] border-b border-border/60 bg-background/90 backdrop-blur-md print:hidden">
         <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6 lg:px-8">
           <Link

@@ -1,33 +1,39 @@
 @import "tailwindcss";
 
-/* Soft Slate (dark) + Clear Dawn (light).
-   Dark is a lifted charcoal, not near-black: page, card, and elevated
-   layers stay in one slate family so long reading is easier. */
+/* Indigo Tide (dark) + Mint Tide (light).
+   One wave geometry (see WaveField). Only the wave colors change.
+   Dark is a deep indigo field with purple crests. Light is near-white
+   with the same crests in teal, aqua, and pale mint. */
 :root,
 [data-theme="dark"] {
-  --background: #1e2330;
-  --background-mesh: #252b3c;
-  --foreground: #e6e8ee;
-  --muted: #a7adbd;
+  --background: #140e24;
+  --background-mesh: #1c1436;
+  --heading: #f6f3ff;
+  --foreground: #d9d6ea;
+  --muted: #b9b4d0;
   --accent: #45baab;
-  --accent-hover: #6dcec2;
-  --accent-warm: #e7a0c0;
-  --accent-amber: #e4c36a;
-  --accent-violet: #c4a3ea;
-  --surface: #262c3a;
-  --surface-elevated: #323a4c;
-  --border: #343b4d;
-  --glass: rgba(50, 58, 76, 0.94);
-  --grain-opacity: 0.04;
-  --aurora-1: rgba(69, 186, 171, 0.14);
-  --aurora-2: rgba(231, 160, 192, 0.09);
-  --aurora-3: rgba(196, 163, 234, 0.1);
-  --section-wash-about: rgba(69, 186, 171, 0.07);
-  --section-wash-skills: rgba(196, 163, 234, 0.07);
-  --section-wash-projects: rgba(69, 186, 171, 0.06);
+  --accent-hover: #6ed9ce;
+  --accent-warm: #f0b4d0;
+  --accent-amber: #e7c56a;
+  --accent-violet: #d7c0f4;
+  --surface: rgba(42, 26, 74, 0.86);
+  --surface-elevated: #3c2868;
+  --border: #b7a6d6;
+  --input-border: #d4c6ee;
+  --glass: rgba(36, 22, 66, 0.9);
+  --grain-opacity: 0.035;
+  --wave-1: rgba(118, 64, 196, 0.42);
+  --wave-2: rgba(86, 46, 168, 0.36);
+  --wave-3: rgba(58, 32, 120, 0.55);
+  --wave-4: rgba(69, 186, 171, 0.16);
+  --aurora-1: var(--wave-1);
+  --aurora-2: var(--wave-2);
+  --aurora-3: var(--wave-4);
+  --section-wash-about: rgba(118, 64, 196, 0.12);
+  --section-wash-skills: rgba(69, 186, 171, 0.08);
+  --section-wash-projects: rgba(86, 46, 168, 0.1);
   --glow-cyan: rgba(69, 186, 171, 0.28);
-  --glow-coral: rgba(231, 160, 192, 0.18);
-  /* Soft UI radii */
+  --glow-coral: rgba(240, 180, 208, 0.18);
   --radius-sm: 0.75rem;
   --radius-md: 1rem;
   --radius-lg: 1.25rem;
@@ -35,29 +41,34 @@
 }
 
 [data-theme="light"] {
-  /* Richer cool light — blue-slate mesh, soft elevation (not cream, not flat white) */
-  --background: #e8eef6;
-  --background-mesh: #dce5f0;
-  --foreground: #0b1220;
-  --muted: #4a5d78;
-  --accent: #0d9488;
-  --accent-hover: #0f766e;
-  --accent-warm: #be123c;
-  --accent-amber: #b45309;
-  --accent-violet: #4338ca;
-  --surface: #f4f7fb;
+  --background: #f4fbfa;
+  --background-mesh: #e7f7f4;
+  --heading: #1b2a33;
+  --foreground: #1b2a33;
+  --muted: #3e5564;
+  --accent: #0c6e64;
+  --accent-hover: #09584f;
+  --accent-warm: #9f1239;
+  --accent-amber: #92400e;
+  --accent-violet: #3730a3;
+  --surface: rgba(255, 255, 255, 0.78);
   --surface-elevated: #ffffff;
-  --border: #c5d0e0;
-  --glass: rgba(255, 255, 255, 0.88);
-  --grain-opacity: 0.028;
-  --aurora-1: rgba(13, 148, 136, 0.14);
-  --aurora-2: rgba(67, 56, 202, 0.1);
-  --aurora-3: rgba(14, 165, 233, 0.12);
-  --section-wash-about: rgba(13, 148, 136, 0.07);
-  --section-wash-skills: rgba(67, 56, 202, 0.06);
-  --section-wash-projects: rgba(14, 165, 233, 0.055);
-  --glow-cyan: rgba(13, 148, 136, 0.22);
-  --glow-coral: rgba(190, 18, 60, 0.12);
+  --border: #4f857f;
+  --input-border: #2f6a64;
+  --glass: rgba(255, 255, 255, 0.86);
+  --grain-opacity: 0.03;
+  --wave-1: rgba(143, 227, 217, 0.62);
+  --wave-2: rgba(92, 207, 192, 0.34);
+  --wave-3: rgba(210, 247, 239, 0.95);
+  --wave-4: rgba(143, 227, 217, 0.45);
+  --aurora-1: var(--wave-1);
+  --aurora-2: var(--wave-2);
+  --aurora-3: var(--wave-4);
+  --section-wash-about: rgba(92, 207, 192, 0.16);
+  --section-wash-skills: rgba(143, 227, 217, 0.2);
+  --section-wash-projects: rgba(92, 207, 192, 0.12);
+  --glow-cyan: rgba(12, 110, 100, 0.2);
+  --glow-coral: rgba(159, 18, 57, 0.12);
   --radius-sm: 0.75rem;
   --radius-md: 1rem;
   --radius-lg: 1.25rem;
@@ -66,6 +77,7 @@
 
 @theme inline {
   --color-background: var(--background);
+  --color-heading: var(--heading);
   --color-foreground: var(--foreground);
   --color-muted: var(--muted);
   --color-accent: var(--accent);
@@ -96,12 +108,9 @@ html {
   color-scheme: light;
 }
 
-/* Portal and other full-page shells. Uses theme colors, not a light-only wash. */
+/* Portal sits on the shared wave field. Its own wash would hide the shapes. */
 .portal-shell {
-  background-color: var(--background);
-  background-image:
-    radial-gradient(ellipse 90% 48% at 50% -12%, var(--aurora-1), transparent 58%),
-    radial-gradient(ellipse 55% 40% at 100% 0%, var(--aurora-3), transparent 52%);
+  background: transparent;
 }
 
 input,
@@ -112,7 +121,8 @@ select {
 
 input::placeholder,
 textarea::placeholder {
-  color: color-mix(in srgb, var(--muted) 80%, transparent);
+  color: var(--muted);
+  opacity: 1;
 }
 
 select option {
@@ -121,14 +131,9 @@ select option {
 }
 
 body {
-  background: var(--background);
-  background-image:
-    radial-gradient(ellipse 120% 80% at 50% -30%, var(--aurora-1), transparent 50%),
-    radial-gradient(ellipse 80% 60% at 100% 50%, var(--aurora-2), transparent 45%),
-    radial-gradient(ellipse 70% 50% at 0% 80%, var(--aurora-3), transparent 40%),
-    linear-gradient(180deg, var(--background) 0%, var(--background-mesh) 100%);
-  /* scroll — fixed attachment painted a phantom blank page past the footer on overscroll */
-  background-attachment: scroll;
+  isolation: isolate;
+  background-color: var(--background);
+  background-image: none;
   color: var(--foreground);
   font-family: var(--font-plus-jakarta), "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
   line-height: 1.7;
@@ -145,6 +150,41 @@ h4,
 .font-display {
   font-family: var(--font-outfit), "Outfit", ui-sans-serif, system-ui, sans-serif;
   letter-spacing: -0.02em;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  color: var(--heading);
+}
+
+/* Same crests in both themes. WaveField paints them; tokens only recolor. */
+.wave-field {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.wave-field svg {
+  display: block;
+  width: 118%;
+  height: 118%;
+  margin-left: -9%;
+  margin-top: -6%;
+  animation: wave-drift 32s ease-in-out infinite;
+}
+
+@keyframes wave-drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(-1.6%, 1.1%, 0);
+  }
 }
 
 ::selection {
@@ -170,58 +210,49 @@ h4,
 [data-theme="light"] .glass-panel {
   background: linear-gradient(
     165deg,
-    rgba(255, 255, 255, 0.96) 0%,
-    rgba(244, 247, 251, 0.92) 100%
+    rgba(255, 255, 255, 0.94) 0%,
+    rgba(232, 248, 245, 0.9) 100%
   );
-  border-color: color-mix(in srgb, var(--accent) 14%, var(--border));
+  border-color: color-mix(in srgb, var(--accent) 28%, var(--border));
   box-shadow:
-    0 16px 48px rgba(15, 23, 42, 0.09),
-    0 4px 12px rgba(15, 23, 42, 0.04),
+    0 16px 48px rgba(27, 42, 51, 0.1),
+    0 4px 12px rgba(27, 42, 51, 0.05),
     inset 0 1px 0 rgba(255, 255, 255, 1);
 }
 
-/* Cards and modals need a visible lift once the page is no longer near-black. */
 [data-theme="dark"] .rounded-2xl.border,
 [data-theme="dark"] .rounded-\[var\(--radius-lg\)\].border,
 [data-theme="dark"] .rounded-\[var\(--radius-xl\)\].border,
 [data-theme="dark"] .soft-panel {
   box-shadow:
-    inset 0 1px 0 color-mix(in srgb, var(--foreground) 7%, transparent),
-    0 10px 28px rgba(8, 10, 16, 0.28);
+    inset 0 1px 0 color-mix(in srgb, var(--heading) 10%, transparent),
+    0 10px 28px rgba(10, 6, 22, 0.38);
 }
 
 [data-theme="dark"] .glass-panel {
   background: linear-gradient(
     180deg,
-    color-mix(in srgb, var(--surface-elevated) 88%, var(--foreground)) 0%,
-    var(--surface-elevated) 100%
+    rgba(62, 42, 108, 0.94) 0%,
+    rgba(36, 22, 66, 0.94) 100%
   );
-  border-color: color-mix(in srgb, var(--foreground) 14%, var(--border));
+  border-color: var(--border);
   box-shadow:
-    0 24px 56px rgba(8, 10, 16, 0.42),
-    inset 0 1px 0 color-mix(in srgb, var(--foreground) 10%, transparent);
+    0 24px 56px rgba(8, 4, 20, 0.5),
+    inset 0 1px 0 color-mix(in srgb, var(--heading) 12%, transparent);
 }
 
-/* Fields sit above the card fill. The edge is stronger than --border so
-   inputs still meet a clear boundary on the elevated surface. */
-[data-theme="dark"] :is(input, textarea, select).border:not(.bg-transparent) {
+/* Fields sit on the elevated fill with an edge that clears 3:1. */
+:is(input, textarea, select).border:not(.bg-transparent) {
   background-color: var(--surface-elevated);
-  border-color: color-mix(in srgb, var(--foreground) 22%, var(--border));
+  border-color: var(--input-border);
+  color: var(--foreground);
 }
 
-[data-theme="dark"] :is(input, textarea, select).border:focus,
-[data-theme="dark"] :is(input, textarea, select).border:focus-visible {
+:is(input, textarea, select).border:focus,
+:is(input, textarea, select).border:focus-visible {
   border-color: var(--accent);
   outline: none;
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 28%, transparent);
-}
-
-[data-theme="light"] body {
-  background-image:
-    radial-gradient(ellipse 110% 75% at 8% -12%, rgba(14, 165, 233, 0.16), transparent 48%),
-    radial-gradient(ellipse 90% 65% at 92% 8%, rgba(13, 148, 136, 0.14), transparent 44%),
-    radial-gradient(ellipse 75% 55% at 48% 105%, rgba(67, 56, 202, 0.11), transparent 52%),
-    linear-gradient(180deg, var(--background) 0%, var(--background-mesh) 100%);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 32%, transparent);
 }
 
 [data-theme="light"] .soft-panel {
@@ -233,7 +264,7 @@ h4,
     ),
     linear-gradient(
       320deg,
-      color-mix(in srgb, var(--accent-violet) 5%, transparent),
+      color-mix(in srgb, var(--wave-1) 70%, transparent),
       transparent 45%
     ),
     var(--surface);
@@ -521,7 +552,8 @@ h4,
   .fab-orbit,
   .mesh-grid,
   .float-gentle,
-  .product-screen-track {
+  .product-screen-track,
+  .wave-field svg {
     animation: none !important;
   }
 
