@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowUpRight, Github } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import { siteConfig } from "@/data/site";
 import { ProductVisual } from "@/components/products/ProductVisual";
 import { SectionHeading } from "@/components/ui/SectionHeading";
@@ -89,18 +89,6 @@ export function ProductSuite() {
                         Contact
                       </a>
                     )}
-                    {product.githubUrl ? (
-                      <a
-                        href={product.githubUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={() => trackEvent("product_github", { product: product.id })}
-                        className="inline-flex h-11 items-center gap-2 px-2 text-sm text-muted hover:text-foreground"
-                      >
-                        <Github className="h-4 w-4" aria-hidden />
-                        Source code
-                      </a>
-                    ) : null}
                   </div>
                 </div>
               </article>

@@ -33,14 +33,15 @@ Public products are only these four. TriviaYard and ConfiTrade are not listed, l
 |---|---|---|
 | ConfiRent | https://www.confirent.co.ke | Live (soft launch) |
 | CadenceApp | https://www.cadenceapp.co.ke | Beta / early access |
-| LookFinesse | No live URL. Public repo: https://github.com/MaximaKenya/lookfinesse | Coming soon — Get notified / contact |
+| LookFinesse | No live URL and no public repo | Coming soon — Get notified / contact |
 | ConfiLearn | No live URL and no public repo | Coming soon — Get notified / contact |
 
 Do not publish private repository URLs. The old LookFinesse and TriviaYard Heroku URLs are not used.
 
 ## Platform / ops
 
-- **Heroku ephemeral disk:** `data/*.json` (intakes, bookings, subscribers, analytics, payments) does not survive dyno restarts. For real clients, add durable storage or treat Resend email as source of truth.
+- **Heroku ephemeral disk:** submissions live only in `data/*.json` (`src/lib/storage.ts`). There is no database client in this repo. Those files do not survive a dyno restart or redeploy. Durable storage is not implemented. To keep them, add Heroku Postgres and a future `DATABASE_URL` adapter. Until then, set `RESEND_API_KEY` and `RESEND_FROM_EMAIL` so each submission and each admin reply is emailed. Email is the durable copy.
+- **Admin inbox:** `https://YOUR_APP/admin` (not linked in the public menu). Log in with `ADMIN_PASSWORD`. Also set `PORTAL_SECRET` in production so portal sessions are not signed with the admin password. Reviews stay private until you approve them in the inbox.
 - **Node 22.x:** `package.json` engines pin `22.x`.
 - **OG / favicon:** confirm share preview and beacon mark.
 

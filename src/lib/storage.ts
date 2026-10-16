@@ -2,6 +2,13 @@ import { mkdir, readFile, writeFile, access, rename, unlink } from "fs/promises"
 import path from "path";
 import { randomBytes } from "crypto";
 
+/**
+ * JSON files under data/. This is the only store in the repo.
+ * There is no database client. On Heroku the filesystem is ephemeral, so these
+ * files disappear when the dyno restarts. Durable storage would need a new
+ * adapter and DATABASE_URL (Heroku Postgres). It is not implemented.
+ * Until then, RESEND_API_KEY is the durable copy: submissions and replies are emailed.
+ */
 const DATA_DIR = path.join(process.cwd(), "data");
 
 const DEFAULT_FILES: Record<string, unknown> = {

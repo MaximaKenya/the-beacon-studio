@@ -13,6 +13,7 @@ export type Booking = {
   name: string;
   email: string;
   message?: string;
+  phone?: string;
   meetingType: string;
   createdAt: string;
   status?: string;
@@ -36,6 +37,7 @@ export async function POST(request: Request) {
     const name = typeof body.name === "string" ? body.name.trim() : "";
     const email = typeof body.email === "string" ? normalizeEmail(body.email) : "";
     const message = typeof body.message === "string" ? body.message.trim() : "";
+    const phone = typeof body.phone === "string" ? body.phone.trim() : "";
     const meetingType =
       typeof body.meetingType === "string" ? body.meetingType : "Intro Call";
 
@@ -59,6 +61,7 @@ export async function POST(request: Request) {
       name,
       email,
       ...(message ? { message } : {}),
+      ...(phone ? { phone } : {}),
       meetingType,
       createdAt: new Date().toISOString(),
       status: "pending",
@@ -67,6 +70,13 @@ export async function POST(request: Request) {
 
     bookings.unshift(booking);
     await writeJsonFile("bookings.json", bookings);
+
+    const { upsertClient } = await import("@/lib/clients");
+    await upsertClient({
+      email,
+      name,
+      ...(phone ? { phone } : {}),
+    });
 
     const meeting =
       siteConfig.booking.meetingTypes.find((m) => m.id === meetingType) ??

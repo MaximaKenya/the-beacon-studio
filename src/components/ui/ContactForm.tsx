@@ -11,6 +11,8 @@ export function ContactForm() {
   const [status, setStatus] = useState<FormStatus>("idle");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [topic, setTopic] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState<string | null>(null);
 
@@ -23,7 +25,7 @@ export function ContactForm() {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, message }),
+        body: JSON.stringify({ name, email, phone, topic, message }),
       });
       if (!res.ok) {
         setStatus("error");
@@ -49,6 +51,8 @@ export function ContactForm() {
     setStatus("success");
     setName("");
     setEmail("");
+    setPhone("");
+    setTopic("");
     setMessage("");
   }
 
@@ -67,7 +71,11 @@ export function ContactForm() {
           >
             {siteConfig.email}
           </a>
-          .
+          . Replies also show in the{" "}
+          <a href="/portal/login" className="text-accent hover:text-accent-hover">
+            client portal
+          </a>{" "}
+          when you sign in with this email.
         </p>
         <button
           type="button"
@@ -114,6 +122,43 @@ export function ContactForm() {
             placeholder="you@example.com"
             className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-foreground placeholder:text-muted/50 transition-colors focus:border-accent/50 focus:outline-none focus:ring-2 focus:ring-accent/20"
           />
+        </div>
+      </div>
+
+      <div className="grid gap-6 sm:grid-cols-2">
+        <div>
+          <label htmlFor="phone" className="mb-2 block text-sm font-medium text-foreground">
+            Phone <span className="font-normal text-muted">(optional)</span>
+          </label>
+          <input
+            id="phone"
+            name="phone"
+            type="tel"
+            autoComplete="tel"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            placeholder="+254…"
+            className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-foreground placeholder:text-muted/70 transition-colors focus:border-accent/50 focus:outline-none focus:ring-2 focus:ring-accent/20"
+          />
+        </div>
+        <div>
+          <label htmlFor="topic" className="mb-2 block text-sm font-medium text-foreground">
+            What do you need?
+          </label>
+          <select
+            id="topic"
+            name="topic"
+            value={topic}
+            onChange={(e) => setTopic(e.target.value)}
+            className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-foreground focus:border-accent/50 focus:outline-none focus:ring-2 focus:ring-accent/20"
+          >
+            <option value="">Choose one</option>
+            {siteConfig.contactTopics.map((item) => (
+              <option key={item.id} value={item.id}>
+                {item.label}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 

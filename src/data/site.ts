@@ -21,8 +21,6 @@ export type Product = {
   status: ProductStatus;
   operationalStatus: OperationalStatus;
   liveUrl: string;
-  /** Public GitHub repo when available */
-  githubUrl?: string;
   docsUrl?: string;
   image: string;
   imageAlt: string;
@@ -38,6 +36,7 @@ export type Service = {
   title: string;
   description: string;
   tags: string[];
+  group?: "studio" | "managed-it";
 };
 
 export type EngagementModel = {
@@ -62,7 +61,8 @@ export type Project = {
   description: string;
   tags: string[];
   liveUrl: string;
-  githubUrl: string;
+  /** Unused on the public site. Repos stay private. */
+  githubUrl?: string;
   /** Cover image path under /public */
   image: string;
   previewVideo?: string;
@@ -82,7 +82,7 @@ export type SkillCategory = {
 export type SocialLink = {
   name: string;
   href: string;
-  icon: "github" | "linkedin" | "email" | "twitter";
+  icon: "linkedin" | "email" | "twitter";
 };
 
 export type Stat = {
@@ -132,6 +132,8 @@ export type IntakeProjectType = {
   id: string;
   label: string;
   description: string;
+  /** No published price. The quotation says it is quoted after a free assessment. */
+  quoteOnly?: boolean;
 };
 
 export type IntakeBudget = {
@@ -193,7 +195,7 @@ export type PricingTier = {
   /** Optional Stripe Price id env key hint (see .env.example) */
   stripePriceEnv?: string;
   /** Studio builds vs AI automation offer ladder */
-  group?: "studio" | "automation";
+  group?: "studio" | "automation" | "it";
   /** No online deposit — price is quoted after discovery */
   quoteOnly?: boolean;
 };
@@ -238,7 +240,7 @@ export type ReliabilityItem = {
 /**
  * Public products, in display order.
  * Only list a liveUrl when the product is actually open.
- * Only list a githubUrl when that repo is meant to be public.
+ * Do not link GitHub. Repositories stay private.
  */
 const products: Product[] = [
   {
@@ -302,7 +304,6 @@ const products: Product[] = [
       "M-Pesa and card checkout",
     ],
     liveUrl: "",
-    githubUrl: "https://github.com/MaximaKenya/lookfinesse",
     image: "",
     imageAlt: "",
   },
@@ -343,7 +344,7 @@ export const siteConfig = {
     /** Unique lockup — differentiates from similarly named creative agencies */
     lockup: "products and custom software",
     description:
-      "The Beacon Studio is a software studio in Nairobi. We build our own products, and we take on AI automation and custom software.",
+      "The Beacon Studio is a software studio in Nairobi. We build our own products, and we take on AI automation, custom software, and outsourced IT.",
     /** Footer / legal disambiguation (not a film or media production company) */
     disambiguation:
       "A software studio in Nairobi — products and custom software. Not affiliated with film or media production companies of a similar name.",
@@ -396,11 +397,11 @@ export const siteConfig = {
 
   seo: {
     siteUrl: "https://the-beacon-studio-0def818a6eaf.herokuapp.com",
-    ogImage: "/og-image.png",
+    ogImage: "/opengraph-image",
     twitterHandle: "@yourusername",
     title: "The Beacon Studio — Products and custom software",
     description:
-      "Nairobi software studio. ConfiRent and CadenceApp are open now. LookFinesse and ConfiLearn are coming soon. We also do AI automation and custom software.",
+      "Nairobi software studio. ConfiRent and CadenceApp are open now. LookFinesse and ConfiLearn are coming soon. We also do AI automation, custom software, and outsourced IT.",
     keywords: [
       "The Beacon Studio",
       "Beacon",
@@ -410,6 +411,10 @@ export const siteConfig = {
       "ConfiLearn",
       "AI automation Kenya",
       "custom software Nairobi",
+      "outsourced IT Nairobi",
+      "managed IT Kenya",
+      "Microsoft 365 support Kenya",
+      "backup and disaster recovery",
       "property management Kenya",
       "Nairobi software studio",
     ],
@@ -423,7 +428,7 @@ export const siteConfig = {
 
   heroHeadline: "Products you can use. Software we can build.",
   heroSubhead:
-    "The Beacon Studio is in Nairobi. Four products — two you can open now, two still on the way — plus AI automation and custom software.",
+    "The Beacon Studio is in Nairobi. Four products — two you can open now, two still on the way — plus AI automation, custom software, and outsourced IT.",
 
   /**
    * What clients gain — shown in Services and related CTAs.
@@ -431,24 +436,19 @@ export const siteConfig = {
   clientGains: [
     "A short call before any quote",
     "Progress you can see while we build",
-    "AI automation or custom software",
+    "AI automation, custom software, or outsourced IT",
   ],
 
   currently: {
     status: "Taking on automation and custom software",
     statusType: "available" as "available" | "busy" | "building",
     building: "ConfiRent is live. CadenceApp is in early access.",
-    focus: ["Products", "AI automation", "Custom software"],
+    focus: ["Products", "AI automation", "Custom software", "Managed IT"],
   },
 
   stats: [] as Stat[],
 
   social: [
-    {
-      name: "GitHub",
-      href: "https://github.com/MaximaKenya",
-      icon: "github" as const,
-    },
     {
       name: "LinkedIn",
       href: "https://linkedin.com/in/yourusername",
@@ -482,6 +482,7 @@ export const siteConfig = {
       description:
         "We set up one repetitive task — replies, reminders, or follow-ups — on the tools you already use. Start with a free 20-minute audit.",
       tags: ["One workflow", "Your tools", "Free audit"],
+      group: "studio",
     },
     {
       id: "custom-software",
@@ -489,6 +490,35 @@ export const siteConfig = {
       description:
         "We design and build software for your business. The price is quoted after a free call.",
       tags: ["Quoted after a call", "You keep the work"],
+      group: "studio",
+    },
+    {
+      id: "backup-dr",
+      title: "Backup & Disaster Recovery",
+      description: "Copies of your files, and a plan to get them back if a laptop, server, or account fails.",
+      tags: ["Quoted after a free assessment"],
+      group: "managed-it",
+    },
+    {
+      id: "endpoint",
+      title: "Antivirus & Endpoint Protection",
+      description: "Protection on the computers and phones your team uses, plus help when something looks wrong.",
+      tags: ["Quoted after a free assessment"],
+      group: "managed-it",
+    },
+    {
+      id: "firewall",
+      title: "Firewall & Network Security",
+      description: "A firewall and basic network checks so the office connection is harder to misuse.",
+      tags: ["Quoted after a free assessment"],
+      group: "managed-it",
+    },
+    {
+      id: "microsoft-365",
+      title: "Microsoft 365",
+      description: "Setup, moving mail and files, licensing, and day-to-day support for Microsoft 365.",
+      tags: ["Quoted after a free assessment"],
+      group: "managed-it",
     },
   ] satisfies Service[],
 
@@ -584,6 +614,24 @@ export const siteConfig = {
       group: "automation",
       quoteOnly: true,
     },
+    {
+      id: "managed-it",
+      name: "Managed IT",
+      headline: "Backup, security, and Microsoft 365.",
+      fromPrice: "Quoted after a free assessment",
+      fromAmount: 0,
+      unit: "No set price",
+      includes: [
+        "Backup and disaster recovery",
+        "Antivirus and endpoint protection",
+        "Firewall and network security",
+        "Microsoft 365 setup, migration, licensing, and support",
+      ],
+      cta: "Book a free assessment",
+      ctaAction: "booking",
+      group: "it",
+      quoteOnly: true,
+    },
   ] satisfies PricingTier[],
 
   /**
@@ -614,7 +662,7 @@ export const siteConfig = {
   },
 
   pricingDisclaimer:
-    "Automation prices are starting points in USD. Custom software, and more than one workflow, are quoted after a short call. When you pay online for a priced job, the deposit is 30%.",
+    "Automation prices are starting points in USD. Custom software, more than one workflow, and outsourced IT are quoted after a short call or a free assessment. When you pay online for a priced job, the deposit is 30%.",
 
   productAccessNote:
     "ConfiRent and CadenceApp have their own sign-up. The prices on this page are for automation and custom software.",
@@ -670,7 +718,7 @@ export const siteConfig = {
       id: "faq-1",
       question: "What do you offer?",
       answer:
-        "Four products — ConfiRent, CadenceApp, LookFinesse, and ConfiLearn — and two kinds of client work: AI automation and custom software.",
+        "Four products — ConfiRent, CadenceApp, LookFinesse, and ConfiLearn — and three kinds of client work: AI automation, custom software, and outsourced IT.",
     },
     {
       id: "faq-2",
@@ -695,6 +743,12 @@ export const siteConfig = {
       answer:
         "Nairobi, Kenya (EAT). We work with people anywhere and reply within one business day.",
     },
+    {
+      id: "faq-6",
+      question: "Do you handle day-to-day IT?",
+      answer:
+        "Yes. Outsourced IT covers backup and disaster recovery, antivirus and endpoint protection, firewall and network security, and Microsoft 365 (setup, migration, licensing, and support). The price is quoted after a free assessment.",
+    },
   ] satisfies FaqItem[],
 
   howItWorks: [
@@ -718,7 +772,18 @@ export const siteConfig = {
     },
   ] satisfies HowItWorksStep[],
 
-  servicesPricingNote: "Final price follows a short discovery call.",
+  servicesPricingNote:
+    "Automation has starting prices. Custom software is quoted after a free call. Outsourced IT is quoted after a free assessment.",
+
+  contactTopics: [
+    { id: "ai-automation", label: "AI automation" },
+    { id: "custom-software", label: "Custom software" },
+    { id: "backup-dr", label: "Backup & disaster recovery" },
+    { id: "endpoint", label: "Antivirus & endpoint protection" },
+    { id: "firewall", label: "Firewall & network security" },
+    { id: "microsoft-365", label: "Microsoft 365" },
+    { id: "other", label: "Something else" },
+  ],
 
   /** Multi-step "Start a Project" wizard options — plain language for SMEs & orgs */
   intake: {
@@ -764,6 +829,30 @@ export const siteConfig = {
         id: "suite",
         label: "Something that works with Beacon products",
         description: "Work that connects to ConfiRent, CadenceApp, LookFinesse, or ConfiLearn",
+      },
+      {
+        id: "backup-dr",
+        label: "Backup & disaster recovery",
+        description: "Copies of your files, and a way back if something is lost",
+        quoteOnly: true,
+      },
+      {
+        id: "endpoint",
+        label: "Antivirus & endpoint protection",
+        description: "Protection for the computers and phones your team uses",
+        quoteOnly: true,
+      },
+      {
+        id: "firewall",
+        label: "Firewall & network security",
+        description: "Firewall and basic network checks for the office",
+        quoteOnly: true,
+      },
+      {
+        id: "microsoft-365",
+        label: "Microsoft 365",
+        description: "Setup, migration, licensing, and support",
+        quoteOnly: true,
       },
       {
         id: "other",
@@ -891,6 +980,7 @@ export const siteConfig = {
     meetingTypes: [
       { id: "intro", label: "Intro Call", duration: 30 },
       { id: "automation-audit", label: "Automation audit", duration: 20 },
+      { id: "it-assessment", label: "IT assessment", duration: 30 },
       { id: "project", label: "Project Discussion", duration: 45 },
     ],
   },
@@ -955,7 +1045,7 @@ export const siteConfig = {
     enabled: true,
     name: "Glow",
     greeting:
-      "Hi, I'm Glow. Ask about our products, automation, pricing, or how to start.",
+      "Hi, I'm Glow. Ask about our products, automation, IT, pricing, or how to start.",
     suggestedQuestions: [
       "What is ConfiRent?",
       "What is CadenceApp?",

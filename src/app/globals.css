@@ -5,16 +5,16 @@
 [data-theme="dark"] {
   --background: #06060e;
   --background-mesh: #0a1120;
-  --foreground: #eef2ff;
-  --muted: #8b9bb8;
+  --foreground: #f4f7ff;
+  --muted: #b4c0d4;
   --accent: #2dd4bf;
   --accent-hover: #14b8a6;
   --accent-warm: #f472b6;
   --accent-amber: #fcd34d;
   --accent-violet: #c084fc;
-  --surface: #0e1628;
-  --surface-elevated: #162038;
-  --border: #2a3a52;
+  --surface: #121c30;
+  --surface-elevated: #1a2742;
+  --border: #3d5270;
   --glass: rgba(14, 22, 40, 0.82);
   --grain-opacity: 0.055;
   --aurora-1: rgba(45, 212, 191, 0.26);
@@ -92,6 +92,30 @@ html {
 
 [data-theme="light"] {
   color-scheme: light;
+}
+
+/* Portal and other full-page shells. Uses theme colors, not a light-only wash. */
+.portal-shell {
+  background-color: var(--background);
+  background-image:
+    radial-gradient(ellipse 90% 48% at 50% -12%, var(--aurora-1), transparent 58%),
+    radial-gradient(ellipse 55% 40% at 100% 0%, var(--aurora-3), transparent 52%);
+}
+
+input,
+textarea,
+select {
+  color: var(--foreground);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: color-mix(in srgb, var(--muted) 80%, transparent);
+}
+
+select option {
+  background: var(--surface);
+  color: var(--foreground);
 }
 
 body {

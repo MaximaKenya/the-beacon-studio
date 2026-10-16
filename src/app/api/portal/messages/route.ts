@@ -44,6 +44,20 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "projectId required" }, { status: 400 });
   }
 
+  if (projectId.startsWith("client:")) {
+    const clientId = projectId.slice("client:".length);
+    if (!admin && session?.clientId !== clientId) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+    const mailbox = await getThread(projectId);
+    if (mailbox) await markThreadRead(projectId, admin ? "admin" : "client");
+    const refreshedMailbox = await getThread(projectId);
+    return NextResponse.json({
+      thread: refreshedMailbox ?? { projectId, clientId, messages: [], updatedAt: "" },
+      unread: 0,
+    });
+  }
+
   const project = await findProjectById(projectId);
   if (!project) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -77,6 +91,20 @@ export async function POST(request: Request) {
 
   if (!projectId || !text) {
     return NextResponse.json({ error: "projectId and body required" }, { status: 400 });
+  }
+
+  if (projectId.startsWith("client:")) {
+    const clientId = projectId.slice("client:".length);
+    if (!admin && session?.clientId !== clientId) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+    const mailboxMessage = await postMessage({
+      projectId,
+      clientId,
+      sender: admin ? "admin" : "client",
+      body: text,
+    });
+    return NextResponse.json({ ok: true, message: mailboxMessage });
   }
 
   const project = await findProjectById(projectId);

@@ -22,6 +22,7 @@ import {
   AnimatedPieChart,
 } from "@/components/admin/AdminCharts";
 import { AdminPdfExport } from "@/components/admin/AdminPdfExport";
+import { AdminInbox } from "@/components/admin/AdminInbox";
 import { AdminOpsHub, type AdminOpsData } from "@/components/admin/AdminOpsHub";
 import { AdminProjectsPanel } from "@/components/admin/AdminProjectsPanel";
 import { parseResponseJson } from "@/lib/safe-json";
@@ -187,7 +188,8 @@ export default function AdminPage() {
             </button>
           </form>
           <p className="mt-4 text-xs text-muted">
-            Set <code className="font-mono text-foreground">ADMIN_PASSWORD</code> in{" "}
+            Password is the <code className="font-mono text-foreground">ADMIN_PASSWORD</code>{" "}
+            environment variable. On Heroku that is a config var. Locally it lives in{" "}
             <code className="font-mono text-foreground">.env.local</code>.
           </p>
           <Link href="/" className="mt-6 inline-flex items-center gap-1 text-sm text-accent hover:underline">
@@ -277,6 +279,10 @@ export default function AdminPage() {
               Log out
             </button>
           </div>
+        </div>
+
+        <div className="mb-12">
+          <AdminInbox />
         </div>
 
         {ops && (

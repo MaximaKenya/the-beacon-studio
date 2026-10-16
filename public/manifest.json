@@ -1,7 +1,7 @@
 {
   "name": "The Beacon Studio",
   "short_name": "Beacon",
-  "description": "Products and custom software from Nairobi. ConfiRent, CadenceApp, LookFinesse, and ConfiLearn.",
+  "description": "Products, custom software, and IT from Nairobi.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#07070f",
@@ -11,6 +11,12 @@
       "src": "/icon",
       "sizes": "32x32",
       "type": "image/png"
+    },
+    {
+      "src": "/apple-icon",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
     }
   ]
 }
