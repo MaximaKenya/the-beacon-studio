@@ -71,12 +71,10 @@ export function AdminProjectsPanel() {
   }
 
   return (
-    <div className="space-y-4 rounded-2xl border border-border bg-surface/40 p-5">
+    <div id="projects" className="admin-panel admin-section space-y-4 p-5 sm:p-6">
       <div>
-        <p className="font-mono text-[10px] uppercase tracking-widest text-muted">
-          Portal sync
-        </p>
-        <h3 className="font-display text-lg font-semibold text-foreground">
+        <p className="admin-kicker">Portal sync</p>
+        <h3 className="mt-1 font-display text-xl font-semibold text-heading">
           Client projects
         </h3>
         <p className="mt-1 text-sm text-muted">
