@@ -336,12 +336,13 @@ function findProductMention(message: string) {
       lower.includes(p.id) ||
       lower.includes(p.name.toLowerCase()) ||
       (p.id === "confilearn" &&
-        (lower.includes("nest") || lower.includes("lms") || lower.includes("course"))) ||
+        (lower.includes("tutor") || lower.includes("lms") || lower.includes("course") || lower.includes("kiswahili"))) ||
       (p.id === "lookfinesse" &&
-        (lower.includes("marketplace") || lower.includes("fashion"))) ||
-      (p.id === "cadenceapp" && lower.includes("rhythm")) ||
-      (p.id === "confirent" && lower.includes("rent")) ||
-      (p.id === "triviayard" && (lower.includes("trivia") || lower.includes("entertainment")))
+        (lower.includes("fashion") || lower.includes("beauty") || lower.includes("fitness") || lower.includes("marketplace"))) ||
+      (p.id === "cadenceapp" &&
+        (lower.includes("collection") || lower.includes("dialer") || lower.includes("bpo") || lower.includes("calling"))) ||
+      (p.id === "confirent" &&
+        (lower.includes("rent") || lower.includes("landlord") || lower.includes("property") || lower.includes("tenant")))
   );
 }
 
@@ -409,13 +410,15 @@ function buildReply(intent: Intent): string {
       return `Top answers from our FAQ:\n\n${formatFaq()}\n\nMore at [FAQ](/#faq).`;
 
     case "experience":
-      return `${founder.name} (${founder.role}) leads ${brand.name}. Background:\n• ${formatExperience()}\nMeet Max: [About](/#about).`;
+      return `${founder.name} (${founder.role}) leads ${brand.name} from ${location}.\n• ${formatExperience()}\n[Contact](/#contact) · [Products](/#products).`;
 
     case "skills":
       return `${brand.name} toolkit:\n${formatSkills()}\nFocus: ${currently.focus.join(", ")}.`;
 
     case "projects":
-      return `Selected work & case studies:\n• ${formatProjects()}\nAlso see the [product suite](/#products).`;
+      return projects.length
+        ? `Selected work:\n• ${formatProjects()}\nAlso see the [products](/#products).`
+        : `The public work is the four products: ${formatProductPageLinks()}. Client projects are not listed here.`;
 
     case "contact":
       return `Reach ${brand.name} at ${email} — typically 1–2 business days (EAT). Or use [Contact](/#contact), [Book a Call](/#book), or call ${siteConfig.phoneDisplay}.`;
@@ -427,7 +430,7 @@ function buildReply(intent: Intent): string {
       return `Book a ${booking.slotDuration}-minute call — Mon–Fri, ${booking.hoursStart}–${booking.hoursEnd} (EAT / ${booking.timezone.replace("_", " ")}). Types: ${booking.meetingTypes.map((m) => m.label).join(", ")}. Open [Book a Call](/#book).`;
 
     case "about":
-      return `${assistant.name} here! ${brand.name} is ${founder.name}'s product studio — ${brand.tagline}\n\n${founder.bio.trim().split("\n\n")[0]}\n\n[Meet the founder](/#about) · Ask about products, custom builds, or [booking](/#book).`;
+      return `${assistant.name} here. ${brand.name} is ${founder.name}'s software studio in ${location} — ${brand.tagline}\n\n${founder.bio.trim().split("\n\n")[0]}\n\n[Products](/#products) · [Contact](/#contact) · [Book a call](/#contact).`;
 
     case "status":
       return `${brand.name} is currently: "${currently.status}". Building: ${currently.building}.`;
@@ -440,7 +443,7 @@ function buildReply(intent: Intent): string {
 
     case "testimonials":
       if (testimonials.length === 0)
-        return `No testimonials listed yet — check [Work](/#work) and [Products](/#products).`;
+        return `We don't publish testimonials. See the [products](/#products) or [contact us](/#contact).`;
       return `What people say:\n${testimonials.map((t) => `"${t.quote}" — ${t.author}, ${t.role}`).join("\n")}`;
 
     case "personality":
@@ -453,7 +456,7 @@ function buildReply(intent: Intent): string {
       return assistant.greeting;
 
     default:
-      return `${assistant.name} here! I can tell you about ${brand.name}'s [products](/#products), [pricing](/#pricing), [portal](/portal/login), or how to [start a project](/#services). Try "What is ConfiLearn?" or "How do deposits work?"`;
+      return `${assistant.name} here. I can tell you about [products](/#products), [pricing](/#pricing), or how to [get in touch](/#contact). Try "What is ConfiRent?" or "How much does automation cost?"`;
   }
 }
 
@@ -461,6 +464,15 @@ export function getKnowledgeResponse(userMessage: string): KnowledgeResponse {
   const trimmed = userMessage.trim();
   if (!trimmed) {
     return { reply: assistant.greeting, confidence: 1, intent: "greeting", source: "knowledge-base" };
+  }
+
+  if (/\btrivia\s*yard\b|\btriviayard\b|\bconfi\s*trade\b|\bconfitrade\b/i.test(trimmed)) {
+    return {
+      reply: `Those are not products we offer. The four products are ${formatProductPageLinks()}.`,
+      confidence: 0.95,
+      intent: "products",
+      source: "knowledge-base",
+    };
   }
 
   const mentioned = findProductMention(trimmed);
@@ -474,7 +486,7 @@ export function getKnowledgeResponse(userMessage: string): KnowledgeResponse {
 
     if (productFocused) {
       return {
-        reply: `**${mentioned.name}** [${mentioned.status} / ${mentioned.operationalStatus}]\n${mentioned.longDescription ?? mentioned.description}\n\n• Product page: [/products/${mentioned.id}](/products/${mentioned.id})${mentioned.githubUrl ? `\n• GitHub: ${mentioned.githubUrl}` : ""}\n• Start custom work: [Start a Project](/#services) · [Book a Call](/#book)`,
+        reply: `**${mentioned.name}** (${mentioned.statusLabel})\n${mentioned.description}\nFor: ${mentioned.audience}\n\n${mentioned.features.map((feature) => `• ${feature}`).join("\n")}\n\n• Page: [/products/${mentioned.id}](/products/${mentioned.id})${mentioned.liveUrl ? `\n• Site: ${mentioned.liveUrl}` : "\n• Not open yet. [Get notified or contact us](/#contact)."}${mentioned.githubUrl ? `\n• Source code: ${mentioned.githubUrl}` : ""}`,
         confidence: 0.95,
         intent: "products",
         source: "knowledge-base",

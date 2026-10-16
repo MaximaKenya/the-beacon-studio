@@ -1,23 +1,31 @@
 "use client";
 
+import { useEffect } from "react";
 import { usePathname } from "next/navigation";
+import { useFeatures } from "@/providers/FeatureProvider";
 import { NewsletterPopup } from "@/components/features/NewsletterPopup";
 import { BookingModal } from "@/components/features/BookingModal";
 import { ChatWidget } from "@/components/features/ChatWidget";
 import { FloatingBookCTA } from "@/components/features/FloatingBookCTA";
 import { KeyboardShortcuts } from "@/components/features/KeyboardShortcuts";
-import { SmartCTABar } from "@/components/features/SmartCTABar";
 import { TerminalEasterEgg } from "@/components/features/TerminalEasterEgg";
 import { ProductDrawer } from "@/components/features/ProductDrawer";
 import { ProjectIntakeWizard } from "@/components/features/ProjectIntakeWizard";
-import { ExitIntentCall } from "@/components/features/ExitIntentCall";
-import { ProductComparePicker } from "@/components/features/ProductComparePicker";
 import { SavedQuoteReminder } from "@/components/features/SavedQuoteReminder";
-import { PortalProgressTeaser } from "@/components/features/PortalProgressTeaser";
 import type { ReactNode } from "react";
 
 export function FeatureLayer({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const { openBooking } = useFeatures();
+
+  useEffect(() => {
+    const openFromHash = () => {
+      if (window.location.hash === "#book") openBooking();
+    };
+    openFromHash();
+    window.addEventListener("hashchange", openFromHash);
+    return () => window.removeEventListener("hashchange", openFromHash);
+  }, [openBooking]);
   const hideMarketingOverlays =
     pathname?.startsWith("/admin") ||
     pathname?.startsWith("/dashboard") ||
@@ -35,13 +43,9 @@ export function FeatureLayer({ children }: { children: ReactNode }) {
           <ProductDrawer />
           <ProjectIntakeWizard />
           <FloatingBookCTA />
-          <SmartCTABar />
           <TerminalEasterEgg />
           <KeyboardShortcuts />
-          <ExitIntentCall />
-          <ProductComparePicker />
           <SavedQuoteReminder />
-          <PortalProgressTeaser />
         </>
       )}
     </>

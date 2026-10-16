@@ -33,7 +33,6 @@ export default async function ProductPage({ params }: Props) {
   if (!product) notFound();
 
   const related = siteConfig.products.filter((p) => p.id !== product.id).slice(0, 3);
-  const stack = siteConfig.techStack.filter((t) => t.usedIn.includes(product.id));
 
-  return <ProductDetail product={product} related={related} stack={stack} />;
+  return <ProductDetail product={product} related={related} />;
 }

@@ -25,6 +25,12 @@ export type Product = {
   githubUrl?: string;
   docsUrl?: string;
   image: string;
+  imageAlt: string;
+  /** Plain status line shown on cards and product pages */
+  statusLabel: string;
+  /** Who the product is for */
+  audience: string;
+  features: string[];
 };
 
 export type Service = {
@@ -230,93 +236,98 @@ export type ReliabilityItem = {
 };
 
 /**
- * Products array — add unlimited entries; suite UI scales from this.
- *
- * Order: LookFinesse (flagship) → ConfiLearn (LMS) → CadenceApp → ConfiRent → TriviaYard.
- * Update liveUrl only when a public deploy URL exists in the product README.
- *
- * LMS naming (ex-LuminousLMS): primary brand is ConfiLearn.
- * ConfiLearn chosen; Nest avoided due to NestJS collision.
- * Runners-up: Nest, Campus, Lesson, Cohort, Scholar, Primer, Brightpath, Studio Learn.
- * Avoided: Nest (NestJS), LuminousLMS, Quoramax; Scholar/Primer/Campus had stronger brand collisions.
+ * Public products, in display order.
+ * Only list a liveUrl when the product is actually open.
+ * Only list a githubUrl when that repo is meant to be public.
  */
-const products = [
+const products: Product[] = [
   {
-    id: "lookfinesse",
-    name: "LookFinesse",
-    tagline: "Sell fashion, beauty & fitness online — with Kenya-ready payments.",
+    id: "confirent",
+    name: "ConfiRent",
+    tagline: "Property management with confidence",
     description:
-      "Shop, bookings, and Kenya-ready payments for fashion, beauty, and fitness creators.",
-    longDescription:
-      "LookFinesse is The Beacon Studio's flagship creator marketplace for fashion, beauty, and fitness — social feed, shop, vendor dashboards, ads, and payments (M-Pesa + Stripe). Built for the African creator economy with a mobile-first Next.js + Supabase commerce surface.",
-    tags: ["Marketplace", "M-Pesa", "Next.js"],
+      "Kenyan property platform to find, rent, buy and manage homes in one place. Landlords, agents, agencies and developers list verified properties and run tenancies; tenants pay rent by M-Pesa or card, message landlords and track statements.",
+    tags: ["Property", "M-Pesa", "Kenya"],
     status: "live" as ProductStatus,
+    statusLabel: "Live · soft launch",
     operationalStatus: "operational" as OperationalStatus,
-    liveUrl: "https://lookfinesseke-0cf56b906a55.herokuapp.com/",
-    docsUrl: "",
-    image: "/images/projects/lookfinesse.svg",
-  },
-  {
-    id: "confilearn",
-    name: "ConfiLearn",
-    tagline: "Run live classes and courses — tutors get paid via M-Pesa.",
-    description:
-      "Live classes and courses, with tutor payouts via M-Pesa.",
-    longDescription:
-      "ConfiLearn is a learning platform for live classes and on-demand courses. Tutors get a studio for authoring, learners get progress, streaks, XP, and certificates, and payouts go via M-Pesa. Shaped for African learners and educators — TanStack Start, React, Supabase, and Cloudflare.",
-    tags: ["EdTech", "Live classes", "M-Pesa"],
-    status: "beta" as ProductStatus,
-    operationalStatus: "building" as OperationalStatus,
-    liveUrl: "",
-    githubUrl: "https://github.com/MaximaKenya/luminouslms",
-    docsUrl: "",
-    image: "/images/projects/confilearn.svg",
+    audience: "Tenants, buyers, landlords, agents, developers, and service providers.",
+    features: [
+      "Verified listings with ID checks",
+      "Rent collection via M-Pesa or card, with statements and payment plans",
+      "In-app messaging and group notices",
+      "ConfiRent AI assistant",
+    ],
+    liveUrl: "https://www.confirent.co.ke",
+    image: "/images/products/confirent-login.jpg",
+    imageAlt: "ConfiRent sign-in screen on a phone",
   },
   {
     id: "cadenceapp",
     name: "CadenceApp",
-    tagline: "Planning rhythm for teams that need to ship on schedule.",
-    description: "Keep the week visible so work ships on schedule.",
-    longDescription:
-      "CadenceApp is Beacon’s planning and ops rhythm for teams that need to ship on schedule. It is early: the public GitHub repo is live while the product surface is still taking shape. Use it when you want cadence, not another noisy task dump.",
-    tags: ["Ops", "Planning"],
-    status: "coming-soon" as ProductStatus,
-    operationalStatus: "building" as OperationalStatus,
-    liveUrl: "",
-    githubUrl: "https://github.com/MaximaKenya/CadenceApp",
-    docsUrl: "",
-    image: "/images/projects/cadenceapp.svg",
-  },
-  {
-    // TODO(ConfiRent): replace stub when user uploads the local repo (expected soon).
-    id: "confirent",
-    name: "ConfiRent",
-    tagline: "Rental ops with clearer trust between hosts and renters.",
-    description: "Coming soon — listings, deposits, and handoffs with clearer trust.",
-    longDescription:
-      "ConfiRent is Beacon’s coming-soon rental ops product. The idea is clearer trust between hosts and renters — listings you can stand behind, deposits you can follow, and handoffs that don’t disappear into chat threads. Stack, screenshots, and links land when the repo is ready.",
-    tags: ["Rentals", "Coming soon"],
-    status: "coming-soon" as ProductStatus,
-    operationalStatus: "building" as OperationalStatus,
-    liveUrl: "",
-    docsUrl: "",
-    image: "/images/projects/confirent.svg",
-  },
-  {
-    id: "triviayard",
-    name: "TriviaYard",
-    tagline: "Live trivia and play that keeps audiences coming back.",
-    description: "Live trivia and audience play for communities, venues, and brands.",
-    longDescription:
-      "TriviaYard is Beacon’s coming-soon wing for live trivia and audience entertainment. Host a round, keep the room playing, and give communities a reason to come back. Full stack, screenshots, and links will land as the product ships.",
-    tags: ["Trivia", "Live play"],
-    status: "live" as ProductStatus,
+    tagline: "The unified operations platform for customer teams.",
+    description:
+      "Brings collections, calling, messaging and AI automation into one workspace. Teams load accounts, call and message customers, track promises and payments, and let AI handle repetitive replies and reports.",
+    tags: ["Collections", "Calling", "Messaging"],
+    status: "beta" as ProductStatus,
+    statusLabel: "Beta / early access",
     operationalStatus: "operational" as OperationalStatus,
-    liveUrl: "https://triviayard-9cf8a6eb71ba.herokuapp.com/",
-    docsUrl: "",
-    image: "/images/projects/triviayard.svg",
+    audience:
+      "Collections agencies, BPOs, contact centres, and any business with customer-facing teams.",
+    features: [
+      "Dialer with campaigns (manual, power, or auto) and inbound routing",
+      "Collections with debtor history, promise-to-pay tracking, and audit trails you can export to PDF or Excel",
+      "AI replies on email, WhatsApp, and SMS, plus automatic KPI reports",
+      "Pay per module, with a 14-day free trial",
+    ],
+    liveUrl: "https://www.cadenceapp.co.ke",
+    image: "/images/products/cadenceapp-home.jpg",
+    imageAlt: "CadenceApp home page on a desktop",
   },
-] satisfies Product[];
+  {
+    id: "lookfinesse",
+    name: "LookFinesse",
+    tagline: "Kenya-first social marketplace for fashion, beauty and fitness.",
+    description:
+      "Connects shoppers with local fashion, beauty and fitness vendors. Browse and buy, book services nearby with delivery, get AI styling and fitness help; vendors get a dashboard for products and orders.",
+    tags: ["Fashion", "Beauty", "Fitness"],
+    status: "coming-soon" as ProductStatus,
+    statusLabel: "Coming soon",
+    operationalStatus: "building" as OperationalStatus,
+    audience: "Shoppers and local fashion, beauty, and fitness vendors.",
+    features: [
+      "Near-me shopping, booking, and delivery",
+      "AI stylist, shopping copilot, and gym buddy",
+      "Vendor dashboard",
+      "M-Pesa and card checkout",
+    ],
+    liveUrl: "",
+    githubUrl: "https://github.com/MaximaKenya/lookfinesse",
+    image: "",
+    imageAlt: "",
+  },
+  {
+    id: "confilearn",
+    name: "ConfiLearn",
+    tagline: "Learn from trusted African tutors, live and on your phone.",
+    description:
+      "Learning marketplace where tutors sell courses and teach live classes and learners pay with M-Pesa; payments held in escrow until delivered. Built for African learners with Kiswahili, offline downloads and WhatsApp reminders.",
+    tags: ["Tutors", "Live classes", "M-Pesa"],
+    status: "coming-soon" as ProductStatus,
+    statusLabel: "Coming soon",
+    operationalStatus: "building" as OperationalStatus,
+    audience: "African learners and tutors.",
+    features: [
+      "M-Pesa payments with escrow and tutor wallets",
+      "Live classrooms",
+      "Quizzes and mastery checks",
+      "Kiswahili, offline lessons, and WhatsApp notifications",
+    ],
+    liveUrl: "",
+    image: "",
+    imageAlt: "",
+  },
+];
 
 export const siteConfig = {
   brand: {
@@ -328,30 +339,30 @@ export const siteConfig = {
     /** Legacy initials (favicon now uses the signal mark) */
     initials: "Be",
     /** Short brand line (hero can use a stronger business headline) */
-    tagline: "Cloud products & custom software.",
+    tagline: "Products and custom software.",
     /** Unique lockup — differentiates from similarly named creative agencies */
-    lockup: "cloud products & custom software",
+    lockup: "products and custom software",
     description:
-      "The Beacon Studio is a Nairobi software product studio. Cloud apps, custom builds, and AI automation for repetitive work.",
+      "The Beacon Studio is a software studio in Nairobi. We build our own products, and we take on AI automation and custom software.",
     /** Footer / legal disambiguation (not a film or media production company) */
     disambiguation:
-      "A software product studio in Nairobi — cloud apps and custom builds. Not affiliated with film or media production companies of a similar name.",
+      "A software studio in Nairobi — products and custom software. Not affiliated with film or media production companies of a similar name.",
   },
 
   founder: {
     name: "Maximillian",
     shortName: "Max",
     role: "Founder & Product Builder",
-    bio: `I'm Max, founder of The Beacon Studio. I build cloud products and custom software from Nairobi (EAT), for teams anywhere.`,
+    bio: `I'm Max, founder of The Beacon Studio. I build software from Nairobi for people anywhere.`,
     location: "Nairobi, Kenya",
     timezone: "Africa/Nairobi",
   },
 
   /** Brand display name used in header / footer / SEO */
   name: "The Beacon Studio",
-  role: "Software Product Studio",
-  tagline: "Cloud products & custom software.",
-  bio: `I'm Max, founder of The Beacon Studio. I build cloud products and custom software from Nairobi (EAT), for teams anywhere.`,
+  role: "Software studio",
+  tagline: "Products and custom software.",
+  bio: `I'm Max, founder of The Beacon Studio. I build software from Nairobi for people anywhere.`,
 
   /** TODO(go-live): replace email, phone, LinkedIn, Twitter before public launch */
   email: "hello@example.com",
@@ -387,66 +398,50 @@ export const siteConfig = {
     siteUrl: "https://the-beacon-studio-0def818a6eaf.herokuapp.com",
     ogImage: "/og-image.png",
     twitterHandle: "@yourusername",
-    title: "The Beacon Studio — Cloud Products & Custom Software",
+    title: "The Beacon Studio — Products and custom software",
     description:
-      "Cloud apps, custom software, and AI automation for organizations in Kenya — WhatsApp automation, missed-call follow-up, lead capture, and routine admin. Nairobi product studio.",
+      "Nairobi software studio. ConfiRent and CadenceApp are open now. LookFinesse and ConfiLearn are coming soon. We also do AI automation and custom software.",
     keywords: [
       "The Beacon Studio",
       "Beacon",
-      "Beacon Studio software",
+      "ConfiRent",
+      "CadenceApp",
       "LookFinesse",
       "ConfiLearn",
-      "CadenceApp",
-      "ConfiRent",
-      "TriviaYard",
-      "custom software development",
-      "cloud apps",
-      "SaaS studio Kenya",
-      "Nairobi software studio",
-      "product studio",
-      "hire software developer Kenya",
-      "custom SaaS development",
       "AI automation Kenya",
-      "WhatsApp automation",
-      "lead follow-up automation",
+      "custom software Nairobi",
+      "property management Kenya",
+      "Nairobi software studio",
     ],
   },
 
   cta: {
-    primary: "Explore products",
-    secondary: "Start a project",
+    primary: "See products",
+    secondary: "Contact us",
     tertiary: "Book a call",
   },
 
-  /** Benefit-led hero — suite of cloud apps + custom builds */
-  heroHeadline: "Cloud apps, custom software, and automation.",
-  /** Short supporting line under suite chips (chips render via SuiteLine). */
-  heroSubhead: "Use our products, hire us to build, or automate the repetitive work. Nairobi / EAT.",
+  heroHeadline: "Products you can use. Software we can build.",
+  heroSubhead:
+    "The Beacon Studio is in Nairobi. Four products — two you can open now, two still on the way — plus AI automation and custom software.",
 
   /**
    * What clients gain — shown in Services and related CTAs.
    */
   clientGains: [
-    "Weekly demos and a scoped plan",
-    "Live progress in your client portal",
-    "Direct messaging, plus Glow for quick answers",
-    "Cloud apps, custom builds, or one automated workflow",
+    "A short call before any quote",
+    "Progress you can see while we build",
+    "AI automation or custom software",
   ],
 
   currently: {
-    status: "Open for custom builds",
+    status: "Taking on automation and custom software",
     statusType: "available" as "available" | "busy" | "building",
-    building: "LookFinesse and TriviaYard live",
-
-    focus: ["Next.js", "TypeScript", "Cloud SaaS"],
+    building: "ConfiRent is live. CadenceApp is in early access.",
+    focus: ["Products", "AI automation", "Custom software"],
   },
 
-  stats: [
-    { label: "Products in suite", value: String(products.length), suffix: "" },
-    { label: "Years building", value: "3", suffix: "+" },
-    { label: "Projects shipped", value: "12", suffix: "+" },
-    { label: "Timezone", value: "EAT", suffix: "" },
-  ] satisfies Stat[],
+  stats: [] as Stat[],
 
   social: [
     {
@@ -468,13 +463,8 @@ export const siteConfig = {
 
   navigation: [
     { id: "products", label: "Products" },
-    { id: "automation", label: "Automation" },
     { id: "services", label: "Services" },
     { id: "pricing", label: "Pricing" },
-    { id: "about", label: "About" },
-    { id: "work", label: "Work" },
-    { id: "faq", label: "FAQ" },
-    { id: "book", label: "Book" },
     { id: "contact", label: "Contact" },
   ] satisfies NavSection[],
 
@@ -490,59 +480,34 @@ export const siteConfig = {
       id: "ai-automation",
       title: "AI Automation",
       description:
-        "Automate enquiries, missed-call follow-ups, and routine admin — the personal service stays.",
-      tags: ["WhatsApp", "Lead follow-up", "Reminders"],
+        "We set up one repetitive task — replies, reminders, or follow-ups — on the tools you already use. Start with a free 20-minute audit.",
+      tags: ["One workflow", "Your tools", "Free audit"],
     },
     {
-      id: "custom-apps",
-      title: "Custom apps & SaaS",
-      description: "MVP to a product your team can own, with weekly demos.",
-      tags: ["Next.js", "TypeScript", "Portal"],
-    },
-    {
-      id: "product-suite",
-      title: "Product suite",
-      description: "Adopt or extend LookFinesse, ConfiLearn, CadenceApp, ConfiRent, or TriviaYard.",
-      tags: ["LookFinesse", "ConfiLearn", "CadenceApp"],
-    },
-    {
-      id: "ops-payments",
-      title: "Quotes & messaging",
-      description: "Branded quotes, portal messaging, and Glow for quick answers.",
-      tags: ["Quotes", "Messaging", "Glow"],
-    },
-    {
-      id: "launch",
-      title: "Launch partnerships",
-      description: "Discovery, build sprints, then handoff or a retainer.",
-      tags: ["Discovery", "Handoff", "Retainer"],
+      id: "custom-software",
+      title: "Custom Software",
+      description:
+        "We design and build software for your business. The price is quoted after a free call.",
+      tags: ["Quoted after a call", "You keep the work"],
     },
   ] satisfies Service[],
 
   engagementModels: [
     {
       id: "fixed",
-      name: "Fixed scope",
-      headline: "Clear brief. Clear price.",
-      description: "A locked scope, timeline, and fee for a known outcome.",
-      bestFor: "MVPs, launches, bounded rebuilds",
-      highlights: ["Scoped discovery", "Milestone demos", "Fixed fee"],
+      name: "Project",
+      headline: "A price after we understand the work.",
+      description: "Custom software is quoted after a free call. You get a written quote before we build.",
+      bestFor: "A new piece of software, or a change to something you already have",
+      highlights: ["Free call", "Written quote", "You keep the work"],
     },
     {
       id: "retainer",
       name: "Retainer",
-      headline: "Ongoing craft on tap.",
-      description: "Monthly capacity for features, polish, and support.",
-      bestFor: "Growing products & continuous delivery",
-      highlights: ["Reserved capacity", "Priority response", "Flexible backlog"],
-    },
-    {
-      id: "equity",
-      name: "Equity-friendly",
-      headline: "Aligned upside for the right builds.",
-      description: "Reduced cash plus equity, when the product and team fit.",
-      bestFor: "Early founders with strong product fit",
-      highlights: ["Hybrid cash + equity", "Deep partnership", "By invitation"],
+      headline: "Monthly help after something is live.",
+      description: "We keep an automation running, or keep improving software you already have.",
+      bestFor: "Automation that needs watching, or ongoing software changes",
+      highlights: ["From $450/month for automation", "Monitoring", "Agreed improvements"],
     },
   ] satisfies EngagementModel[],
 
@@ -552,59 +517,21 @@ export const siteConfig = {
    */
   pricingTiers: [
     {
-      id: "sprint",
-      name: "Sprint",
-      headline: "Ship one focused slice fast.",
-      fromPrice: "From $800",
-      fromAmount: 800,
-      unit: "per engagement · typical $800–1,500",
+      id: "custom-software",
+      name: "Custom Software",
+      headline: "Software built for your business.",
+      fromPrice: "Quoted after discovery",
+      fromAmount: 0,
+      unit: "Free call to start",
       includes: [
-        "1–2 week focused build",
-        "Scoped outcome & weekly demo",
-        "Production-ready TypeScript",
-        "Handoff notes & Loom walkthrough",
+        "A free call to understand the work",
+        "A written quote before we build",
+        "You keep the software",
       ],
-      cta: "Start your build",
-      ctaAction: "intake",
-      stripePriceEnv: "STRIPE_PRICE_SPRINT_DEPOSIT",
-      group: "studio",
-    },
-    {
-      id: "product-build",
-      name: "Product build",
-      headline: "MVP to launch-ready — lower rewrite risk.",
-      fromPrice: "From $3,000",
-      fromAmount: 3000,
-      unit: "scoped project · typical $3k–8k",
-      includes: [
-        "Discovery → build → launch",
-        "UI/UX + API + cloud deploy",
-        "Milestone demos every week",
-        "Docs, auth patterns, and handoff",
-      ],
-      cta: "Get a launch plan",
-      ctaAction: "intake",
-      featured: true,
-      stripePriceEnv: "STRIPE_PRICE_PRODUCT_DEPOSIT",
-      group: "studio",
-    },
-    {
-      id: "retainer",
-      name: "Retainer",
-      headline: "Reserved capacity every month.",
-      fromPrice: "From $1,500",
-      fromAmount: 1500,
-      unit: "per month · typical $1.5k–3k",
-      includes: [
-        "Reserved engineering hours",
-        "Priority response (EAT business days)",
-        "Features, polish & ops support",
-        "Pause or resize with notice",
-      ],
-      cta: "Call us",
+      cta: "Book a free call",
       ctaAction: "booking",
-      stripePriceEnv: "STRIPE_PRICE_RETAINER_DEPOSIT",
       group: "studio",
+      quoteOnly: true,
     },
     {
       id: "automation-pilot",
@@ -655,6 +582,7 @@ export const siteConfig = {
       cta: "Book a discovery call",
       ctaAction: "booking",
       group: "automation",
+      quoteOnly: true,
     },
   ] satisfies PricingTier[],
 
@@ -686,10 +614,10 @@ export const siteConfig = {
   },
 
   pricingDisclaimer:
-    "USD floors, not a fixed menu. A 30% deposit (Stripe or M-Pesa) reserves the work. Final quotes follow a short discovery call.",
+    "Automation prices are starting points in USD. Custom software, and more than one workflow, are quoted after a short call. When you pay online for a priced job, the deposit is 30%.",
 
   productAccessNote:
-    "Product suite: request access — no public seat pricing until each app is live.",
+    "ConfiRent and CadenceApp have their own sign-up. The prices on this page are for automation and custom software.",
 
   comparison: {
     title: "Us, DIY, or an agency",
@@ -740,68 +668,53 @@ export const siteConfig = {
   faq: [
     {
       id: "faq-1",
-      question: "What does The Beacon Studio actually build?",
+      question: "What do you offer?",
       answer:
-        "Cloud apps, custom software, and AI automation for repetitive work. Same studio either way.",
+        "Four products — ConfiRent, CadenceApp, LookFinesse, and ConfiLearn — and two kinds of client work: AI automation and custom software.",
     },
     {
       id: "faq-2",
-      question: "How does pricing work?",
+      question: "How much does automation cost?",
       answer:
-        "Published USD floors for studio builds and automation. A short discovery call turns the floor into a quote.",
-    },
-    {
-      id: "faq-automation-custom",
-      question: "How does AI automation customization work?",
-      answer:
-        "Every organization is different, so it starts with a short discovery call: how do you handle enquiries, missed calls, and follow-ups today? We then map one workflow and build it on your tools — WhatsApp, SMS, email, web chat, voice or missed-call, CRM or Google Sheets, and M-Pesa.",
-    },
-    {
-      id: "faq-automation-after",
-      question: "What happens after the automation pilot?",
-      answer:
-        "You can stop there, or move to a retainer from $450/month for monitoring, error handling, backups, reporting, and agreed improvements. Extra workflows start from $4,500 and are quoted after discovery.",
+        "A pilot is one workflow, from $1,350, and usually takes 2–3 weeks. A retainer starts at $450 a month. Several workflows start from $4,500 and are quoted after a discovery call. The 20-minute audit is free.",
     },
     {
       id: "faq-3",
-      question: "Can I get access to the product suite?",
-      answer: "Request access on a product card. We’ll tell you when that app is ready.",
+      question: "How much does custom software cost?",
+      answer: "It is quoted after a discovery call. The call is free.",
     },
     {
       id: "faq-4",
-      question: "Where are you based, and do you work remotely?",
-      answer: "Nairobi (EAT), working with teams worldwide. We reply within one business day.",
+      question: "Which products can I use now?",
+      answer:
+        "ConfiRent is live (soft launch) at confirent.co.ke. CadenceApp is in beta at cadenceapp.co.ke. LookFinesse and ConfiLearn are coming soon — ask us to notify you.",
     },
     {
       id: "faq-5",
-      question: "What stack do you use?",
-      answer: "TypeScript, Next.js, React, Node, and PostgreSQL.",
-    },
-    {
-      id: "faq-6",
-      question: "How do we start?",
-      answer: "Start a project or book a call. Glow can answer quick questions first.",
+      question: "Where are you based?",
+      answer:
+        "Nairobi, Kenya (EAT). We work with people anywhere and reply within one business day.",
     },
   ] satisfies FaqItem[],
 
   howItWorks: [
     {
-      id: "discover",
+      id: "talk",
       step: 1,
-      title: "Scope it",
-      description: "A short call, then a clear outcome, timeline, and range.",
+      title: "Talk",
+      description: "Tell us what you need. A short call is enough to start.",
     },
     {
       id: "build",
       step: 2,
-      title: "Build it",
-      description: "Weekly demos. You keep the repo.",
+      title: "Build",
+      description: "We do the work and show you progress.",
     },
     {
-      id: "launch",
+      id: "handover",
       step: 3,
-      title: "Launch it",
-      description: "Go live, hand off, or keep a retainer.",
+      title: "Hand over",
+      description: "You get the finished work, or we keep it running.",
     },
   ] satisfies HowItWorksStep[],
 
@@ -850,7 +763,7 @@ export const siteConfig = {
       {
         id: "suite",
         label: "Something that works with Beacon products",
-        description: "Connect or extend LookFinesse, ConfiLearn, CadenceApp, ConfiRent, or TriviaYard",
+        description: "Work that connects to ConfiRent, CadenceApp, LookFinesse, or ConfiLearn",
       },
       {
         id: "other",
@@ -891,56 +804,13 @@ export const siteConfig = {
    * Recently shipped — add entries as you release.
    * Optional productId links to products[].
    */
-  changelog: [
-    {
-      id: "cl-1",
-      date: "2026-07",
-      title: "Beacon suite maps to real products",
-      summary:
-        "LookFinesse, ConfiLearn, CadenceApp, and ConfiRent replace placeholder suite cards — wired to real repos where available.",
-      tag: "studio",
-    },
-    {
-      id: "cl-2",
-      date: "2026-06",
-      title: "LookFinesse commerce surface",
-      summary:
-        "Creator marketplace with shop, feed, vendor tools, ads, and M-Pesa / Stripe payment paths in active beta.",
-      productId: "lookfinesse",
-      tag: "improved",
-    },
-    {
-      id: "cl-3",
-      date: "2026-05",
-      title: "ConfiLearn tutor studio",
-      summary:
-        "Course authoring, live sessions, XP / certificates, and M-Pesa payouts for the ConfiLearn learning platform beta.",
-      productId: "confilearn",
-      tag: "shipped",
-    },
-    {
-      id: "cl-4",
-      date: "2026-04",
-      title: "CadenceApp repo linked",
-      summary:
-        "CadenceApp public repo connected; product surface still early. ConfiRent remains a coming-soon stub pending upload.",
-      productId: "cadenceapp",
-      tag: "improved",
-    },
-  ] satisfies ChangelogEntry[],
+  changelog: [] satisfies ChangelogEntry[],
 
-  /** Interactive tech stack — usedIn references product ids */
+  /** Studio tools. Not claimed as the stack of any product. */
   techStack: [
-    { id: "ts", name: "TypeScript", category: "language", usedIn: ["lookfinesse", "confilearn", "cadenceapp"] },
-    { id: "next", name: "Next.js", category: "framework", usedIn: ["lookfinesse"] },
-    { id: "react", name: "React", category: "framework", usedIn: ["lookfinesse", "confilearn"] },
-    { id: "tanstack", name: "TanStack Start", category: "framework", usedIn: ["confilearn"] },
-    { id: "node", name: "Node.js", category: "framework", usedIn: ["lookfinesse", "confilearn"] },
-    { id: "pg", name: "PostgreSQL", category: "data", usedIn: ["lookfinesse", "confilearn"] },
-    { id: "vercel", name: "Vercel", category: "platform", usedIn: ["lookfinesse"] },
-    { id: "cloudflare", name: "Cloudflare", category: "platform", usedIn: ["confilearn"] },
-    { id: "supabase", name: "Supabase", category: "platform", usedIn: ["lookfinesse", "confilearn"] },
-    { id: "figma", name: "Figma", category: "design", usedIn: ["lookfinesse", "confilearn", "cadenceapp", "confirent"] },
+    { id: "ts", name: "TypeScript", category: "language", usedIn: [] },
+    { id: "next", name: "Next.js", category: "framework", usedIn: [] },
+    { id: "react", name: "React", category: "framework", usedIn: [] },
   ] satisfies TechStackItem[],
 
   /**
@@ -1085,11 +955,11 @@ export const siteConfig = {
     enabled: true,
     name: "Glow",
     greeting:
-      "Hey — I'm Glow. Ask about AI automation, our cloud apps, pricing, or how to start a project.",
+      "Hi, I'm Glow. Ask about our products, automation, pricing, or how to start.",
     suggestedQuestions: [
-      "What is AI automation?",
-      "How does an automation pilot work?",
-      "What is ConfiLearn?",
+      "What is ConfiRent?",
+      "What is CadenceApp?",
+      "How much does automation cost?",
       "How do I start a project?",
     ],
   },
@@ -1125,93 +995,16 @@ export const siteConfig = {
       company: "The Beacon Studio",
       period: "2024 — Present",
       description:
-        "Building The Beacon Studio product suite and shipping custom software for clients — from discovery to launch.",
-      tags: ["Product", "SaaS", "Client work"],
-      logo: "/images/experience/company-1.svg",
+        "Builds The Beacon Studio products and takes on AI automation and custom software.",
+      tags: ["Products", "Automation", "Custom software"],
       accent: "cyan" as const,
       current: true,
     },
-    {
-      id: "exp-2",
-      role: "Software Developer",
-      company: "Previous Company",
-      period: "2022 — 2024",
-      description:
-        "Grew fast, shipped features end-to-end, and helped the team move quicker with cleaner code and better CI.",
-      tags: ["JavaScript", "REST APIs", "PostgreSQL"],
-      logo: "/images/experience/company-2.svg",
-      accent: "coral" as const,
-    },
-    {
-      id: "exp-3",
-      role: "Freelance / Independent",
-      company: "Independent",
-      period: "2021 — 2022",
-      description:
-        "Shipped client sites and side projects end-to-end — learned that great software starts with listening.",
-      tags: ["Next.js", "Tailwind CSS", "Figma"],
-      logo: "/images/experience/company-3.svg",
-      accent: "amber" as const,
-    },
   ] satisfies ExperienceEntry[],
 
-  testimonials: [
-    {
-      id: "t-1",
-      quote:
-        "Max doesn't just write code — he brings clarity to every standup and makes the whole team better. Delivered ahead of schedule, too.",
-      author: "Colleague Name",
-      role: "Engineering Lead",
-      avatar: "/images/testimonials/avatar-1.jpg",
-    },
-    {
-      id: "t-2",
-      quote:
-        "He turned our vague idea into something our users genuinely love. Sharp, reliable, and easy to work with.",
-      author: "Client Name",
-      role: "Product Manager",
-      avatar: "/images/testimonials/avatar-2.jpg",
-    },
-  ] satisfies Testimonial[],
+  testimonials: [] as Testimonial[],
 
-  projects: [
-    {
-      id: "case-lookfinesse",
-      title: "LookFinesse (product)",
-      description:
-        "Fashion, beauty & fitness social commerce — shop, creators, vendor ops, and Kenya-ready payments.",
-      tags: ["Next.js", "Supabase", "Stripe", "M-Pesa"],
-      liveUrl: "https://lookfinesseke-0cf56b906a55.herokuapp.com/",
-      githubUrl: "",
-      image: "/images/projects/lookfinesse.svg",
-      comingSoon: true,
-      kind: "product" as const,
-    },
-    {
-      id: "case-confilearn",
-      title: "ConfiLearn (product)",
-      description:
-        "Live + on-demand learning with tutor studio, XP, certificates, and M-Pesa creator payouts.",
-      tags: ["TanStack Start", "Supabase", "EdTech"],
-      liveUrl: "",
-      githubUrl: "https://github.com/MaximaKenya/luminouslms",
-      image: "/images/projects/confilearn.svg",
-      comingSoon: true,
-      kind: "product" as const,
-    },
-    {
-      id: "case-mvp",
-      title: "SaaS MVP launch",
-      description:
-        "Placeholder case study: discovery → MVP → launch for a founder who needed a shippable product in weeks.",
-      tags: ["Next.js", "Auth", "Cloud"],
-      liveUrl: "",
-      githubUrl: "",
-      image: "/images/projects/project-three.jpg",
-      comingSoon: true,
-      kind: "client" as const,
-    },
-  ] satisfies Project[],
+  projects: [] as Project[],
 
   skillRadar: [
     { name: "Frontend", level: 90 },
@@ -1226,9 +1019,9 @@ export const siteConfig = {
   achievements: [] as string[],
 
   nowPlaying: [
-    { id: "np-1", type: "Building", label: "LookFinesse & TriviaYard live · ConfiLearn beta" },
-    { id: "np-2", type: "Open", label: "Custom client builds" },
-    { id: "np-3", type: "Focus", label: "Cloud SaaS & TypeScript" },
+    { id: "np-1", type: "Live", label: "ConfiRent is in soft launch" },
+    { id: "np-2", type: "Beta", label: "CadenceApp is in early access" },
+    { id: "np-3", type: "Open", label: "Automation and custom software" },
   ],
 
   notes: [
@@ -1256,7 +1049,7 @@ export const siteConfig = {
   ],
 
   footer: {
-    note: "Software product studio · Nairobi · EAT.",
+    note: "Software studio · Nairobi · EAT.",
     legal: [
       { label: "Privacy", href: "#" },
       { label: "Terms", href: "#" },

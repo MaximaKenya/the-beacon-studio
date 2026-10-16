@@ -23,13 +23,13 @@ export async function GET() {
         _meta: {
           type: "product",
           status: product.status,
-          docsUrl: product.docsUrl,
+          docsUrl: "docsUrl" in product ? product.docsUrl : undefined,
           image: product.image,
         },
       })),
       ...siteConfig.projects.map((project) => ({
         id: project.id,
-        url: project.liveUrl || `${siteConfig.seo.siteUrl}/#work`,
+        url: project.liveUrl || `${siteConfig.seo.siteUrl}/#products`,
         title: project.title,
         content_text: project.description,
         tags: project.tags,

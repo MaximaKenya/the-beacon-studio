@@ -18,13 +18,13 @@ export function SectionHeading({
 }: SectionHeadingProps) {
   const Title = as;
   return (
-    <div className="relative mb-14 max-w-2xl">
+    <div className="relative mb-10 max-w-2xl">
       <div className="mb-3 inline-flex items-center gap-2 font-mono text-xs uppercase tracking-[0.25em] text-accent">
         <span className="h-1 w-1 rounded-full bg-accent" aria-hidden />
         {label}
       </div>
 
-      <Title className="font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl lg:text-5xl">
+      <Title className="font-display text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
         {title}
         {accent && (
           <span className="ml-2 inline-block text-accent-warm" aria-hidden>

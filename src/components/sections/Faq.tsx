@@ -11,7 +11,7 @@ export function Faq() {
   const baseId = useId();
 
   return (
-    <section id="faq" className="relative overflow-hidden py-28 lg:py-40">
+    <section id="faq" className="relative border-t border-border py-20 lg:py-28">
       <div className="relative mx-auto max-w-3xl px-6 lg:px-8">
         <ScrollReveal>
           <SectionHeading

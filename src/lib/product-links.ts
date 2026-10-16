@@ -1,13 +1,11 @@
 import type { Product } from "@/data/site";
 
 /**
- * Public "Open [Product]" destination:
- * liveUrl → githubUrl → on-site product page.
- * Never invents a production URL.
+ * Public visit link. Live URL only.
+ * Coming-soon products stay on the site (notify / contact). A public repo is separate.
  */
 export function getProductOpenHref(product: Product): string {
   if (product.liveUrl) return product.liveUrl;
-  if (product.githubUrl) return product.githubUrl;
   return `/products/${product.id}`;
 }
 

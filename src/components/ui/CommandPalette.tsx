@@ -21,7 +21,6 @@ import {
   Calendar,
   Rocket,
   Boxes,
-  Activity,
 } from "lucide-react";
 import { siteConfig } from "@/data/site";
 import { useFeatures } from "@/providers/FeatureProvider";
@@ -193,26 +192,15 @@ export function CommandPaletteProvider({ children }: { children: ReactNode }) {
           ]
         : []),
       {
-        id: "suite-status",
-        label: "View suite status",
-        group: "Studio",
-        icon: <Activity className="h-4 w-4" aria-hidden />,
+        id: "go-automation",
+        label: "AI Automation",
+        group: "Pages",
+        icon: <Bot className="h-4 w-4" aria-hidden />,
         action: () => {
-          document.getElementById("constellation")?.scrollIntoView({ behavior: "smooth" });
+          window.location.href = "/automation";
           setOpen(false);
         },
-        keywords: "status operational suite health",
-      },
-      {
-        id: "go-estimator",
-        label: "Open timeline estimator",
-        group: "Studio",
-        icon: <Rocket className="h-4 w-4" aria-hidden />,
-        action: () => {
-          document.getElementById("estimator")?.scrollIntoView({ behavior: "smooth" });
-          setOpen(false);
-        },
-        keywords: "estimate timeline weeks scope roi",
+        keywords: "automation ai workflow audit whatsapp",
       },
       ...socialItems,
     ];

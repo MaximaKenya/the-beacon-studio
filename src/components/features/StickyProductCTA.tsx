@@ -1,6 +1,6 @@
 "use client";
 
-import { Calendar, Mail, Rocket } from "lucide-react";
+import { Bell, Calendar, Mail } from "lucide-react";
 import type { Product } from "@/data/site";
 import { useFeatures } from "@/providers/FeatureProvider";
 import { trackEvent } from "@/lib/analytics";
@@ -10,8 +10,8 @@ import { mailtoHref, trackEmailClick } from "@/lib/contact-actions";
  * Sticky CTA bar on product detail pages — request access / book / email.
  */
 export function StickyProductCTA({ product }: { product: Product }) {
-  const { openIntake, openBooking } = useFeatures();
-  const isLive = Boolean(product.liveUrl);
+  const { openNewsletter, openBooking } = useFeatures();
+  const isOpen = Boolean(product.liveUrl);
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-[140] border-t border-border/70 bg-background/90 px-4 py-3 backdrop-blur-xl supports-[backdrop-filter]:bg-background/75">
@@ -23,7 +23,7 @@ export function StickyProductCTA({ product }: { product: Product }) {
           <p className="truncate text-xs text-muted">{product.tagline}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          {isLive ? (
+          {isOpen ? (
             <a
               href={product.liveUrl}
               target="_blank"
@@ -33,19 +33,19 @@ export function StickyProductCTA({ product }: { product: Product }) {
               }
               className="inline-flex h-10 items-center gap-1.5 whitespace-nowrap rounded-xl bg-accent px-4 text-sm font-semibold text-background hover:bg-accent-hover"
             >
-              Open app
+              Visit site
             </a>
           ) : (
             <button
               type="button"
               onClick={() => {
-                trackEvent("product_request_access", { product: product.id, source: "sticky" });
-                openIntake();
+                trackEvent("product_notify", { product: product.id, source: "sticky" });
+                openNewsletter();
               }}
               className="inline-flex h-10 items-center gap-1.5 whitespace-nowrap rounded-xl bg-accent px-4 text-sm font-semibold text-background hover:bg-accent-hover"
             >
-              <Rocket className="h-3.5 w-3.5" aria-hidden />
-              Request access
+              <Bell className="h-3.5 w-3.5" aria-hidden />
+              Get notified
             </button>
           )}
           <button
