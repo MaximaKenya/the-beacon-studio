@@ -6,6 +6,7 @@ import { Footer } from "@/components/layout/Footer";
 import { OrganizationJsonLd } from "@/components/seo/OrganizationJsonLd";
 import { FaqJsonLd } from "@/components/seo/FaqJsonLd";
 import { Providers } from "@/providers/Providers";
+import { WaveField } from "@/components/ui/WaveField";
 import "./globals.css";
 
 const plusJakarta = Plus_Jakarta_Sans({
@@ -77,6 +78,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col bg-background font-sans text-foreground antialiased">
+        <WaveField />
         <a
           href="#main"
           className="absolute left-4 top-4 z-[300] -translate-y-[200%] rounded-2xl bg-accent px-4 py-2 text-sm font-medium text-background transition-transform focus:translate-y-0 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-background"

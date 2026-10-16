@@ -21,7 +21,7 @@ export default function OpenGraphImage() {
           height: "100%",
           display: "flex",
           alignItems: "center",
-          background: "#1e2330",
+          background: "#140e24",
           padding: "72px 80px",
         }}
       >
@@ -33,16 +33,16 @@ export default function OpenGraphImage() {
             alignItems: "center",
             justifyContent: "center",
             borderRadius: 48,
-            background: "#262c3a",
+            background: "#2a1848",
             marginRight: 56,
           }}
         >
           <svg width="150" height="150" viewBox="0 0 32 32" fill="none">
             <path d={BEACON_BEAM_LEFT} fill="#45baab" />
             <path d={BEACON_BEAM_RIGHT} fill="#45baab" />
-            <path d={BEACON_TOWER} fill="#e6e8ee" />
-            <path d={BEACON_BASE} fill="#e6e8ee" />
-            <path d={BEACON_LANTERN} fill="#e6e8ee" />
+            <path d={BEACON_TOWER} fill="#f6f3ff" />
+            <path d={BEACON_BASE} fill="#f6f3ff" />
+            <path d={BEACON_LANTERN} fill="#f6f3ff" />
             <circle cx={BEACON_LIGHT.cx} cy={BEACON_LIGHT.cy} r={BEACON_LIGHT.r} fill="#45baab" />
           </svg>
         </div>
@@ -62,7 +62,7 @@ export default function OpenGraphImage() {
               marginTop: 12,
               fontSize: 72,
               lineHeight: 1.05,
-              color: "#e6e8ee",
+              color: "#f6f3ff",
               fontWeight: 700,
             }}
           >
@@ -72,7 +72,7 @@ export default function OpenGraphImage() {
             style={{
               marginTop: 20,
               fontSize: 28,
-              color: "#a7adbd",
+              color: "#b9b4d0",
               maxWidth: 640,
             }}
           >

@@ -50,7 +50,7 @@ export function BeaconWordmark({
   const displayName = siteConfig.brand.name;
 
   return (
-    <span className={`inline-flex items-center ${s.gap} text-foreground ${className}`}>
+    <span className={`inline-flex items-center ${s.gap} text-heading ${className}`}>
       <span className="relative flex shrink-0 items-center justify-center" aria-hidden>
         <BeaconMark size={s.mark} />
       </span>

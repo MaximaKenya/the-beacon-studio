@@ -22,16 +22,16 @@ export default function Icon() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          background: "#1e2330",
+          background: "#140e24",
           borderRadius: 8,
         }}
       >
         <svg width="26" height="26" viewBox="0 0 32 32" fill="none">
           <path d={BEACON_BEAM_LEFT} fill="#45baab" />
           <path d={BEACON_BEAM_RIGHT} fill="#45baab" />
-          <path d={BEACON_TOWER} fill="#e6e8ee" />
-          <path d={BEACON_BASE} fill="#e6e8ee" />
-          <path d={BEACON_LANTERN} fill="#e6e8ee" />
+          <path d={BEACON_TOWER} fill="#f6f3ff" />
+          <path d={BEACON_BASE} fill="#f6f3ff" />
+          <path d={BEACON_LANTERN} fill="#f6f3ff" />
           <circle cx={BEACON_LIGHT.cx} cy={BEACON_LIGHT.cy} r={BEACON_LIGHT.r} fill="#45baab" />
         </svg>
       </div>
