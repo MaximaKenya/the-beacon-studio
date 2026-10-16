@@ -28,7 +28,12 @@ export type Product = {
   statusLabel: string;
   /** Who the product is for */
   audience: string;
+  /** Short benefit lines for the product card (aim for four). */
   features: string[];
+  /** Longer feature list for the product page and assistant. */
+  keyFeatures?: string[];
+  /** One pricing line. Omit when there is no public price. */
+  pricing?: string;
 };
 
 export type Service = {
@@ -248,40 +253,60 @@ const products: Product[] = [
     name: "ConfiRent",
     tagline: "Property management with confidence",
     description:
-      "Kenyan property platform to find, rent, buy and manage homes in one place. Landlords, agents, agencies and developers list verified properties and run tenancies; tenants pay rent by M-Pesa or card, message landlords and track statements.",
+      "Find, rent, buy, and manage property in Kenya from one place. Landlords collect rent by M-Pesa or card with nothing taken off the top, and people looking for a home see listings from verified listers.",
     tags: ["Property", "M-Pesa", "Kenya"],
     status: "live" as ProductStatus,
     statusLabel: "Live · soft launch",
     operationalStatus: "operational" as OperationalStatus,
-    audience: "Tenants, buyers, landlords, agents, developers, and service providers.",
+    audience:
+      "People looking for a home, landlords, agents and agencies, developers, and short-stay guests.",
     features: [
-      "Verified listings with ID checks",
-      "Rent collection via M-Pesa or card, with statements and payment plans",
-      "In-app messaging and group notices",
-      "ConfiRent AI assistant",
+      "Rent goes by M-Pesa or card straight to the landlord's account. ConfiRent takes 0% of rent.",
+      "Each payment is matched to the tenancy, so you can see who has paid, who owes, and pull statements and receipts.",
+      "Listers are checked with an ID, a selfie, and a KRA PIN, then reviewed by an admin.",
+      "Message one-to-one for free on every plan, and ask the assistant about rent, plans, and listings.",
     ],
+    keyFeatures: [
+      "Rent is collected by M-Pesa (STK prompt) or card and paid straight to the landlord's payout account. ConfiRent takes 0% of rent.",
+      "Each payment is matched to the tenancy. See who has paid and who owes, with statements, receipts, and landlord-approved payment plans.",
+      "Verified listers: ID, selfie, and KRA PIN, reviewed by an admin, to stop fake listings and scams.",
+      "Free 1:1 in-app messaging on every plan. Landlords also get group chat and broadcast notices.",
+      "A ConfiRent AI assistant for questions about rent, payment plans, and listings. You can install it as a phone app.",
+      "Agents and agencies get team seats. Developers get project pages. Short-stay guests can book without an account. Privacy follows Kenya's Data Protection Act.",
+    ],
+    pricing:
+      "Landlords start free; paid plans from KES 2,999/month. Agents free for 3 listings. Featured listings from KES 300/week.",
     liveUrl: "https://www.confirent.co.ke",
-    image: "/images/products/confirent-login.jpg",
-    imageAlt: "ConfiRent sign-in screen on a phone",
+    image: "/images/products/confirent-desktop.jpg",
+    imageAlt: "ConfiRent homepage on a desktop, with search and a featured listing",
   },
   {
     id: "cadenceapp",
     name: "CadenceApp",
-    tagline: "The unified operations platform for customer teams.",
+    tagline: "The unified operations platform for customer teams",
     description:
-      "Brings collections, calling, messaging and AI automation into one workspace. Teams load accounts, call and message customers, track promises and payments, and let AI handle repetitive replies and reports.",
+      "Replace a dialer, debtor spreadsheets, WhatsApp, email, and a separate CRM with one workspace. Call, chase payments, message customers, and let AI handle repetitive replies from the same place.",
     tags: ["Collections", "Calling", "Messaging"],
     status: "beta" as ProductStatus,
     statusLabel: "Beta / early access",
     operationalStatus: "operational" as OperationalStatus,
     audience:
-      "Collections agencies, BPOs, contact centres, and any business with customer-facing teams.",
+      "Customer teams that currently split work across a dialer, spreadsheets, WhatsApp, email, and a CRM.",
     features: [
-      "Dialer with campaigns (manual, power, or auto) and inbound routing",
-      "Collections with debtor history, promise-to-pay tracking, and audit trails you can export to PDF or Excel",
-      "AI replies on email, WhatsApp, and SMS, plus automatic KPI reports",
-      "Pay per module, with a 14-day free trial",
+      "Dial manually, in power mode, or on auto, on office lines, cloud voice, or the agent's mobile, including Kenyan numbers.",
+      "Returned calls go to the account owner, an inbound team, or any free agent, with the account open. Missed calls become callbacks.",
+      "Keep a full debtor profile, track promises to pay, and set payment plans or settlement offers, with a suggested next step.",
+      "AI replies to email and WhatsApp, answers pricing questions, and builds reports from your own knowledge base, with a spending cap.",
     ],
+    keyFeatures: [
+      "Dialer with manual, power, and auto modes. It works with office PBX or GSM lines, cloud voice, or the agent's mobile, and handles Kenyan number formats.",
+      "Smart inbound routing sends a returned call to the account owner, an inbound team, or any free agent, and opens the account on screen. Missed calls become callbacks.",
+      "Collections keeps full debtor profiles, promise-to-pay tracking, payment plans, settlement offers, and a suggested next step.",
+      "Allocate work and launch campaigns in a few clicks.",
+      "AI Automation also works on its own. It replies to email and WhatsApp, answers pricing enquiries, fills KPIs, and builds reports from each organisation's knowledge base. Choose draft-for-review or auto-send, with a spending cap and an hours-saved dashboard.",
+      "A tamper-evident audit trail records who, role, IP, time, and the before and after, and exports to a branded PDF or Excel. Modules are Collections, Dialer, Communications, AI Automation, CRM, Finance, HR, and Teams. Each organisation has its own branding.",
+    ],
+    pricing: "Per-seat pricing, pay only for the modules you use. 14-day free trial.",
     liveUrl: "https://www.cadenceapp.co.ke",
     image: "/images/products/cadenceapp-home.jpg",
     imageAlt: "CadenceApp home page on a desktop",
@@ -401,12 +426,15 @@ export const siteConfig = {
     twitterHandle: "@yourusername",
     title: "The Beacon Studio — Products and custom software",
     description:
-      "Nairobi software studio. ConfiRent and CadenceApp are open now. LookFinesse and ConfiLearn are coming soon. We also do AI automation, custom software, and outsourced IT.",
+      "Nairobi software studio. ConfiRent helps you find, rent, buy, and manage property in Kenya. CadenceApp is one workspace for customer teams. LookFinesse and ConfiLearn are coming soon. We also do AI automation, custom software, and outsourced IT.",
     keywords: [
       "The Beacon Studio",
       "Beacon",
       "ConfiRent",
+      "property management Kenya",
+      "M-Pesa rent collection",
       "CadenceApp",
+      "collections dialer Kenya",
       "LookFinesse",
       "ConfiLearn",
       "AI automation Kenya",
@@ -415,7 +443,6 @@ export const siteConfig = {
       "managed IT Kenya",
       "Microsoft 365 support Kenya",
       "backup and disaster recovery",
-      "property management Kenya",
       "Nairobi software studio",
     ],
   },
@@ -736,6 +763,18 @@ export const siteConfig = {
       question: "Which products can I use now?",
       answer:
         "ConfiRent is live (soft launch) at confirent.co.ke. CadenceApp is in beta at cadenceapp.co.ke. LookFinesse and ConfiLearn are coming soon — ask us to notify you.",
+    },
+    {
+      id: "faq-7",
+      question: "What is ConfiRent?",
+      answer:
+        "ConfiRent is a Kenyan platform to find, rent, buy, and manage property. It is in soft launch at confirent.co.ke. Landlords collect rent by M-Pesa or card, and ConfiRent takes 0% of rent. Listings come from listers checked with an ID, a selfie, and a KRA PIN. Messaging is free on every plan. Landlords start free; paid plans from KES 2,999/month. Agents free for 3 listings. Featured listings from KES 300/week.",
+    },
+    {
+      id: "faq-8",
+      question: "What is CadenceApp?",
+      answer:
+        "CadenceApp is in early access at cadenceapp.co.ke. It replaces a separate dialer, debtor spreadsheets, WhatsApp, email, and CRM with one workspace for calling, collections, messages, and AI replies on email and WhatsApp. Per-seat pricing, pay only for the modules you use. 14-day free trial.",
     },
     {
       id: "faq-5",

@@ -8,8 +8,13 @@ export function OrganizationJsonLd() {
     name: product.name,
     applicationCategory: "BusinessApplication",
     operatingSystem: "Web",
-    description: product.description,
+    description: product.pricing
+      ? `${product.description} ${product.pricing}`
+      : product.description,
     url: product.liveUrl || `${baseUrl}/products/${product.id}`,
+    ...(product.pricing
+      ? { offers: { "@type": "Offer", description: product.pricing } }
+      : {}),
   }));
 
   const jsonLd = {

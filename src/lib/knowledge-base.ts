@@ -503,8 +503,11 @@ export function getKnowledgeResponse(userMessage: string): KnowledgeResponse {
       trimmed.toLowerCase().includes(mentioned.id);
 
     if (productFocused) {
+      const featureLines = (mentioned.keyFeatures ?? mentioned.features)
+        .map((feature) => `• ${feature}`)
+        .join("\n");
       return {
-        reply: `**${mentioned.name}** (${mentioned.statusLabel})\n${mentioned.description}\nFor: ${mentioned.audience}\n\n${mentioned.features.map((feature) => `• ${feature}`).join("\n")}\n\n• Page: [/products/${mentioned.id}](/products/${mentioned.id})${mentioned.liveUrl ? `\n• Site: ${mentioned.liveUrl}` : "\n• Not open yet. [Get notified or contact us](/#contact)."}`,
+        reply: `**${mentioned.name}** (${mentioned.statusLabel}) — ${mentioned.tagline}\n${mentioned.description}\nWho it's for: ${mentioned.audience}\n\n${featureLines}${mentioned.pricing ? `\n\nPricing: ${mentioned.pricing}` : ""}\n\n• Page: [/products/${mentioned.id}](/products/${mentioned.id})${mentioned.liveUrl ? `\n• Site: ${mentioned.liveUrl}` : "\n• Not open yet. [Get notified or contact us](/#contact)."}`,
         confidence: 0.95,
         intent: "products",
         source: "knowledge-base",
