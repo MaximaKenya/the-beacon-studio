@@ -103,11 +103,13 @@ export async function createQuotation(input: {
   client: ClientRecord;
 }): Promise<QuotationRecord> {
   const { project, client } = input;
-  const depositPercent = project.depositPercent ?? getDepositPercent();
-  const costFrom = project.costFrom ?? 800;
-  const costTo = project.costTo ?? 3000;
-  const depositAmount =
-    project.depositAmount ?? Math.round(costFrom * (depositPercent / 100) * 100) / 100;
+  const quoteOnly = project.costFrom === 0 && project.costTo === 0;
+  const depositPercent = quoteOnly ? 0 : (project.depositPercent ?? getDepositPercent());
+  const costFrom = quoteOnly ? 0 : (project.costFrom ?? 800);
+  const costTo = quoteOnly ? 0 : (project.costTo ?? 3000);
+  const depositAmount = quoteOnly
+    ? 0
+    : (project.depositAmount ?? Math.round(costFrom * (depositPercent / 100) * 100) / 100);
   const now = new Date();
   const id = randomUUID();
   const clientSlug = slugifyFilename(client.name);
@@ -127,7 +129,14 @@ export async function createQuotation(input: {
     projectTypeLabel: typeLabel(project.projectType),
     budgetLabel: budgetLabel(project.budget),
     timelineLabel: timelineLabel(project.timeline),
-    lineItems: [
+    lineItems: quoteOnly
+      ? [
+          {
+            label: typeLabel(project.projectType),
+            detail: "Quoted after a free assessment. No price until we look at the setup.",
+          },
+        ]
+      : [
       {
         label: "Discovery & scope lock",
         detail: "Kickoff call, requirements, success criteria",

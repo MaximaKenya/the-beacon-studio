@@ -95,7 +95,7 @@ function LoginForm() {
           Client portal
         </h1>
         <p className="mt-2 text-sm text-muted">
-          Sign in with the email from your project intake — we&apos;ll issue a one-time code.
+          Sign in with the email you used to contact us. We&apos;ll issue a one-time code.
         </p>
       </div>
 
@@ -114,7 +114,7 @@ function LoginForm() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full rounded-xl border border-border bg-background/60 py-2.5 pl-10 pr-4 text-sm focus:border-accent/50 focus:outline-none"
+                  className="w-full rounded-xl border border-border bg-surface py-2.5 pl-10 pr-4 text-sm text-foreground placeholder:text-muted focus:border-accent/50 focus:outline-none"
                   autoComplete="email"
                 />
               </div>
@@ -188,7 +188,7 @@ function LoginForm() {
                   required
                   value={code}
                   onChange={(e) => setCode(e.target.value)}
-                  className="w-full rounded-xl border border-border bg-background/60 py-2.5 pl-10 pr-4 font-mono text-sm tracking-widest focus:border-accent/50 focus:outline-none"
+                  className="w-full rounded-xl border border-border bg-surface py-2.5 pl-10 pr-4 font-mono text-sm tracking-widest text-foreground placeholder:text-muted focus:border-accent/50 focus:outline-none"
                   autoComplete="one-time-code"
                 />
               </div>

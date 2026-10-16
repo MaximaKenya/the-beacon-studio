@@ -8,7 +8,7 @@ import { siteConfig } from "@/data/site";
 export const metadata: Metadata = {
   title: "Brand mark",
   description:
-    "The Beacon Studio logo — Beacon Dot default, four concepts, and Canva export links.",
+    "The Beacon Studio lighthouse mark, for light and dark backgrounds.",
   robots: { index: false, follow: false },
 };
 
@@ -20,9 +20,9 @@ export default function BrandPage() {
         The Beacon Studio mark
       </h1>
       <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted sm:text-base">
-        Default identity is <strong className="text-foreground">Beacon Dot</strong> — a rounded
-        app tile with a custom geometric B and a solid signal disc. Built for favicons, headers,
-        PDFs, and Canva export. Solid shapes only; no glow.
+        The mark is a small lighthouse: a tower, a lamp, and two beams. It uses the text color
+        for the tower and the accent for the light, so the same SVG works on light and dark
+        backgrounds. Solid shapes only, so it stays clear at favicon size.
       </p>
 
       <section className="mt-12">

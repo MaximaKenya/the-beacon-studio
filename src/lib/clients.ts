@@ -9,6 +9,7 @@ export type ClientRecord = {
   email: string;
   name: string;
   company?: string;
+  phone?: string;
   createdAt: string;
   updatedAt: string;
   accessToken?: string;
@@ -33,6 +34,7 @@ export async function upsertClient(input: {
   email: string;
   name: string;
   company?: string;
+  phone?: string;
   accessToken?: string;
 }): Promise<ClientRecord> {
   const all = await listClients();
@@ -45,6 +47,7 @@ export async function upsertClient(input: {
       ...existing,
       name: input.name || existing.name,
       company: input.company ?? existing.company,
+      phone: input.phone || existing.phone,
       accessToken: input.accessToken ?? existing.accessToken,
       updatedAt: now,
     };
@@ -59,6 +62,7 @@ export async function upsertClient(input: {
     email,
     name: input.name,
     company: input.company,
+    phone: input.phone,
     createdAt: now,
     updatedAt: now,
     accessToken: input.accessToken,

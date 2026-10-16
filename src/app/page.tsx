@@ -4,6 +4,7 @@ import { Services } from "@/components/sections/Services";
 import { HowItWorks } from "@/components/sections/HowItWorks";
 import { Pricing } from "@/components/sections/Pricing";
 import { Faq } from "@/components/sections/Faq";
+import { PublicReviews } from "@/components/sections/PublicReviews";
 import { Contact } from "@/components/sections/Contact";
 
 export default function Home() {
@@ -15,6 +16,7 @@ export default function Home() {
       <HowItWorks />
       <Pricing />
       <Faq />
+      <PublicReviews />
       <Contact />
     </>
   );

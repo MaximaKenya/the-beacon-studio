@@ -9,8 +9,11 @@ type ContactSubmission = {
   createdAt: string;
   name: string;
   email: string;
+  phone?: string;
+  topic?: string;
   message: string;
   read?: boolean;
+  status?: string;
 };
 
 /**
@@ -21,6 +24,8 @@ export async function POST(request: Request) {
     const body = await parseRequestJson(request);
     const name = typeof body.name === "string" ? body.name.trim() : "";
     const email = typeof body.email === "string" ? body.email.trim() : "";
+    const phone = typeof body.phone === "string" ? body.phone.trim() : "";
+    const topic = typeof body.topic === "string" ? body.topic.trim() : "";
     const message = typeof body.message === "string" ? body.message.trim() : "";
 
     if (!name || !email || !message) {
@@ -32,9 +37,15 @@ export async function POST(request: Request) {
       createdAt: new Date().toISOString(),
       name,
       email,
+      ...(phone ? { phone } : {}),
+      ...(topic ? { topic } : {}),
       message,
       read: false,
+      status: "new",
     };
+
+    const { upsertClient } = await import("@/lib/clients");
+    await upsertClient({ email, name, ...(phone ? { phone } : {}) });
 
     const all = await readJsonFile<ContactSubmission[]>("contacts.json", []);
     all.unshift(entry);

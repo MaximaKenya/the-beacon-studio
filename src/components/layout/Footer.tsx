@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { Github, Linkedin, Mail, Phone } from "lucide-react";
+import { Linkedin, Mail, Phone } from "lucide-react";
 import { siteConfig } from "@/data/site";
 import { BeaconWordmark } from "@/components/brand/BeaconWordmark";
 import { SuiteLine } from "@/components/brand/SuiteLine";
@@ -10,7 +10,6 @@ import { trackEvent } from "@/lib/analytics";
 import { mailtoHref, phoneHref, trackCallClick, trackEmailClick } from "@/lib/contact-actions";
 
 const iconMap = {
-  github: Github,
   linkedin: Linkedin,
   email: Mail,
   twitter: Mail,
