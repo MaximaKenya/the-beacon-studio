@@ -13,7 +13,6 @@ import {
   Command,
   Copy,
   ExternalLink,
-  Github,
   Linkedin,
   Mail,
   Search,
@@ -94,9 +93,7 @@ export function CommandPaletteProvider({ children }: { children: ReactNode }) {
       label: `Open ${link.name}`,
       group: "Social",
       icon:
-        link.icon === "github" ? (
-          <Github className="h-4 w-4" aria-hidden />
-        ) : link.icon === "linkedin" ? (
+        link.icon === "linkedin" ? (
           <Linkedin className="h-4 w-4" aria-hidden />
         ) : (
           <Mail className="h-4 w-4" aria-hidden />

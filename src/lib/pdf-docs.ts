@@ -109,9 +109,12 @@ const PRINT_STYLES = `
 
 function markSvg(): string {
   return `<svg width="28" height="28" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <path d="M11 4H21A7 7 0 0 1 28 11V21A7 7 0 0 1 21 28H11A7 7 0 0 1 4 21V11A7 7 0 0 1 11 4Z" fill="#0f172a"/>
-  <path fill-rule="evenodd" d="M16 7.6L24.4 24.2H7.6L16 7.6ZM14.15 24.2L16 20.55L17.85 24.2H14.15Z" fill="#0d9488"/>
-  <circle cx="16" cy="22.75" r="1.9" fill="#0d9488"/>
+  <path d="M13.7 9.55 2.15 5.85l2.15 4.85 9.4.55Z" fill="#0d9488"/>
+  <path d="M18.3 9.55 29.85 5.85l-2.15 4.85-9.4.55Z" fill="#0d9488"/>
+  <path d="M13.25 13.55h5.5l1.85 12.05H11.4l1.85-12.05Z" fill="#0b1220"/>
+  <path d="M9.35 25.45h13.3v2.05c0 .7-.55 1.25-1.25 1.25h-10.8c-.7 0-1.25-.55-1.25-1.25v-2.05Z" fill="#0b1220"/>
+  <path d="M12.15 7.35h7.7c.9 0 1.6.7 1.6 1.6v3.15c0 .9-.7 1.6-1.6 1.6h-7.7c-.9 0-1.6-.7-1.6-1.6V8.95c0-.9.7-1.6 1.6-1.6Z" fill="#0b1220"/>
+  <circle cx="16" cy="10.45" r="1.7" fill="#0d9488"/>
 </svg>`;
 }
 
@@ -209,17 +212,22 @@ export async function downloadQuotationPdf(quote: QuotationRecord): Promise<void
   pdf.setFont("helvetica", "bold");
   pdf.setFontSize(12);
   pdf.setTextColor(INK.r, INK.g, INK.b);
-  pdf.text("Estimated cost range", 40, y);
+  const quoteOnly = quote.costFrom === 0 && quote.costTo === 0;
+  pdf.text(quoteOnly ? "Price" : "Estimated cost range", 40, y);
   pdf.text(
-    `${money(quote.costFrom, quote.currency)} – ${money(quote.costTo, quote.currency)}`,
+    quoteOnly
+      ? "Quoted after a free assessment"
+      : `${money(quote.costFrom, quote.currency)} – ${money(quote.costTo, quote.currency)}`,
     pageW - 40,
     y,
     { align: "right" }
   );
   y += 20;
-  pdf.setTextColor(ACCENT.r, ACCENT.g, ACCENT.b);
-  pdf.text(`${quote.depositPercent}% deposit due to kick off`, 40, y);
-  pdf.text(money(quote.depositAmount, quote.currency), pageW - 40, y, { align: "right" });
+  if (!quoteOnly) {
+    pdf.setTextColor(ACCENT.r, ACCENT.g, ACCENT.b);
+    pdf.text(`${quote.depositPercent}% deposit due to kick off`, 40, y);
+    pdf.text(money(quote.depositAmount, quote.currency), pageW - 40, y, { align: "right" });
+  }
 
   y += 28;
   pdf.setFont("helvetica", "normal");
@@ -263,7 +271,7 @@ export function quotationHtml(quote: QuotationRecord): string {
         `<tr><td><strong>${escapeHtml(i.label)}</strong><br/><span class="meta">${escapeHtml(i.detail || "")}</span></td><td style="text-align:right">${i.amountFrom != null ? `$${i.amountFrom}–$${i.amountTo}` : ""}</td></tr>`
     )
     .join("")}</table>
-<p class="total">Cost range: $${quote.costFrom} – $${quote.costTo}<br/>${quote.depositPercent}% deposit: $${quote.depositAmount}</p>
+<p class="total">${quote.costFrom === 0 && quote.costTo === 0 ? "Quoted after a free assessment" : `Cost range: $${quote.costFrom} – $${quote.costTo}<br/>${quote.depositPercent}% deposit: $${quote.depositAmount}`}</p>
 <p class="meta">Generated for print · ${siteConfig.brand.name}</p>
 </body></html>`;
 }

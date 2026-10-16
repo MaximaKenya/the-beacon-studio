@@ -68,6 +68,7 @@ export function BookingModal() {
   }, [bookingOpen, bookingMeetingType]);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [message, setMessage] = useState("");
   const [booked, setBooked] = useState<BookedSlot[]>([]);
   const [loading, setLoading] = useState(false);
@@ -126,6 +127,7 @@ export function BookingModal() {
             time: selectedTime,
             name,
             email,
+            phone: phone || undefined,
             message: message || undefined,
             meetingType,
           }),
@@ -283,7 +285,7 @@ export function BookingModal() {
                   </p>
 
                   <div>
-                    <label htmlFor="booking-name" className="mb-1.5 block text-sm font-medium">
+                    <label htmlFor="booking-name" className="mb-1.5 block text-sm font-medium text-foreground">
                       Name
                     </label>
                     <input
@@ -291,11 +293,11 @@ export function BookingModal() {
                       required
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      className="w-full rounded-xl border border-border bg-surface px-4 py-2.5 text-sm focus:border-accent/50 focus:outline-none focus:ring-2 focus:ring-accent/20"
+                      className="w-full rounded-xl border border-border bg-surface px-4 py-2.5 text-sm text-foreground placeholder:text-muted focus:border-accent/50 focus:outline-none focus:ring-2 focus:ring-accent/20"
                     />
                   </div>
                   <div>
-                    <label htmlFor="booking-email" className="mb-1.5 block text-sm font-medium">
+                    <label htmlFor="booking-email" className="mb-1.5 block text-sm font-medium text-foreground">
                       Email
                     </label>
                     <input
@@ -304,11 +306,23 @@ export function BookingModal() {
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full rounded-xl border border-border bg-surface px-4 py-2.5 text-sm focus:border-accent/50 focus:outline-none focus:ring-2 focus:ring-accent/20"
+                      className="w-full rounded-xl border border-border bg-surface px-4 py-2.5 text-sm text-foreground placeholder:text-muted focus:border-accent/50 focus:outline-none focus:ring-2 focus:ring-accent/20"
                     />
                   </div>
                   <div>
-                    <label htmlFor="booking-message" className="mb-1.5 block text-sm font-medium">
+                    <label htmlFor="booking-phone" className="mb-1.5 block text-sm font-medium text-foreground">
+                      Phone <span className="font-normal text-muted">(optional)</span>
+                    </label>
+                    <input
+                      id="booking-phone"
+                      type="tel"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      className="w-full rounded-xl border border-border bg-surface px-4 py-2.5 text-sm text-foreground placeholder:text-muted focus:border-accent/50 focus:outline-none focus:ring-2 focus:ring-accent/20"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="booking-message" className="mb-1.5 block text-sm font-medium text-foreground">
                       Message (optional)
                     </label>
                     <textarea
@@ -317,7 +331,7 @@ export function BookingModal() {
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
                       placeholder="What would you like to discuss?"
-                      className="w-full resize-none rounded-xl border border-border bg-surface px-4 py-2.5 text-sm focus:border-accent/50 focus:outline-none focus:ring-2 focus:ring-accent/20"
+                      className="w-full resize-none rounded-xl border border-border bg-surface px-4 py-2.5 text-sm text-foreground placeholder:text-muted focus:border-accent/50 focus:outline-none focus:ring-2 focus:ring-accent/20"
                     />
                   </div>
 

@@ -2,15 +2,15 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
-import { Bell, ExternalLink, Github, X } from "lucide-react";
+import { Bell, ExternalLink, X } from "lucide-react";
 import { siteConfig, type Product, type ProductStatus } from "@/data/site";
 import { useFeatures } from "@/providers/FeatureProvider";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
 import { trackEvent } from "@/lib/analytics";
 
 const statusClass: Record<ProductStatus, string> = {
-  live: "border-emerald-500/40 bg-emerald-500/10 text-emerald-400",
-  beta: "border-accent/40 bg-accent/10 text-accent",
+  live: "border-accent/40 bg-accent/10 text-accent",
+  beta: "border-accent-violet/40 bg-accent-violet/10 text-accent-violet",
   "coming-soon": "border-accent-amber/40 bg-accent-amber/10 text-accent-amber",
 };
 
@@ -163,20 +163,7 @@ export function ProductDrawer() {
               <Bell className="h-4 w-4 text-accent" aria-hidden />
               Notify me
             </a>
-            {product.githubUrl ? (
-              <a
-                href={product.githubUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() =>
-                  trackEvent("product_github", { product: product.id })
-                }
-                className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-xl border border-border bg-surface/50 text-sm font-medium text-muted transition-all hover:border-accent/40 hover:text-foreground"
-              >
-                <Github className="h-4 w-4" aria-hidden />
-                GitHub
-              </a>
-            ) : product.docsUrl ? (
+            {product.docsUrl ? (
               <a
                 href={product.docsUrl}
                 target="_blank"
@@ -187,16 +174,6 @@ export function ProductDrawer() {
               </a>
             ) : null}
           </div>
-          {product.githubUrl && product.docsUrl ? (
-            <a
-              href={product.docsUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex h-11 w-full items-center justify-center rounded-xl border border-border bg-surface/50 text-sm font-medium text-muted transition-all hover:border-accent/40 hover:text-foreground"
-            >
-              Docs
-            </a>
-          ) : null}
         </div>
       </div>
     </div>

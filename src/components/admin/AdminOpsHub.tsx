@@ -501,10 +501,10 @@ export function AdminOpsHub({
                         <span
                           className={`rounded-md border px-2 py-0.5 font-mono text-[10px] uppercase ${
                             p.status === "success"
-                              ? "border-emerald-500/40 text-emerald-600"
+                              ? "border-accent/40 text-accent"
                               : p.status === "pending"
-                                ? "border-amber-500/40 text-amber-600"
-                                : "border-rose-400/40 text-rose-500"
+                                ? "border-accent-amber/40 text-accent-amber"
+                                : "border-accent-warm/40 text-accent-warm"
                           }`}
                         >
                           {p.status}
@@ -999,7 +999,7 @@ export function AdminOpsHub({
                       "Subscriber removed"
                     ).then(() => setDrawer(null))
                   }
-                  className="rounded-xl border border-rose-400/40 px-3 py-2 text-xs text-rose-500"
+                  className="rounded-xl border border-accent-warm/40 px-3 py-2 text-xs text-accent-warm"
                 >
                   Remove subscriber
                 </button>

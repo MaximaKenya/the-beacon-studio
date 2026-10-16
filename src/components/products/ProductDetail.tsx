@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Bell, ExternalLink, Github, ArrowLeft, Calendar, Mail } from "lucide-react";
+import { Bell, ExternalLink, ArrowLeft, Calendar, Mail } from "lucide-react";
 import type { Product } from "@/data/site";
 import { useFeatures } from "@/providers/FeatureProvider";
 import { trackEvent } from "@/lib/analytics";
@@ -116,18 +116,6 @@ export function ProductDetail({
                 Email
               </a>
 
-              {product.githubUrl && (
-                <a
-                  href={product.githubUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => trackEvent("product_github", { product: product.id })}
-                  className="inline-flex h-12 items-center gap-2 rounded-xl border border-border bg-surface px-5 text-sm font-medium text-muted hover:border-accent/40 hover:text-foreground"
-                >
-                  <Github className="h-4 w-4" aria-hidden />
-                  Source code
-                </a>
-              )}
             </div>
           </div>
 

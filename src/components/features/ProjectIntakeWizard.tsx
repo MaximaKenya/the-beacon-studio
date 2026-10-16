@@ -37,6 +37,7 @@ export function ProjectIntakeWizard() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [company, setCompany] = useState("");
+  const [phone, setPhone] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [improving, setImproving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -73,6 +74,7 @@ export function ProjectIntakeWizard() {
       setName("");
       setEmail("");
       setCompany("");
+      setPhone("");
       setError(null);
       setDone(false);
       setSubmitting(false);
@@ -131,6 +133,7 @@ export function ProjectIntakeWizard() {
       name: name.trim(),
       email: email.trim(),
       company: company.trim() || undefined,
+      phone: phone.trim() || undefined,
     };
 
     try {
@@ -483,6 +486,19 @@ export function ProjectIntakeWizard() {
                       onChange={(e) => setEmail(e.target.value)}
                       className="w-full rounded-xl border border-border bg-surface/50 px-4 py-2.5 text-sm text-foreground focus:border-accent/50 focus:outline-none"
                       autoComplete="email"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="intake-phone" className="mb-1.5 block text-xs text-muted">
+                      Phone (optional)
+                    </label>
+                    <input
+                      id="intake-phone"
+                      type="tel"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      className="w-full rounded-xl border border-border bg-surface px-4 py-2.5 text-sm text-foreground placeholder:text-muted focus:border-accent/50 focus:outline-none"
+                      autoComplete="tel"
                     />
                   </div>
                   <div>

@@ -21,12 +21,16 @@ export type ProjectUpdate = {
   by: "admin" | "system";
 };
 
+export type ReviewVisibility = "pending" | "approved" | "hidden";
+
 export type ProjectReview = {
   id: string;
   at: string;
   author: string;
   rating: number;
   comment: string;
+  /** Public pages and Glow only show "approved". Missing means pending. */
+  visibility?: ReviewVisibility;
 };
 
 export type ProjectStatus =
@@ -132,13 +136,21 @@ export async function createProjectFromIntake(input: {
   timeline: string;
   brief: string;
 }): Promise<ProjectRecord> {
+  const typeMeta = siteConfig.intake.projectTypes.find((t) => t.id === input.projectType);
+  const quoteOnly = Boolean(typeMeta?.quoteOnly);
   const estimate = estimateFromIntake(input.projectType, input.budget);
-  const depositPercent = getDepositPercent();
-  const depositAmount = Math.round(estimate.costFrom * (depositPercent / 100) * 100) / 100;
-  const typeLabel =
-    siteConfig.intake.projectTypes.find((t) => t.id === input.projectType)?.label ??
-    input.projectType;
-  const milestones = defaultMilestones();
+  const depositPercent = quoteOnly ? 0 : getDepositPercent();
+  const depositAmount = quoteOnly
+    ? 0
+    : Math.round(estimate.costFrom * (depositPercent / 100) * 100) / 100;
+  const typeLabel = typeMeta?.label ?? input.projectType;
+  const milestones = quoteOnly
+    ? [
+        { id: "m1", title: "Free assessment", percent: 20, done: false },
+        { id: "m2", title: "Setup", percent: 50, done: false },
+        { id: "m3", title: "Handover and support", percent: 30, done: false },
+      ]
+    : defaultMilestones();
   const now = new Date().toISOString();
 
   const project: ProjectRecord = {
@@ -153,18 +165,20 @@ export async function createProjectFromIntake(input: {
     brief: input.brief,
     milestones,
     progressPercent: computeProgress(milestones),
-    nextPaymentDate: addDaysIso(14),
-    nextPaymentAmount: depositAmount,
+    nextPaymentDate: quoteOnly ? undefined : addDaysIso(14),
+    nextPaymentAmount: quoteOnly ? undefined : depositAmount,
     nextPaymentCurrency: "USD",
-    costFrom: estimate.costFrom,
-    costTo: estimate.costTo,
+    costFrom: quoteOnly ? 0 : estimate.costFrom,
+    costTo: quoteOnly ? 0 : estimate.costTo,
     depositAmount,
     depositPercent,
     updates: [
       {
         id: randomUUID(),
         at: now,
-        message: "Project created from intake. Quotation ready — deposit unlocks kickoff.",
+        message: quoteOnly
+          ? "Request received. The price is quoted after a free assessment."
+          : "Project created from intake. Quotation ready — deposit unlocks kickoff.",
         by: "system",
       },
     ],
@@ -219,9 +233,41 @@ export async function addProjectReview(
     {
       id: randomUUID(),
       at: new Date().toISOString(),
+      visibility: "pending" as const,
       ...review,
     },
     ...project.reviews,
   ];
   return updateProject(id, { reviews });
+}
+
+export async function setReviewVisibility(
+  projectId: string,
+  reviewId: string,
+  visibility: ReviewVisibility
+): Promise<ProjectRecord | null> {
+  const project = await findProjectById(projectId);
+  if (!project) return null;
+  const reviews = project.reviews.map((review) =>
+    review.id === reviewId ? { ...review, visibility } : review
+  );
+  if (!reviews.some((review) => review.id === reviewId)) return null;
+  return updateProject(projectId, { reviews });
+}
+
+/** Reviews the public site and Glow may quote. Pending and hidden stay private. */
+export async function listApprovedReviews(): Promise<
+  { id: string; quote: string; author: string; rating: number; at: string }[]
+> {
+  const projects = await listProjects();
+  return projects
+    .flatMap((project) => project.reviews)
+    .filter((review) => review.visibility === "approved")
+    .map((review) => ({
+      id: review.id,
+      quote: review.comment,
+      author: review.author,
+      rating: review.rating,
+      at: review.at,
+    }));
 }

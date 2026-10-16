@@ -82,7 +82,7 @@ export async function POST(request: Request) {
     const client = await findClientByEmail(email);
     if (!client) {
       return NextResponse.json(
-        { error: "No portal account for this email. Submit a project intake first." },
+        { error: "No portal account for this email yet. Send a message or start a project first." },
         { status: 404 }
       );
     }

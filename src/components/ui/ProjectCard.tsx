@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { useRef, useState, type MouseEvent } from "react";
-import { ArrowUpRight, Github, Sparkles } from "lucide-react";
+import { ArrowUpRight, Sparkles } from "lucide-react";
 import type { Project } from "@/data/site";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { AnimatedIcon } from "@/components/ui/AnimatedIcon";
@@ -137,23 +137,6 @@ export function ProjectCard({ project, index }: ProjectCardProps) {
             <span className="inline-flex items-center gap-1.5 text-sm text-muted">
               Live Demo
               <ArrowUpRight className="h-4 w-4" strokeWidth={1.75} />
-            </span>
-          )}
-          {project.githubUrl ? (
-            <a
-              href={project.githubUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group/link inline-flex items-center gap-1.5 text-sm font-medium text-muted transition-colors hover:text-foreground"
-              aria-label={`${project.title} on GitHub`}
-            >
-              <AnimatedIcon icon={Github} size="sm" animation="subtle" />
-              Source
-            </a>
-          ) : (
-            <span className="inline-flex items-center gap-1.5 text-sm text-muted">
-              <Github className="h-4 w-4" strokeWidth={1.75} />
-              Source
             </span>
           )}
         </div>

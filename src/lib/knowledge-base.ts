@@ -119,7 +119,25 @@ const INTENT_RULES: IntentRule[] = [
   },
   {
     intent: "services",
-    keywords: ["service", "custom app", "saas", "api", "redesign", "rebuild"],
+    keywords: [
+      "service",
+      "custom app",
+      "saas",
+      "api",
+      "redesign",
+      "rebuild",
+      "it support",
+      "outsourced",
+      "managed it",
+      "backup",
+      "disaster",
+      "antivirus",
+      "endpoint",
+      "firewall",
+      "microsoft 365",
+      "office 365",
+      "m365",
+    ],
     patterns: [/what (services|do you offer)/i, /custom (software|app|build)/i],
     weight: 1.3,
   },
@@ -443,7 +461,7 @@ function buildReply(intent: Intent): string {
 
     case "testimonials":
       if (testimonials.length === 0)
-        return `We don't publish testimonials. See the [products](/#products) or [contact us](/#contact).`;
+        return `We only publish a review after we approve it. See the [products](/#products) or [contact us](/#contact).`;
       return `What people say:\n${testimonials.map((t) => `"${t.quote}" — ${t.author}, ${t.role}`).join("\n")}`;
 
     case "personality":
@@ -486,7 +504,7 @@ export function getKnowledgeResponse(userMessage: string): KnowledgeResponse {
 
     if (productFocused) {
       return {
-        reply: `**${mentioned.name}** (${mentioned.statusLabel})\n${mentioned.description}\nFor: ${mentioned.audience}\n\n${mentioned.features.map((feature) => `• ${feature}`).join("\n")}\n\n• Page: [/products/${mentioned.id}](/products/${mentioned.id})${mentioned.liveUrl ? `\n• Site: ${mentioned.liveUrl}` : "\n• Not open yet. [Get notified or contact us](/#contact)."}${mentioned.githubUrl ? `\n• Source code: ${mentioned.githubUrl}` : ""}`,
+        reply: `**${mentioned.name}** (${mentioned.statusLabel})\n${mentioned.description}\nFor: ${mentioned.audience}\n\n${mentioned.features.map((feature) => `• ${feature}`).join("\n")}\n\n• Page: [/products/${mentioned.id}](/products/${mentioned.id})${mentioned.liveUrl ? `\n• Site: ${mentioned.liveUrl}` : "\n• Not open yet. [Get notified or contact us](/#contact)."}`,
         confidence: 0.95,
         intent: "products",
         source: "knowledge-base",

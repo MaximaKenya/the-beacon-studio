@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { buildAssistantSystemPrompt } from "@/lib/assistant-context";
 import { buildFallbackReply } from "@/lib/assistant-fallback";
 import { getKnowledgeResponse, shouldUseOpenAI } from "@/lib/knowledge-base";
+import { listApprovedReviews } from "@/lib/projects";
 
 export const runtime = "nodejs";
 
@@ -49,6 +50,12 @@ export async function POST(request: Request) {
 
     const lastUser = messages[messages.length - 1].content;
     const local = getKnowledgeResponse(lastUser);
+    if (local.intent === "testimonials") {
+      const approved = await listApprovedReviews();
+      local.reply = approved.length
+        ? `What clients say:\n${approved.map((review) => `"${review.quote}" — ${review.author}`).join("\n")}`
+        : `We only publish a review after we approve it. None are public yet. See the [products](/#products) or [contact us](/#contact).`;
+    }
 
     if (!forceAI && local.confidence >= 0.55) {
       return NextResponse.json({ reply: local.reply, mode: "knowledge-base", confidence: local.confidence });

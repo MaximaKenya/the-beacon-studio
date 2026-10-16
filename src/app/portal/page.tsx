@@ -36,6 +36,11 @@ export default function PortalDashboardPage() {
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
   const [reviewMsg, setReviewMsg] = useState<string | null>(null);
+  const [mailboxClient, setMailboxClient] = useState<{
+    id: string;
+    name: string;
+    email: string;
+  } | null>(null);
 
   const load = useCallback(async () => {
     const auth = await fetch("/api/portal/auth");
@@ -58,6 +63,15 @@ export default function PortalDashboardPage() {
       nextPaymentDays: null,
     });
     if (!res.ok || !payload.project) {
+      const sessionRes = await fetch("/api/portal/auth");
+      const session = await parseResponseJson<{
+        authenticated?: boolean;
+        client?: { id: string; name: string; email: string };
+      }>(sessionRes, {});
+      if (session.authenticated && session.client) {
+        setMailboxClient(session.client);
+        setData(null);
+      }
       setLoading(false);
       return;
     }
@@ -94,7 +108,7 @@ export default function PortalDashboardPage() {
     });
     if (res.ok) {
       setComment("");
-      setReviewMsg("Thanks — your review is on the timeline.");
+      setReviewMsg("Thanks — we read every review. It stays private until we approve it.");
       await load();
     } else {
       setReviewMsg("Could not save review. Try again.");
@@ -108,6 +122,30 @@ export default function PortalDashboardPage() {
   }
 
   if (!data?.project) {
+    if (mailboxClient) {
+      return (
+        <div className="space-y-6">
+          <div>
+            <p className="font-mono text-[10px] uppercase tracking-widest text-muted">
+              Welcome, {mailboxClient.name.split(" ")[0]}
+            </p>
+            <h1 className="mt-1 font-display text-3xl font-bold text-foreground">Messages</h1>
+            <p className="mt-2 max-w-xl text-sm text-muted">
+              There is no active project on this account yet. Replies from the studio show up here.
+            </p>
+          </div>
+          <ChatPanel projectId={`client:${mailboxClient.id}`} viewer="client" />
+          <button
+            type="button"
+            onClick={() => void logout()}
+            className="inline-flex h-10 items-center gap-2 rounded-xl border border-border bg-surface px-4 text-sm text-muted hover:text-foreground"
+          >
+            <LogOut className="h-4 w-4" />
+            Sign out
+          </button>
+        </div>
+      );
+    }
     return (
       <div className="py-20 text-center">
         <p className="text-foreground">No project found for this account.</p>
@@ -214,15 +252,21 @@ export default function PortalDashboardPage() {
                 No scheduled date — you can still pay a deposit below.
               </p>
             )}
-            <div className="mt-4 max-w-sm">
-              <PayButton
-                tierId="sprint"
-                mode="deposit"
-                variant="primary"
-                projectId={project.id}
-                label="Pay deposit"
-              />
-            </div>
+            {project.costFrom || project.costTo ? (
+              <div className="mt-4 max-w-sm">
+                <PayButton
+                  tierId="sprint"
+                  mode="deposit"
+                  variant="primary"
+                  projectId={project.id}
+                  label="Pay deposit"
+                />
+              </div>
+            ) : (
+              <p className="mt-3 text-sm text-muted">
+                This work is quoted after a free assessment. There is no price to pay yet.
+              </p>
+            )}
           </div>
         </div>
       </section>
@@ -298,7 +342,12 @@ export default function PortalDashboardPage() {
               </div>
               <p className="mt-1 text-foreground">{r.comment}</p>
               <p className="mt-1 font-mono text-[10px] text-muted">
-                {r.author} · {formatNairobi(r.at)}
+                {r.author} · {formatNairobi(r.at)} ·{" "}
+                {r.visibility === "approved"
+                  ? "public"
+                  : r.visibility === "hidden"
+                    ? "hidden"
+                    : "waiting for approval"}
               </p>
             </li>
           ))}

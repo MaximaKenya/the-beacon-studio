@@ -19,6 +19,7 @@ export type IntakeEntry = {
   name: string;
   email: string;
   company?: string;
+  phone?: string;
   submittedAt: string;
   createdAt?: string;
   read?: boolean;
@@ -48,6 +49,7 @@ export async function POST(request: Request) {
       typeof body.company === "string" && body.company.trim()
         ? body.company.trim()
         : undefined;
+    const phone = typeof body.phone === "string" ? body.phone.trim() : "";
 
     const validType = siteConfig.intake.projectTypes.some((t) => t.id === projectType);
     const validBudget = siteConfig.intake.budgets.some((b) => b.id === budget);
@@ -80,6 +82,7 @@ export async function POST(request: Request) {
       name,
       email,
       ...(company ? { company } : {}),
+      ...(phone ? { phone } : {}),
       submittedAt: new Date().toISOString(),
       createdAt: new Date().toISOString(),
       read: false,
@@ -87,7 +90,12 @@ export async function POST(request: Request) {
     };
 
     // Create client + project + quotation for portal
-    const client = await upsertClient({ email, name, company });
+    const client = await upsertClient({
+      email,
+      name,
+      company,
+      ...(phone ? { phone } : {}),
+    });
     const project = await createProjectFromIntake({
       clientId: client.id,
       intakeId: entry.id,

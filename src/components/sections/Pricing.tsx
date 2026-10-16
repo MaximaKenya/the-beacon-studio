@@ -14,7 +14,9 @@ export function Pricing() {
     const automation = tier.group === "automation";
     if (tier.ctaAction === "booking") {
       trackEvent("cta_click", { type: "book", source: "pricing", tier: tier.id });
-      openBooking(automation ? "automation-audit" : undefined);
+      openBooking(
+        tier.group === "it" ? "it-assessment" : automation ? "automation-audit" : undefined
+      );
     } else {
       trackEvent("cta_click", { type: "intake", source: "pricing", tier: tier.id });
       openIntake(automation ? "ai-automation" : undefined);
@@ -22,7 +24,8 @@ export function Pricing() {
   };
 
   const automationTiers = siteConfig.pricingTiers.filter((tier) => tier.group === "automation");
-  const customTiers = siteConfig.pricingTiers.filter((tier) => tier.group !== "automation");
+  const customTiers = siteConfig.pricingTiers.filter((tier) => tier.group === "studio" || !tier.group);
+  const itTiers = siteConfig.pricingTiers.filter((tier) => tier.group === "it");
 
   return (
     <section id="pricing" className="relative border-t border-border py-20 lg:py-28">
@@ -30,7 +33,7 @@ export function Pricing() {
         <SectionHeading
           label="Pricing"
           title="Simple starting prices"
-          description="Automation has published starting prices. Custom software is quoted after a free call."
+          description="Automation has published starting prices. Custom software is quoted after a free call. Outsourced IT is quoted after a free assessment."
         />
 
         <div className="mb-10 flex flex-col gap-4 rounded-2xl border border-border bg-surface p-6 sm:flex-row sm:items-center sm:justify-between">
@@ -85,13 +88,15 @@ export function Pricing() {
         </div>
 
         <div className="mt-8 grid gap-6">
-          {customTiers.map((tier) => (
+          {[...customTiers, ...itTiers].map((tier) => (
             <article
               key={tier.id}
               className="flex flex-col gap-6 rounded-2xl border border-border bg-surface p-6 md:flex-row md:items-center md:justify-between"
             >
               <div className="max-w-xl">
-                <p className="text-xs font-medium uppercase tracking-wide text-muted">Custom software</p>
+                <p className="text-xs font-medium uppercase tracking-wide text-muted">
+                  {tier.group === "it" ? "Managed IT" : "Custom software"}
+                </p>
                 <h3 className="mt-2 font-display text-2xl font-semibold text-foreground">{tier.name}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-muted">{tier.headline}</p>
                 <p className="mt-4 font-display text-2xl font-semibold text-foreground">{tier.fromPrice}</p>

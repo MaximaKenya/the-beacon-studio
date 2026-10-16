@@ -19,7 +19,7 @@ What must be true before calling the site live for clients. Full setup: `INTEGRA
 
 | Integration | Env vars | Without it |
 |---|---|---|
-| **Resend** (contact, subscribe, book, portal OTP) | `RESEND_API_KEY`, `RESEND_FROM_EMAIL` | Forms save to `data/*.json` only; OTP on-screen |
+| **Resend** (contact, subscribe, book, portal OTP, inbox replies) | `RESEND_API_KEY`, `RESEND_FROM_EMAIL` | Forms still save in the active store; OTP on-screen; no email copy |
 | **Stripe** (card deposits) | `STRIPE_SECRET_KEY` (+ optional Price IDs / publishable key) | Pay UI → coming soon + mailto/book |
 | **M-Pesa Daraja** (STK Push) | `MPESA_*` | Same coming-soon fallbacks |
 | **OpenAI** (Glow + brief helper) | `OPENAI_API_KEY` | On-site knowledge base only |
@@ -33,14 +33,15 @@ Public products are only these four. TriviaYard and ConfiTrade are not listed, l
 |---|---|---|
 | ConfiRent | https://www.confirent.co.ke | Live (soft launch) |
 | CadenceApp | https://www.cadenceapp.co.ke | Beta / early access |
-| LookFinesse | No live URL. Public repo: https://github.com/MaximaKenya/lookfinesse | Coming soon — Get notified / contact |
+| LookFinesse | No live URL and no public repo | Coming soon — Get notified / contact |
 | ConfiLearn | No live URL and no public repo | Coming soon — Get notified / contact |
 
 Do not publish private repository URLs. The old LookFinesse and TriviaYard Heroku URLs are not used.
 
 ## Platform / ops
 
-- **Durable storage:** set `DATABASE_URL` (see below). Without it, `data/*.json` lives on the dyno disk and Heroku wipes it on restart.
+- **Durable storage:** set `DATABASE_URL` (see below). Without it, `data/*.json` lives on the dyno disk and Heroku wipes it on restart. Set `RESEND_API_KEY` and `RESEND_FROM_EMAIL` so each submission and each admin reply is also emailed.
+- **Admin inbox:** `https://YOUR_APP/admin` (not linked in the public menu). Log in with `ADMIN_PASSWORD`. Also set `PORTAL_SECRET` in production so portal sessions are not signed with the admin password. Reviews stay private until you approve them in the inbox.
 - **Node 22.x:** `package.json` engines pin `22.x`.
 - **OG / favicon:** confirm share preview and beacon mark.
 

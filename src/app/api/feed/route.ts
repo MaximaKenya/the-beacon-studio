@@ -36,7 +36,6 @@ export async function GET() {
         date_modified: new Date().toISOString(),
         _meta: {
           type: "case-study",
-          github: project.githubUrl,
           comingSoon: project.comingSoon ?? false,
           image: project.image,
         },
