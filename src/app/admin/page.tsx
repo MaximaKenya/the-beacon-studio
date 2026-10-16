@@ -26,6 +26,28 @@ import { AdminOpsHub, type AdminOpsData } from "@/components/admin/AdminOpsHub";
 import { AdminProjectsPanel } from "@/components/admin/AdminProjectsPanel";
 import { parseResponseJson } from "@/lib/safe-json";
 
+type StorageHealth = {
+  ok?: boolean;
+  storage?: "postgres" | "file";
+  database?: "up" | "down" | "unconfigured";
+};
+
+function StorageBadge({ health }: { health: StorageHealth | null }) {
+  if (!health?.storage) return null;
+  const backend = health.storage === "postgres" ? "Postgres" : "JSON files";
+  const detail =
+    health.database === "up"
+      ? "connected"
+      : health.database === "down"
+        ? "unreachable"
+        : "local dev";
+  return (
+    <p className="mt-1 font-mono text-[10px] uppercase tracking-widest text-muted">
+      Storage · {backend} · {detail}
+    </p>
+  );
+}
+
 function StatCard({
   label,
   value,
@@ -61,6 +83,7 @@ export default function AdminPage() {
   const [ops, setOps] = useState<AdminOpsData | null>(null);
   const [updatedAt, setUpdatedAt] = useState<string | null>(null);
   const [loadingStats, setLoadingStats] = useState(false);
+  const [storageHealth, setStorageHealth] = useState<StorageHealth | null>(null);
 
   const wingLabels = useMemo(() => {
     const map = new Map(siteConfig.products.map((p) => [p.id, p.name]));
@@ -109,6 +132,10 @@ export default function AdminPage() {
 
   useEffect(() => {
     void checkAuth();
+    void fetch("/api/health")
+      .then((res) => parseResponseJson<StorageHealth>(res, {}))
+      .then((data) => setStorageHealth(data))
+      .catch(() => setStorageHealth(null));
   }, []);
 
   useEffect(() => {
@@ -157,6 +184,7 @@ export default function AdminPage() {
             <div>
               <h1 className="font-display text-xl font-semibold text-foreground">Admin</h1>
               <p className="text-xs text-muted">Beacon analytics · pin protected</p>
+              <StorageBadge health={storageHealth} />
             </div>
           </div>
           <form onSubmit={login} className="space-y-4">
@@ -245,6 +273,7 @@ export default function AdminPage() {
             >
               ← Back to site
             </Link>
+            <StorageBadge health={storageHealth} />
             {updatedAt && (
               <p className="mt-1 text-xs text-muted">
                 Updated {new Date(updatedAt).toLocaleString()}

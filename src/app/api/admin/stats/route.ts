@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { getAnalyticsStore, summarizeAnalytics } from "@/lib/analytics-store";
-import { readJsonFile, writeJsonFile } from "@/lib/storage";
+import { getStorageHealth, readJsonFile, writeJsonFile } from "@/lib/storage";
 import { listPayments } from "@/lib/payments";
 
 export const runtime = "nodejs";
@@ -185,10 +185,13 @@ export async function GET(request: Request) {
     });
   }
 
+  const storage = await getStorageHealth();
+
   return NextResponse.json({
     summary,
     updatedAt: store.updatedAt,
     ops,
+    storage,
   });
 }
 

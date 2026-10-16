@@ -1,141 +1,102 @@
-import { mkdir, readFile, writeFile, access, rename, unlink } from "fs/promises";
-import path from "path";
-import { randomBytes } from "crypto";
+import {
+  ensureSchema,
+  pingDatabase,
+  readDocument,
+  storageBackend,
+  usesPostgres,
+  writeDocument,
+} from "@/lib/pg";
+import * as files from "@/lib/storage-file";
 
-const DATA_DIR = path.join(process.cwd(), "data");
+export type StorageBackend = "postgres" | "file";
 
-const DEFAULT_FILES: Record<string, unknown> = {
-  "subscribers.json": [],
-  "bookings.json": [],
-  "intakes.json": [],
-  "payments.json": [],
-  "contacts.json": [],
-  "clients.json": [],
-  "projects.json": [],
-  "messages.json": [],
-  "quotations.json": [],
-  "receipts.json": [],
-  "portal-codes.json": [],
-  "analytics.json": {
-    events: [],
-    reactions: [],
-    updatedAt: new Date(0).toISOString(),
-  },
-};
-
-/** Serialize writes per filename to avoid corrupt/partial JSON under concurrent POSTs. */
-const writeQueues = new Map<string, Promise<void>>();
-
-async function ensureDataDir() {
-  await mkdir(DATA_DIR, { recursive: true });
-}
-
-async function fileExists(filePath: string): Promise<boolean> {
-  try {
-    await access(filePath);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-function defaultContent(filename: string): string {
-  const value = DEFAULT_FILES[filename] ?? {};
-  return JSON.stringify(value, null, 2);
-}
-
-/** Ensures data/ exists and default JSON files are present with valid content. */
-export async function ensureDataFiles(): Promise<void> {
-  await ensureDataDir();
-  for (const filename of Object.keys(DEFAULT_FILES)) {
-    const filePath = path.join(DATA_DIR, filename);
-    if (!(await fileExists(filePath))) {
-      await writeFile(filePath, defaultContent(filename), "utf-8");
-    }
-  }
+export function getStorageBackend(): StorageBackend {
+  return storageBackend();
 }
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-/**
- * Read a JSON data file. Empty, whitespace, or invalid JSON → return fallback
- * and rewrite a valid file so the next read is clean.
- */
-export async function readJsonFile<T>(filename: string, fallback: T): Promise<T> {
-  await ensureDataFiles();
-  const filePath = path.join(DATA_DIR, filename);
-
-  try {
-    const raw = await readFile(filePath, "utf-8");
-    const trimmed = raw.trim();
-    if (!trimmed) {
-      await atomicWrite(filePath, JSON.stringify(fallback, null, 2));
-      return fallback;
-    }
-    const parsed = JSON.parse(trimmed) as T;
-    // Guard against wrong root type (e.g. {} when [] expected)
-    if (Array.isArray(fallback) && !Array.isArray(parsed)) {
-      await atomicWrite(filePath, JSON.stringify(fallback, null, 2));
-      return fallback;
-    }
-    if (
-      isPlainObject(fallback) &&
-      (Array.isArray(parsed) || typeof parsed !== "object" || parsed === null)
-    ) {
-      await atomicWrite(filePath, JSON.stringify(fallback, null, 2));
-      return fallback;
-    }
-    return parsed;
-  } catch {
-    try {
-      await atomicWrite(filePath, JSON.stringify(fallback, null, 2));
-    } catch {
-      /* best effort repair */
-    }
-    return fallback;
+function sameRootShape(parsed: unknown, fallback: unknown): boolean {
+  if (Array.isArray(fallback)) return Array.isArray(parsed);
+  if (isPlainObject(fallback)) {
+    return isPlainObject(parsed);
   }
+  return true;
 }
 
-async function atomicWrite(filePath: string, content: string): Promise<void> {
-  const dir = path.dirname(filePath);
-  await mkdir(dir, { recursive: true });
-  const tmp = path.join(
-    dir,
-    `.${path.basename(filePath)}.${process.pid}.${randomBytes(4).toString("hex")}.tmp`
-  );
+/**
+ * Create the Postgres table when DATABASE_URL is set, or the local JSON
+ * files when it is not. Called at server startup and before the first use.
+ */
+export async function initStorage(): Promise<void> {
+  if (usesPostgres()) {
+    await ensureSchema();
+    return;
+  }
+  await files.ensureDataFiles();
+}
+
+/** Ensures the active backend is ready. File mode also creates default JSON files. */
+export async function ensureDataFiles(): Promise<void> {
+  await initStorage();
+}
+
+export async function readJsonFile<T>(filename: string, fallback: T): Promise<T> {
+  if (!usesPostgres()) {
+    return files.readJsonFile(filename, fallback);
+  }
+
+  await ensureSchema();
+  let parsed: unknown;
   try {
-    await writeFile(tmp, content, "utf-8");
-    await rename(tmp, filePath);
+    parsed = await readDocument(filename);
   } catch (err) {
-    try {
-      await unlink(tmp);
-    } catch {
-      /* ignore */
-    }
+    console.error(`[storage] postgres read failed for ${filename}`, err);
     throw err;
   }
+
+  if (parsed === undefined) return fallback;
+  if (!sameRootShape(parsed, fallback)) {
+    await writeDocument(filename, fallback);
+    return fallback;
+  }
+  return parsed as T;
 }
 
 export async function writeJsonFile<T>(filename: string, data: T): Promise<void> {
-  await ensureDataFiles();
-  const filePath = path.join(DATA_DIR, filename);
-  const content = JSON.stringify(data, null, 2);
+  if (!usesPostgres()) {
+    await files.writeJsonFile(filename, data);
+    return;
+  }
+  await ensureSchema();
+  await writeDocument(filename, data);
+}
 
-  const prev = writeQueues.get(filename) ?? Promise.resolve();
-  const next = prev
-    .catch(() => undefined)
-    .then(async () => {
-      await atomicWrite(filePath, content);
-    });
-  writeQueues.set(
-    filename,
-    next.finally(() => {
-      if (writeQueues.get(filename) === next) writeQueues.delete(filename);
-    })
-  );
-  await next;
+export type StorageHealth = {
+  ok: boolean;
+  storage: StorageBackend;
+  database: "up" | "down" | "unconfigured";
+};
+
+/** Which backend is active, and whether Postgres answers. */
+export async function getStorageHealth(): Promise<StorageHealth> {
+  if (!usesPostgres()) {
+    return { ok: true, storage: "file", database: "unconfigured" };
+  }
+  try {
+    await ensureSchema();
+    const up = await pingDatabase();
+    return {
+      ok: up,
+      storage: "postgres",
+      database: up ? "up" : "down",
+    };
+  } catch (err) {
+    console.error("[storage] postgres health check failed", err);
+    return { ok: false, storage: "postgres", database: "down" };
+  }
 }
 
 /**

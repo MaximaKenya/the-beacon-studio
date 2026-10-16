@@ -688,9 +688,11 @@ export function AdminOpsHub({
         </div>
       )}
 
-      <p className="flex items-center gap-2 text-xs text-muted">
+      <p className="flex flex-wrap items-center gap-2 text-xs text-muted">
         <Inbox className="h-3.5 w-3.5" />
-        Data in <code className="font-mono text-foreground">data/*.json</code>
+        Stored in the active backend (Postgres when{" "}
+        <code className="font-mono text-foreground">DATABASE_URL</code> is set, otherwise{" "}
+        <code className="font-mono text-foreground">data/*.json</code>)
         {" · "}
         <Mail className="h-3.5 w-3.5" />
         Portal at <code className="font-mono">/portal</code>
