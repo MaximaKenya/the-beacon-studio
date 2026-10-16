@@ -1,46 +1,25 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
-import { Bell, ExternalLink, Github, ArrowLeft, Calendar, Mail, Phone } from "lucide-react";
-import {
-  siteConfig,
-  type Product,
-  type ProductStatus,
-  type TechStackItem,
-} from "@/data/site";
+import { Bell, ExternalLink, Github, ArrowLeft, Calendar, Mail } from "lucide-react";
+import type { Product } from "@/data/site";
 import { useFeatures } from "@/providers/FeatureProvider";
 import { trackEvent } from "@/lib/analytics";
 import { AskGlowPrompt } from "@/components/features/AskGlowPrompt";
 import { StickyProductCTA } from "@/components/features/StickyProductCTA";
-import { screensForProduct } from "@/data/product-screens";
-import { mailtoHref, phoneHref, trackCallClick, trackEmailClick } from "@/lib/contact-actions";
-
-const statusLabel: Record<ProductStatus, string> = {
-  live: "Live",
-  beta: "Beta",
-  "coming-soon": "Coming Soon",
-};
-
-const statusClass: Record<ProductStatus, string> = {
-  live: "border-emerald-500/40 bg-emerald-500/10 text-emerald-400",
-  beta: "border-accent/40 bg-accent/10 text-accent",
-  "coming-soon": "border-accent-amber/40 bg-accent-amber/10 text-accent-amber",
-};
+import { ProductVisual } from "@/components/products/ProductVisual";
+import { mailtoHref, trackEmailClick } from "@/lib/contact-actions";
 
 export function ProductDetail({
   product,
   related,
-  stack,
 }: {
   product: Product;
   related: Product[];
-  stack: TechStackItem[];
+  stack?: unknown;
 }) {
-  const { openIntake, openBooking, openNewsletter, openChat } = useFeatures();
-  const isLive = Boolean(product.liveUrl);
-  const isComingSoon = product.status === "coming-soon" || !isLive;
-  const shots = screensForProduct(product.id).filter((s) => s.src);
+  const { openBooking, openNewsletter, openChat } = useFeatures();
+  const isOpen = Boolean(product.liveUrl);
 
   return (
     <div className="relative px-6 pb-28 pt-28 lg:px-8 lg:pt-32">
@@ -50,71 +29,39 @@ export function ProductDetail({
           className="inline-flex items-center gap-2 text-sm text-muted transition-colors hover:text-accent"
         >
           <ArrowLeft className="h-4 w-4" aria-hidden />
-          Back to suite
+          All products
         </Link>
 
-        <div className="mt-8 grid gap-12 lg:grid-cols-[1.15fr_0.85fr] lg:gap-16">
+        <div className="mt-8 grid gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16">
           <div>
-            <div className="mb-5 flex flex-wrap items-center gap-2">
-              <span
-                className={`rounded-md border px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider ${statusClass[product.status]}`}
-              >
-                {statusLabel[product.status]}
-              </span>
-              <span className="rounded-md border border-border/70 bg-surface/40 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-muted">
-                {product.operationalStatus}
-              </span>
-            </div>
-
-            <h1 className="font-display text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
+            <p className="text-xs font-medium uppercase tracking-wide text-accent">
+              {product.statusLabel}
+            </p>
+            <h1 className="mt-3 font-display text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">
               {product.name}
             </h1>
-            <p className="mt-3 text-xl font-medium text-foreground/90">{product.tagline}</p>
-            <p className="mt-6 text-base leading-relaxed text-muted lg:text-lg">
-              {product.longDescription ?? product.description}
-            </p>
+            <p className="mt-3 text-lg text-foreground/90">{product.tagline}</p>
+            <p className="mt-6 text-base leading-relaxed text-muted">{product.description}</p>
+            <p className="mt-4 text-sm text-muted">For {product.audience}</p>
 
-            {isComingSoon && (
-              <div className="mt-8 rounded-2xl border border-accent-amber/30 bg-accent-amber/5 px-5 py-4">
-                <p className="font-display text-base font-semibold text-foreground">
-                  {product.status === "coming-soon" ? "Coming soon" : "Private beta"}
-                </p>
-                <p className="mt-1 text-sm text-muted">
-                  {product.name} isn&apos;t publicly live yet. Request access, subscribe for
-                  launch notes, or book a call to talk about custom builds alongside the suite.
-                </p>
-              </div>
+            {!isOpen && (
+              <p className="mt-6 rounded-2xl border border-border bg-surface px-5 py-4 text-sm leading-relaxed text-muted">
+                {product.name} is not open yet. Ask us to notify you, or send a message.
+              </p>
             )}
 
-            <ul className="mt-8 flex flex-wrap gap-2" aria-label="Tags">
-              {product.tags.slice(0, 3).map((tag) => (
-                <li
-                  key={tag}
-                  className="rounded-md border border-border/70 bg-surface/60 px-3 py-1.5 font-mono text-[11px] text-muted"
-                >
-                  {tag}
+            <h2 className="mt-10 font-display text-lg font-semibold text-foreground">What it includes</h2>
+            <ul className="mt-4 space-y-2">
+              {product.features.map((feature) => (
+                <li key={feature} className="flex gap-2 text-sm leading-relaxed text-foreground">
+                  <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-accent" aria-hidden />
+                  {feature}
                 </li>
               ))}
             </ul>
 
-            {stack.length > 0 && (
-              <div className="mt-10">
-                <p className="font-mono text-[10px] uppercase tracking-widest text-muted">Stack</p>
-                <ul className="mt-3 flex flex-wrap gap-2">
-                  {stack.map((t) => (
-                    <li
-                      key={t.id}
-                      className="rounded-lg border border-border bg-background/50 px-3 py-1.5 text-sm text-foreground"
-                    >
-                      {t.name}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
             <div className="mt-10 flex flex-wrap gap-3">
-              {isLive ? (
+              {isOpen ? (
                 <a
                   href={product.liveUrl}
                   target="_blank"
@@ -124,33 +71,29 @@ export function ProductDetail({
                   }
                   className="inline-flex h-12 items-center gap-2 rounded-xl bg-accent px-6 text-sm font-semibold text-background hover:bg-accent-hover"
                 >
-                  Open live app
+                  Visit site
                   <ExternalLink className="h-4 w-4" aria-hidden />
                 </a>
               ) : (
                 <button
                   type="button"
                   onClick={() => {
-                    trackEvent("product_request_access", { product: product.id });
-                    openIntake();
+                    trackEvent("product_notify", { product: product.id, source: "detail" });
+                    openNewsletter();
                   }}
-                  className="inline-flex h-12 items-center rounded-xl bg-accent px-6 text-sm font-semibold text-background hover:bg-accent-hover"
+                  className="inline-flex h-12 items-center gap-2 rounded-xl bg-accent px-6 text-sm font-semibold text-background hover:bg-accent-hover"
                 >
-                  Request access
+                  <Bell className="h-4 w-4" aria-hidden />
+                  Get notified
                 </button>
               )}
 
-              <button
-                type="button"
-                onClick={() => {
-                  trackEvent("product_notify", { product: product.id });
-                  if (siteConfig.newsletter.enabled) openNewsletter();
-                }}
-                className="inline-flex h-12 items-center gap-2 rounded-xl border border-border bg-surface px-5 text-sm font-semibold text-foreground hover:border-accent/40"
+              <Link
+                href="/#contact"
+                className="inline-flex h-12 items-center rounded-xl border border-border bg-surface px-5 text-sm font-semibold text-foreground hover:border-accent/40"
               >
-                <Bell className="h-4 w-4 text-accent" aria-hidden />
-                Notify me
-              </button>
+                Contact
+              </Link>
 
               <button
                 type="button"
@@ -163,15 +106,6 @@ export function ProductDetail({
                 <Calendar className="h-4 w-4 text-accent" aria-hidden />
                 Book a call
               </button>
-
-              <a
-                href={phoneHref()}
-                onClick={() => trackCallClick(`product_${product.id}`)}
-                className="inline-flex h-12 items-center gap-2 rounded-xl border border-border bg-surface px-5 text-sm font-semibold text-foreground hover:border-accent/40"
-              >
-                <Phone className="h-4 w-4 text-accent" aria-hidden />
-                Call
-              </a>
 
               <a
                 href={mailtoHref(`${product.name} inquiry`)}
@@ -191,44 +125,16 @@ export function ProductDetail({
                   className="inline-flex h-12 items-center gap-2 rounded-xl border border-border bg-surface px-5 text-sm font-medium text-muted hover:border-accent/40 hover:text-foreground"
                 >
                   <Github className="h-4 w-4" aria-hidden />
-                  GitHub
+                  Source code
                 </a>
               )}
             </div>
           </div>
 
           <div className="space-y-6">
-            {shots.length > 0 ? (
-              <div className="space-y-4">
-                {shots.map((shot) => (
-                  <div
-                    key={shot.id}
-                    className="overflow-hidden rounded-2xl border border-border bg-surface/40"
-                  >
-                    <Image
-                      src={shot.src!}
-                      alt={shot.alt}
-                      width={1440}
-                      height={900}
-                      className="h-auto w-full object-cover object-top"
-                      priority={shot === shots[0]}
-                    />
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="overflow-hidden rounded-2xl border border-border bg-surface/40 p-6">
-                <Image
-                  src={product.image}
-                  alt={product.name}
-                  width={800}
-                  height={500}
-                  className="mx-auto h-auto max-h-64 w-full object-contain"
-                  priority
-                />
-              </div>
-            )}
-
+            <div className="overflow-hidden rounded-2xl border border-border">
+              <ProductVisual product={product} frameClassName="aspect-[4/5] sm:aspect-[16/11]" />
+            </div>
             <AskGlowPrompt
               productName={product.name}
               onAsk={(q) => {
@@ -241,24 +147,17 @@ export function ProductDetail({
 
         {related.length > 0 && (
           <div className="mt-20 border-t border-border/70 pt-12">
-            <p className="font-mono text-[10px] uppercase tracking-widest text-muted">
-              Related products
-            </p>
+            <p className="text-xs font-medium uppercase tracking-wide text-muted">Other products</p>
             <ul className="mt-5 grid gap-4 sm:grid-cols-3">
-              {related.map((p) => (
-                <li key={p.id}>
+              {related.map((item) => (
+                <li key={item.id}>
                   <Link
-                    href={`/products/${p.id}`}
-                    onClick={() =>
-                      trackEvent("product_click", {
-                        product: p.id,
-                        source: "related",
-                      })
-                    }
+                    href={`/products/${item.id}`}
                     className="block rounded-xl border border-border bg-surface/30 p-5 transition-colors hover:border-accent/40"
                   >
-                    <p className="font-display text-base font-semibold text-foreground">{p.name}</p>
-                    <p className="mt-1 text-sm text-muted">{p.tagline}</p>
+                    <p className="text-xs text-accent">{item.statusLabel}</p>
+                    <p className="mt-1 font-display text-base font-semibold text-foreground">{item.name}</p>
+                    <p className="mt-1 text-sm text-muted">{item.tagline}</p>
                   </Link>
                 </li>
               ))}

@@ -34,7 +34,8 @@ export async function POST(request: Request) {
         : `${origin}/#pricing?canceled=1`;
 
     const secret = process.env.STRIPE_SECRET_KEY?.trim();
-    const priceEnvKey = tier.stripePriceEnv ?? "";
+    const rawPriceEnv = "stripePriceEnv" in tier ? tier.stripePriceEnv : undefined;
+    const priceEnvKey = typeof rawPriceEnv === "string" ? rawPriceEnv : "";
     const priceId = priceEnvKey ? process.env[priceEnvKey]?.trim() : undefined;
 
     if (!secret) {

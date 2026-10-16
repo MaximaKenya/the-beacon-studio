@@ -21,11 +21,11 @@ export default function NotFound() {
           Back to {siteConfig.brand.name}
         </Link>
         <Link
-          href="/#work"
+          href="/#products"
           className="inline-flex items-center justify-center gap-2 rounded-xl border border-border px-6 py-3 text-sm font-semibold text-foreground transition-colors hover:border-accent/30 hover:text-accent"
         >
           <ArrowLeft className="h-4 w-4" aria-hidden />
-          View work
+          View products
         </Link>
       </div>
     </section>

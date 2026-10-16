@@ -32,7 +32,7 @@ Favicon, Apple icon, PDF headers, Header, Footer, Hero, Admin, and Portal all us
 
 ### Product suite
 
-Order: **LookFinesse** (flagship) → **ConfiLearn** (LMS) → **CadenceApp** → **ConfiRent** → **TriviaYard**.
+Public products: **ConfiRent** (live, soft launch) → **CadenceApp** (beta / early access) → **LookFinesse** (coming soon, public repo only) → **ConfiLearn** (coming soon, no public link). Services: **AI Automation** and **Custom Software**. TriviaYard and ConfiTrade are not part of the public site.
 
 ## Quick start
 
@@ -203,17 +203,13 @@ All PDFs use Beacon mark / wordmark in the header. Timestamps: **Africa/Nairobi*
 | **Movable Glow FAB** | Marketing pages (`FeatureLayer`) | Drag to reposition; `localStorage` key `beacon-glow-fab-pos`; z-index 250; hidden on `/admin` and `/portal` |
 | **Chat knowledge base** | Glow panel | On-site answers for products, pricing, booking, founder — works without OpenAI |
 | **OpenAI chat** | `POST /api/chat` | Optional `OPENAI_API_KEY`; Glow calls this with KB fallback |
-| **Product recommender** | Glow (“Which product fits…?”) | KB routes to LookFinesse / ConfiLearn / CadenceApp / ConfiRent / TriviaYard |
+| **Product answers** | Glow | Knowledge base covers ConfiRent, CadenceApp, LookFinesse, and ConfiLearn only |
 | **Brief improver** | Start a Project wizard | `POST /api/brief/improve` — polishes intake briefs |
 | **Ask Glow** | Product detail pages | Quick product Qs open Glow with a prefilled prompt |
 
-## Conversion extras
+## Homepage
 
-- Soft exit-intent **Book a 15-min call** after browsing
-- **Compare products** quick picker (footer-left)
-- **Saved quote reminder** after intake (localStorage)
-- **Portal progress teaser** (aggregate active builds, no PII)
-- Social proof via real vibe aggregates on `PublicAnalyticsPulse`
+Hero, four product cards, two services, three-step “How we work”, pricing, a short FAQ, and contact. Booking, intake, and payments stay available from those sections and the header.
 
 ## Newsletter popup
 
@@ -223,9 +219,8 @@ All PDFs use Beacon mark / wordmark in the header. Timestamps: **Africa/Nairobi*
 
 ## Site highlights
 
-- Hero balances **suite of cloud apps** + **custom builds** (Explore products / Start a project / Book a call)
-- Homepage product carousel with landing-style previews (LookFinesse, ConfiLearn, CadenceApp, ConfiRent, TriviaYard)
-- Polaroid-style founder photo (no oval frames)
+- Homepage is a short page: products, services, how we work, pricing, FAQ, contact
+- Product cards use a real ConfiRent login shot and a real CadenceApp home shot. Coming-soon products use a mark, not an old screenshot.
 - Cool blue-slate light theme with mesh depth
 - 30% deposits via Stripe or M-Pesa
 - Client portal + admin ops E2E

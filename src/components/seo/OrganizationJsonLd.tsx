@@ -9,15 +9,7 @@ export function OrganizationJsonLd() {
     applicationCategory: "BusinessApplication",
     operatingSystem: "Web",
     description: product.description,
-    url: product.liveUrl || `${baseUrl}/#products`,
-    offers:
-      product.status !== "coming-soon"
-        ? {
-            "@type": "Offer",
-            price: "0",
-            priceCurrency: "USD",
-          }
-        : undefined,
+    url: product.liveUrl || `${baseUrl}/products/${product.id}`,
   }));
 
   const jsonLd = {

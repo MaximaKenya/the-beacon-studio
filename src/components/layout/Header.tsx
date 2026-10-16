@@ -13,14 +13,7 @@ import { AnimatedIcon } from "@/components/ui/AnimatedIcon";
 import { mailtoHref, phoneHref, trackCallClick, trackEmailClick } from "@/lib/contact-actions";
 
 /** Primary nav stays single-line; overflow items live in More */
-const PRIMARY_NAV_IDS = new Set([
-  "products",
-  "automation",
-  "services",
-  "pricing",
-  "about",
-  "book",
-]);
+const PRIMARY_NAV_IDS = new Set(["products", "services", "pricing", "contact"]);
 
 export function Header() {
   const pathname = usePathname();

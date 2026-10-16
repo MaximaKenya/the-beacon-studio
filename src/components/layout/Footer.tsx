@@ -126,11 +126,10 @@ export function Footer() {
             <p className="font-mono text-[10px] uppercase tracking-widest text-muted">Studio</p>
             <ul className="mt-3 space-y-2">
               {[
-                { href: pathname === "/" ? "#automation" : "/automation", label: "Automation" },
+                { href: "/automation", label: "AI Automation" },
                 { href: pathname === "/" ? "#services" : "/#services", label: "Services" },
                 { href: pathname === "/" ? "#pricing" : "/#pricing", label: "Pricing" },
-                { href: pathname === "/" ? "#work" : "/#work", label: "Work" },
-                { href: pathname === "/" ? "#book" : "/#book", label: "Book a call" },
+                { href: pathname === "/" ? "#contact" : "/#contact", label: "Contact" },
               ].map((link) => (
                 <li key={link.href}>
                   <a
@@ -147,7 +146,7 @@ export function Footer() {
                   onClick={() => openIntake()}
                   className="text-sm text-muted transition-colors hover:text-accent"
                 >
-                Start your build
+                Start a project
               </button>
               </li>
             </ul>
@@ -157,9 +156,7 @@ export function Footer() {
             <p className="font-mono text-[10px] uppercase tracking-widest text-muted">Company</p>
             <ul className="mt-3 space-y-2">
               {[
-                { href: pathname === "/" ? "#about" : "/#about", label: "About" },
                 { href: pathname === "/" ? "#faq" : "/#faq", label: "FAQ" },
-                { href: pathname === "/" ? "#contact" : "/#contact", label: "Contact" },
                 { href: "/portal/login", label: "Client portal" },
               ].map((link) => (
                 <li key={link.href}>

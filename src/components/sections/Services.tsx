@@ -1,137 +1,88 @@
 "use client";
 
-import { ArrowRight, Bot, Layers, MessageSquare, Rocket, Sparkles } from "lucide-react";
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import { siteConfig } from "@/data/site";
-import { ScrollReveal, StaggerChild } from "@/components/ui/ScrollReveal";
 import { SectionHeading } from "@/components/ui/SectionHeading";
-import { MagneticButton } from "@/components/ui/MagneticButton";
 import { useFeatures } from "@/providers/FeatureProvider";
-import { AnimatedIcon, IconWrapper } from "@/components/ui/AnimatedIcon";
-import { SoftImageCarousel } from "@/components/ui/SoftImageCarousel";
-
-const icons = [Bot, Layers, Sparkles, MessageSquare, Rocket] as const;
-const accents = ["cyan", "violet", "coral", "amber", "cyan"] as const;
+import { trackEvent } from "@/lib/analytics";
 
 export function Services() {
   const { openBooking, openIntake } = useFeatures();
-  const surfaceSlides = [
-    ...siteConfig.products.map((p) => ({
-      src: p.image,
-      alt: p.name,
-      caption: p.name,
-    })),
-    ...siteConfig.projects.slice(0, 2).map((p) => ({
-      src: p.image,
-      alt: p.title,
-      caption: p.title,
-    })),
-  ];
+  const [automation, custom] = siteConfig.services;
 
   return (
-    <section id="services" className="section-wash-skills relative overflow-hidden py-28 lg:py-40">
-      <div className="relative mx-auto max-w-6xl px-6 lg:px-8">
-        <div className="grid gap-12 lg:grid-cols-[1.15fr_0.85fr] lg:gap-16 lg:items-start">
-          <div>
-            <ScrollReveal variant="fade-down">
-              <SectionHeading
-                label="Services"
-                title="Work we take on"
-                description="Automation first, then custom apps and the product suite."
-              />
-            </ScrollReveal>
+    <section id="services" className="relative border-t border-border py-20 lg:py-28">
+      <div className="mx-auto max-w-6xl px-6 lg:px-8">
+        <SectionHeading
+          label="Services"
+          title="Two ways to hire us"
+          description="Automate one task, or have us build software for you."
+        />
 
-            <ScrollReveal stagger className="mt-4 space-y-3">
-              {siteConfig.services.map((service, i) => {
-                const Icon = icons[i % icons.length];
-                const accent = accents[i % accents.length];
-                return (
-                  <StaggerChild key={service.id}>
-                    <article className="soft-panel flex gap-4 rounded-3xl border border-border/50 px-4 py-5 first:mt-0">
-                      <IconWrapper accent={accent} size="sm">
-                        <AnimatedIcon icon={Icon} size="sm" animation="none" />
-                      </IconWrapper>
-                      <div className="min-w-0 flex-1">
-                        <h3 className="font-display text-lg font-semibold text-foreground">
-                          {service.title}
-                        </h3>
-                        <p className="mt-1.5 text-sm leading-relaxed text-muted">
-                          {service.description}
-                        </p>
-                        <ul className="mt-3 flex flex-wrap gap-2" aria-label="Related skills">
-                          {service.tags.slice(0, 3).map((tag) => (
-                            <li
-                              key={tag}
-                              className="rounded-xl border border-border px-2.5 py-0.5 font-mono text-[11px] text-muted"
-                            >
-                              {tag}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    </article>
-                  </StaggerChild>
-                );
-              })}
-            </ScrollReveal>
-          </div>
-
-          <ScrollReveal delay={0.1} className="lg:sticky lg:top-24">
-            <div className="glass-panel rounded-3xl p-7 sm:p-8">
-              <p className="font-mono text-[10px] uppercase tracking-widest text-accent">
-                What you gain
+        <div className="grid gap-6 md:grid-cols-2">
+          {automation && (
+            <article className="flex h-full flex-col rounded-2xl border border-border bg-surface p-7">
+              <h3 className="font-display text-2xl font-semibold text-foreground">{automation.title}</h3>
+              <p className="mt-3 text-sm leading-relaxed text-muted">{automation.description}</p>
+              <p className="mt-4 text-sm leading-relaxed text-foreground">
+                {siteConfig.automation.toolsLine}
               </p>
-              <h3 className="mt-3 font-display text-2xl font-semibold tracking-tight text-foreground">
-                Ready to start?
-              </h3>
-              <ul className="mt-4 space-y-2.5 text-sm text-muted">
-                {siteConfig.clientGains.map((gain) => (
-                  <li key={gain} className="flex gap-2">
-                    <span
-                      className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-accent"
-                      aria-hidden
-                    />
-                    {gain}
-                  </li>
-                ))}
-              </ul>
-              <div className="mt-8 flex flex-col gap-3">
-                <MagneticButton
-                  onClick={() => openIntake()}
-                  className="inline-flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-2xl bg-accent px-6 text-sm font-semibold text-background shadow-lg shadow-accent/20 transition-all hover:bg-accent-hover"
+              <div className="mt-auto flex flex-wrap gap-3 pt-8">
+                <Link
+                  href="/automation"
+                  className="inline-flex h-11 items-center gap-2 rounded-xl bg-accent px-4 text-sm font-semibold text-background hover:bg-accent-hover"
                 >
-                  Start a Project
+                  See how it works
                   <ArrowRight className="h-4 w-4" aria-hidden />
-                </MagneticButton>
-                <MagneticButton
-                  onClick={() => openBooking()}
-                  className="inline-flex h-12 w-full cursor-pointer items-center justify-center rounded-xl border border-border bg-surface/50 px-6 text-sm font-semibold text-foreground transition-all hover:border-accent/40"
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => {
+                    trackEvent("cta_click", { type: "book", source: "services_automation" });
+                    openBooking("automation-audit");
+                  }}
+                  className="inline-flex h-11 items-center rounded-xl border border-border px-4 text-sm font-medium text-foreground hover:border-accent/40"
                 >
-                  Book a Call
-                </MagneticButton>
-                <MagneticButton
-                  href="#engagement"
-                  className="inline-flex h-11 w-full items-center justify-center text-sm font-medium text-muted transition-colors hover:text-accent"
-                >
-                  See engagement models
-                </MagneticButton>
+                  Free 20-min audit
+                </button>
               </div>
-            </div>
-          </ScrollReveal>
-        </div>
+            </article>
+          )}
 
-        {/* Full-width carousel — aligned to section container, not nested in left column */}
-        <ScrollReveal delay={0.08} className="mt-12 w-full">
-          <p className="mb-4 font-mono text-[10px] uppercase tracking-widest text-muted">
-            Launch partnerships
-          </p>
-          <SoftImageCarousel
-            slides={surfaceSlides}
-            intervalMs={5000}
-            className="w-full"
-            fit="contain"
-            aspect="aspect-[16/9] sm:aspect-[2/1]"
-          />
-        </ScrollReveal>
+          {custom && (
+            <article className="flex h-full flex-col rounded-2xl border border-border bg-surface p-7">
+              <h3 className="font-display text-2xl font-semibold text-foreground">{custom.title}</h3>
+              <p className="mt-3 text-sm leading-relaxed text-muted">{custom.description}</p>
+              <p className="mt-4 text-sm leading-relaxed text-foreground">
+                Websites, internal tools, and new products. We agree the work before we start.
+              </p>
+              <div className="mt-auto flex flex-wrap gap-3 pt-8">
+                <button
+                  type="button"
+                  onClick={() => {
+                    trackEvent("cta_click", { type: "book", source: "services_custom" });
+                    openBooking();
+                  }}
+                  className="inline-flex h-11 items-center gap-2 rounded-xl bg-accent px-4 text-sm font-semibold text-background hover:bg-accent-hover"
+                >
+                  Book a free call
+                  <ArrowRight className="h-4 w-4" aria-hidden />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    trackEvent("cta_click", { type: "intake", source: "services_custom" });
+                    openIntake();
+                  }}
+                  className="inline-flex h-11 items-center rounded-xl border border-border px-4 text-sm font-medium text-foreground hover:border-accent/40"
+                >
+                  Start a project
+                </button>
+              </div>
+            </article>
+          )}
+        </div>
       </div>
     </section>
   );

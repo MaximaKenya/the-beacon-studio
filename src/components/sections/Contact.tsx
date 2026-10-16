@@ -1,32 +1,31 @@
 "use client";
 
-import { Mail, MessageSquare, Phone } from "lucide-react";
+import { Mail, Phone } from "lucide-react";
 import { siteConfig } from "@/data/site";
 import { ScrollReveal } from "@/components/ui/ScrollReveal";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { ContactForm } from "@/components/ui/ContactForm";
-import { AnimatedIcon, IconWrapper } from "@/components/ui/AnimatedIcon";
+import { useFeatures } from "@/providers/FeatureProvider";
 import { mailtoHref, phoneHref, trackCallClick, trackEmailClick } from "@/lib/contact-actions";
 
 export function Contact() {
+  const { openBooking } = useFeatures();
+
   return (
-    <section id="contact" className="relative border-t border-border bg-surface/20 py-28 lg:py-40">
+    <section id="contact" className="relative border-t border-border bg-surface/20 py-20 lg:py-28">
       <div className="relative mx-auto max-w-6xl px-6 lg:px-8">
         <ScrollReveal variant="fade-down">
           <SectionHeading
             label="Contact"
             title="Say hello"
-            description="We reply within one to two business days (EAT)."
+            description="Email, call, or book a time. We reply within one to two business days (EAT)."
           />
         </ScrollReveal>
 
         <div className="grid gap-12 lg:grid-cols-[1fr_1.2fr] lg:gap-16">
           <ScrollReveal delay={0.1} variant="slide-right">
             <div className="space-y-8">
-              <div className="flex gap-4">
-                <IconWrapper accent="cyan" size="md">
-                  <AnimatedIcon icon={Mail} size="md" animation="subtle" />
-                </IconWrapper>
+              <div>
                 <div>
                   <h3 className="font-display font-semibold text-foreground">Email</h3>
                   <a
@@ -39,10 +38,7 @@ export function Contact() {
                 </div>
               </div>
 
-              <div className="flex gap-4">
-                <IconWrapper accent="coral" size="md">
-                  <AnimatedIcon icon={Phone} size="md" animation="subtle" />
-                </IconWrapper>
+              <div>
                 <div>
                   <h3 className="font-display font-semibold text-foreground">Call</h3>
                   <a
@@ -56,16 +52,11 @@ export function Contact() {
                 </div>
               </div>
 
-              <div className="flex gap-4">
-                <IconWrapper accent="violet" size="md">
-                  <AnimatedIcon icon={MessageSquare} size="md" animation="subtle" />
-                </IconWrapper>
-                <div>
-                  <h3 className="font-display font-semibold text-foreground">Response time</h3>
-                  <p className="mt-1 text-sm text-muted">
-                    Typically within 1–2 business days · Africa/Nairobi (EAT).
-                  </p>
-                </div>
+              <div>
+                <h3 className="font-display font-semibold text-foreground">Response time</h3>
+                <p className="mt-1 text-sm text-muted">
+                  Usually within 1–2 business days, Nairobi time.
+                </p>
               </div>
 
               <div className="flex flex-wrap gap-3">
@@ -85,6 +76,13 @@ export function Contact() {
                   <Mail className="h-4 w-4 text-accent" />
                   Email
                 </a>
+                <button
+                  type="button"
+                  onClick={() => openBooking()}
+                  className="inline-flex h-11 items-center rounded-xl border border-border bg-surface px-5 text-sm font-semibold text-foreground hover:border-accent/40"
+                >
+                  Book a call
+                </button>
               </div>
 
               <p className="text-sm leading-relaxed text-muted">

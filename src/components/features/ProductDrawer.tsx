@@ -6,14 +6,7 @@ import { Bell, ExternalLink, Github, X } from "lucide-react";
 import { siteConfig, type Product, type ProductStatus } from "@/data/site";
 import { useFeatures } from "@/providers/FeatureProvider";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
-import { MagneticButton } from "@/components/ui/MagneticButton";
 import { trackEvent } from "@/lib/analytics";
-
-const statusLabel: Record<ProductStatus, string> = {
-  live: "Live",
-  beta: "Beta",
-  "coming-soon": "Coming Soon",
-};
 
 const statusClass: Record<ProductStatus, string> = {
   live: "border-emerald-500/40 bg-emerald-500/10 text-emerald-400",
@@ -26,7 +19,6 @@ export function ProductDrawer() {
     productDrawerOpen,
     selectedProductId,
     closeProductDrawer,
-    openIntake,
     openNewsletter,
   } = useFeatures();
   const trapRef = useFocusTrap(productDrawerOpen);
@@ -96,10 +88,7 @@ export function ProductDrawer() {
             <span
               className={`rounded-md border px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider ${statusClass[product.status]}`}
             >
-              {statusLabel[product.status]}
-            </span>
-            <span className="rounded-md border border-border/70 bg-background/40 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-muted">
-              {product.operationalStatus}
+              {product.statusLabel}
             </span>
           </div>
 
@@ -143,20 +132,21 @@ export function ProductDrawer() {
               }
               className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-accent text-sm font-semibold text-background shadow-lg shadow-accent/20 transition-all hover:bg-accent-hover"
             >
-              Open app
+              Visit site
               <ExternalLink className="h-4 w-4" aria-hidden />
             </a>
           ) : (
-            <MagneticButton
+            <button
+              type="button"
               onClick={() => {
-                trackEvent("product_request_access", { product: product.id });
+                trackEvent("product_notify", { product: product.id });
                 closeProductDrawer();
-                openIntake();
+                openNewsletter();
               }}
               className="inline-flex h-12 w-full cursor-pointer items-center justify-center rounded-xl bg-accent text-sm font-semibold text-background shadow-lg shadow-accent/20 transition-all hover:bg-accent-hover"
             >
-              Request access
-            </MagneticButton>
+              Get notified
+            </button>
           )}
 
           <div className="flex gap-3">

@@ -1,7 +1,7 @@
 {
   "name": "The Beacon Studio",
   "short_name": "Beacon",
-  "description": "Cloud apps, custom software, and AI automation from Nairobi, Kenya.",
+  "description": "Products and custom software from Nairobi. ConfiRent, CadenceApp, LookFinesse, and ConfiLearn.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#07070f",
