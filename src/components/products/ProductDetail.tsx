@@ -42,7 +42,9 @@ export function ProductDetail({
             </h1>
             <p className="mt-3 text-lg text-foreground/90">{product.tagline}</p>
             <p className="mt-6 text-base leading-relaxed text-muted">{product.description}</p>
-            <p className="mt-4 text-sm text-muted">For {product.audience}</p>
+
+            <h2 className="mt-10 font-display text-lg font-semibold text-foreground">Who it&apos;s for</h2>
+            <p className="mt-3 text-sm leading-relaxed text-muted">{product.audience}</p>
 
             {!isOpen && (
               <p className="mt-6 rounded-2xl border border-border bg-surface px-5 py-4 text-sm leading-relaxed text-muted">
@@ -50,15 +52,22 @@ export function ProductDetail({
               </p>
             )}
 
-            <h2 className="mt-10 font-display text-lg font-semibold text-foreground">What it includes</h2>
+            <h2 className="mt-10 font-display text-lg font-semibold text-foreground">Key features</h2>
             <ul className="mt-4 space-y-2">
-              {product.features.map((feature) => (
+              {(product.keyFeatures ?? product.features).map((feature) => (
                 <li key={feature} className="flex gap-2 text-sm leading-relaxed text-foreground">
                   <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-accent" aria-hidden />
                   {feature}
                 </li>
               ))}
             </ul>
+
+            {product.pricing ? (
+              <>
+                <h2 className="mt-10 font-display text-lg font-semibold text-foreground">Pricing</h2>
+                <p className="mt-3 text-sm leading-relaxed text-foreground">{product.pricing}</p>
+              </>
+            ) : null}
 
             <div className="mt-10 flex flex-wrap gap-3">
               {isOpen ? (

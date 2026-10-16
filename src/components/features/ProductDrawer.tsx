@@ -99,6 +99,26 @@ export function ProductDrawer() {
             {product.longDescription ?? product.description}
           </p>
 
+          <h3 className="mt-6 font-display text-sm font-semibold text-foreground">Who it&apos;s for</h3>
+          <p className="mt-2 text-sm leading-relaxed text-muted">{product.audience}</p>
+
+          <h3 className="mt-6 font-display text-sm font-semibold text-foreground">Key features</h3>
+          <ul className="mt-3 space-y-2">
+            {(product.keyFeatures ?? product.features).map((feature) => (
+              <li key={feature} className="flex gap-2 text-sm leading-relaxed text-foreground">
+                <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-accent" aria-hidden />
+                {feature}
+              </li>
+            ))}
+          </ul>
+
+          {product.pricing ? (
+            <>
+              <h3 className="mt-6 font-display text-sm font-semibold text-foreground">Pricing</h3>
+              <p className="mt-2 text-sm leading-relaxed text-foreground">{product.pricing}</p>
+            </>
+          ) : null}
+
           <ul className="mt-6 flex flex-wrap gap-2" aria-label="Tags">
             {product.tags.map((tag) => (
               <li

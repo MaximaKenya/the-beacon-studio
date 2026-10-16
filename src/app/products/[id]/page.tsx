@@ -16,12 +16,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const product = siteConfig.products.find((p) => p.id === id);
   if (!product) return { title: "Product not found" };
 
+  const description = product.pricing
+    ? `${product.description} ${product.pricing}`
+    : product.description;
+
   return {
     title: product.name,
-    description: product.description,
+    description,
     openGraph: {
       title: `${product.name} · ${siteConfig.brand.name}`,
-      description: product.description,
+      description,
       images: product.image ? [product.image] : undefined,
     },
   };

@@ -7,8 +7,8 @@ export function WaveField() {
     <div className="wave-field" aria-hidden>
       <svg viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
         <defs>
-          <filter id="beacon-wave-blur" x="-20%" y="-20%" width="140%" height="140%">
-            <feGaussianBlur stdDeviation="28" />
+          <filter id="beacon-wave-blur" x="-45%" y="-45%" width="190%" height="190%">
+            <feGaussianBlur stdDeviation="64" />
           </filter>
         </defs>
         <g filter="url(#beacon-wave-blur)">

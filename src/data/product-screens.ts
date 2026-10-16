@@ -11,11 +11,11 @@ export type ProductScreen = {
 /** Real screenshots only. Coming-soon products use a mark, not an old capture. */
 export const productScreens: ProductScreen[] = [
   {
-    id: "confirent-login",
+    id: "confirent-home",
     productId: "confirent",
-    label: "Sign in",
-    alt: "ConfiRent sign-in screen on a phone",
-    src: "/images/products/confirent-login.jpg",
+    label: "Home",
+    alt: "ConfiRent homepage on a desktop, with search and a featured listing",
+    src: "/images/products/confirent-desktop.jpg",
   },
   {
     id: "cadenceapp-home",

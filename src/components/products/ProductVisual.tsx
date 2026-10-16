@@ -15,19 +15,14 @@ export function ProductVisual({
   frameClassName?: string;
 }) {
   if (product.image) {
-    const contain = product.id === "confirent";
     return (
-      <div
-        className={`relative overflow-hidden bg-surface ${frameClassName} ${
-          contain ? "bg-[#e7f3ee]" : ""
-        }`}
-      >
+      <div className={`relative overflow-hidden bg-surface ${frameClassName}`}>
         <Image
           src={product.image}
           alt={product.imageAlt || product.name}
           fill
           sizes="(min-width: 768px) 560px, 100vw"
-          className={contain ? "object-contain object-center p-3" : "object-cover object-top"}
+          className="object-cover object-top"
         />
       </div>
     );

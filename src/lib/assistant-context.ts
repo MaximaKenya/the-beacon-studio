@@ -17,8 +17,10 @@ export function buildAssistantSystemPrompt(): string {
       (p) =>
         `- ${p.name} (id: ${p.id}) [${p.statusLabel}]: ${p.tagline}
   ${p.description}
-  For: ${p.audience}
-  Features: ${p.features.join("; ")}
+  Who it's for: ${p.audience}
+  Card benefits: ${p.features.join("; ")}
+  Key features: ${(p.keyFeatures ?? p.features).join("; ")}
+  ${p.pricing ? `Pricing: ${p.pricing}` : "No public price."}
   Page: /products/${p.id}${p.liveUrl ? ` · Site: ${p.liveUrl}` : " · Not open yet. Tell people to get notified or use /#contact."}`
     )
     .join("\n");
@@ -144,6 +146,8 @@ ${projects || "None published. Talk about the four products instead."}
 - Custom software is quoted after a free call. Do not invent a price.
 - For deposits: ${depositPct}% by Stripe or M-Pesa on priced automation work. Quote-only work is not paid online until there is a quote.
 - Do not mention TriviaYard or ConfiTrade.
+- ConfiRent is in soft launch. Do not claim live transaction volumes or user counts.
+- CadenceApp is in early access. Do not describe AI voice calling as available, and do not invent customer counts, uptime, or prices beyond the pricing line on the product.
 - Never invent facts. If unsure, suggest [Contact](/#contact).
 - You are the studio assistant, not ${siteConfig.founder.name} personally.`;
 }

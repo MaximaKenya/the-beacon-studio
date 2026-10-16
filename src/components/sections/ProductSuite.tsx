@@ -46,7 +46,6 @@ export function ProductSuite() {
                       </li>
                     ))}
                   </ul>
-                  <p className="mt-4 text-xs leading-relaxed text-muted">For {product.audience}</p>
 
                   <div className="mt-6 flex flex-wrap items-center gap-3">
                     {isOpen ? (
