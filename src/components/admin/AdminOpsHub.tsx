@@ -213,27 +213,20 @@ export function AdminOpsHub({
   }
 
   return (
-    <div className="space-y-6">
+    <div id="operations" className="admin-section space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <p className="font-mono text-[10px] uppercase tracking-widest text-muted">
+          <p className="admin-kicker">Day to day</p>
+          <h2 className="mt-1 font-display text-2xl font-semibold text-heading">
             Operations
-          </p>
-          <h2 className="mt-1 font-display text-2xl font-bold text-foreground">
-            Inbox & ops hub
           </h2>
-          <p className="mt-1 text-sm text-muted">
-            Click any row for details and actions. Projects sync live to the client portal.
+          <p className="mt-1 max-w-2xl text-sm text-muted">
+            Bookings, intakes, payments, and reviews. Open a row for the details.
           </p>
         </div>
-        <div className="flex flex-wrap gap-3">
-          <Link href="/portal" className="text-sm text-accent hover:underline">
-            Client portal →
-          </Link>
-          <Link href="/" className="text-sm text-accent hover:underline">
-            ← Back to site
-          </Link>
-        </div>
+        <Link href="/portal" className="admin-btn">
+          Client portal
+        </Link>
       </div>
 
       {toast && (
@@ -243,7 +236,7 @@ export function AdminOpsHub({
       )}
 
       {/* Needs attention */}
-      <div className="rounded-2xl border border-accent/25 bg-gradient-to-br from-accent/8 to-surface/40 p-5">
+      <div className="admin-panel border-accent/35 p-5 sm:p-6">
         <div className="flex items-center gap-2">
           <Bell className="h-4 w-4 text-accent" />
           <h3 className="font-display text-lg font-semibold text-foreground">
@@ -348,7 +341,7 @@ export function AdminOpsHub({
 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Bookings */}
-        <section className="rounded-2xl border border-border bg-surface/40 p-5">
+        <section className="admin-panel p-5 sm:p-6">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <Calendar className="h-4 w-4 text-accent" />
@@ -399,7 +392,7 @@ export function AdminOpsHub({
         </section>
 
         {/* Intakes */}
-        <section className="rounded-2xl border border-border bg-surface/40 p-5">
+        <section className="admin-panel p-5 sm:p-6">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <FileText className="h-4 w-4 text-accent" />
@@ -452,7 +445,7 @@ export function AdminOpsHub({
         </section>
 
         {/* Payments */}
-        <section className="rounded-2xl border border-border bg-surface/40 p-5 lg:col-span-2">
+        <section className="admin-panel p-5 sm:p-6 lg:col-span-2">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <CreditCard className="h-4 w-4 text-accent" />
@@ -528,7 +521,7 @@ export function AdminOpsHub({
         </section>
 
         {/* Newsletter */}
-        <section className="rounded-2xl border border-border bg-surface/40 p-5">
+        <section className="admin-panel p-5 sm:p-6">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <Users className="h-4 w-4 text-accent" />
@@ -566,7 +559,7 @@ export function AdminOpsHub({
         </section>
 
         {/* Contacts */}
-        <section className="rounded-2xl border border-border bg-surface/40 p-5">
+        <section className="admin-panel p-5 sm:p-6">
           <div className="flex items-center gap-2">
             <MessageSquare className="h-4 w-4 text-accent" />
             <h3 className="font-display text-lg font-semibold text-foreground">Contact form</h3>
@@ -602,7 +595,7 @@ export function AdminOpsHub({
         </section>
 
         {/* Vibes */}
-        <section className="rounded-2xl border border-border bg-surface/40 p-5 lg:col-span-2">
+        <section className="admin-panel p-5 sm:p-6 lg:col-span-2">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <Smile className="h-4 w-4 text-accent" />
@@ -652,7 +645,7 @@ export function AdminOpsHub({
       </div>
 
       {/* Messaging shortcut */}
-      <section className="rounded-2xl border border-border bg-surface/40 p-5">
+      <section className="admin-panel p-5 sm:p-6">
         <h3 className="font-display text-lg font-semibold text-foreground">
           Project messaging
         </h3>
@@ -705,7 +698,7 @@ export function AdminOpsHub({
           onClick={() => setDrawer(null)}
         >
           <aside
-            className="h-full w-full max-w-md overflow-y-auto border-l border-border bg-background p-6 shadow-xl"
+            className="h-full w-full max-w-md overflow-y-auto border-l border-border bg-surface-elevated p-6 text-foreground shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mb-4 flex items-center justify-between">

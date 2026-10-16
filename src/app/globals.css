@@ -528,6 +528,70 @@ h4 {
   animation: float-gentle 6s ease-in-out infinite;
 }
 
+/* Admin reads as a tool: solid panels over the wave field, one section bar. */
+.admin-section {
+  scroll-margin-top: 8.75rem;
+}
+
+.admin-panel {
+  border-radius: 1.25rem;
+  border: 1px solid color-mix(in srgb, var(--border) 62%, transparent);
+  background: color-mix(in srgb, var(--surface-elevated) 86%, var(--background));
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--heading) 10%, transparent),
+    0 18px 40px color-mix(in srgb, var(--background) 42%, transparent);
+}
+
+.admin-kicker {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.admin-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  padding: 0.3rem;
+  border-radius: 1rem;
+  border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+  background: color-mix(in srgb, var(--surface-elevated) 88%, transparent);
+  backdrop-filter: blur(16px);
+}
+
+.admin-tabs a {
+  border-radius: 0.75rem;
+  padding: 0.45rem 0.85rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.admin-tabs a:hover {
+  color: var(--foreground);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+.admin-btn {
+  display: inline-flex;
+  height: 2.5rem;
+  align-items: center;
+  gap: 0.45rem;
+  border-radius: 0.85rem;
+  border: 1px solid color-mix(in srgb, var(--border) 75%, transparent);
+  background: color-mix(in srgb, var(--surface-elevated) 92%, transparent);
+  padding: 0 0.9rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--foreground);
+}
+
+.admin-btn:hover {
+  border-color: color-mix(in srgb, var(--accent) 50%, var(--border));
+}
+
 .theme-transition::view-transition-old(root),
 .theme-transition::view-transition-new(root) {
   animation-duration: 0.4s;

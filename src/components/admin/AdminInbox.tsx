@@ -123,10 +123,11 @@ export function AdminInbox() {
   }
 
   return (
-    <section className="rounded-2xl border border-border bg-surface/50 p-5">
+    <section id="inbox" className="admin-panel admin-section p-5 sm:p-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h2 className="font-display text-xl font-semibold text-foreground">Inbox</h2>
+          <p className="admin-kicker">Messages</p>
+          <h2 className="mt-1 font-display text-xl font-semibold text-heading">Inbox</h2>
           <p className="mt-1 max-w-2xl text-sm text-muted">
             Contact, intake, bookings, reviews, and portal messages. Open one to reply. The client
             sees the reply in the portal. Email goes out only when Resend is configured.
@@ -135,7 +136,7 @@ export function AdminInbox() {
         <button
           type="button"
           onClick={() => void loadList(selectedId)}
-          className="inline-flex h-9 items-center rounded-xl border border-border bg-background px-3 text-sm text-foreground hover:border-accent/40"
+          className="admin-btn h-9"
         >
           Refresh
         </button>
@@ -147,10 +148,10 @@ export function AdminInbox() {
             key={item.id}
             type="button"
             onClick={() => setFilter(item.id)}
-            className={`rounded-full border px-3 py-1 text-xs font-medium ${
+            className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${
               filter === item.id
-                ? "border-accent bg-accent/15 text-accent"
-                : "border-border text-muted hover:text-foreground"
+                ? "border-accent bg-accent text-background"
+                : "border-border/80 bg-surface/60 text-muted hover:text-foreground"
             }`}
           >
             {item.label}
@@ -159,22 +160,22 @@ export function AdminInbox() {
       </div>
 
       <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
-        <div className="overflow-x-auto rounded-xl border border-border bg-background/40">
+        <div className="overflow-x-auto rounded-xl border border-border/80 bg-background/35">
           {loading ? (
             <p className="px-4 py-8 text-sm text-muted">Loading submissions…</p>
           ) : visible.length === 0 ? (
             <p className="px-4 py-8 text-sm text-muted">No submissions in this view.</p>
           ) : (
             <table className="w-full min-w-[640px] text-left text-sm">
-              <thead className="border-b border-border text-[11px] uppercase tracking-wide text-muted">
+              <thead className="border-b border-border bg-surface-elevated/80 text-[11px] uppercase tracking-wide text-muted">
                 <tr>
-                  <th className="px-3 py-2 font-medium">Type</th>
-                  <th className="px-3 py-2 font-medium">Name</th>
-                  <th className="px-3 py-2 font-medium">Email</th>
-                  <th className="px-3 py-2 font-medium">Phone</th>
-                  <th className="px-3 py-2 font-medium">Message</th>
-                  <th className="px-3 py-2 font-medium">Date</th>
-                  <th className="px-3 py-2 font-medium">Status</th>
+                  <th className="px-3 py-3 font-medium">Type</th>
+                  <th className="px-3 py-3 font-medium">Name</th>
+                  <th className="px-3 py-3 font-medium">Email</th>
+                  <th className="px-3 py-3 font-medium">Phone</th>
+                  <th className="px-3 py-3 font-medium">Message</th>
+                  <th className="px-3 py-3 font-medium">Date</th>
+                  <th className="px-3 py-3 font-medium">Status</th>
                 </tr>
               </thead>
               <tbody>
@@ -182,8 +183,10 @@ export function AdminInbox() {
                   <tr
                     key={item.id}
                     onClick={() => void openItem(item.id)}
-                    className={`cursor-pointer border-b border-border/60 align-top ${
-                      selectedId === item.id ? "bg-accent/10" : "hover:bg-surface"
+                    className={`cursor-pointer border-b border-border/50 align-top ${
+                      selectedId === item.id
+                        ? "bg-accent/10 shadow-[inset_3px_0_0_var(--accent)]"
+                        : "hover:bg-surface/80"
                     }`}
                   >
                     <td className="px-3 py-2 text-foreground">{KIND_LABEL[item.kind]}</td>
@@ -208,9 +211,11 @@ export function AdminInbox() {
           )}
         </div>
 
-        <div className="rounded-xl border border-border bg-background/50 p-4">
+        <div className="flex min-h-80 flex-col rounded-xl border border-border/80 bg-background/40 p-4">
           {!selected ? (
-            <p className="text-sm text-muted">Select a submission to read it and reply.</p>
+            <p className="m-auto max-w-xs text-center text-sm leading-relaxed text-muted">
+              Select a submission to read it and reply.
+            </p>
           ) : (
             <div className="space-y-4">
               <div>
