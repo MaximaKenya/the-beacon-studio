@@ -1,30 +1,32 @@
 @import "tailwindcss";
 
-/* Midnight Aurora (dark) + Clear Dawn (light) */
+/* Soft Slate (dark) + Clear Dawn (light).
+   Dark is a lifted charcoal, not near-black: page, card, and elevated
+   layers stay in one slate family so long reading is easier. */
 :root,
 [data-theme="dark"] {
-  --background: #06060e;
-  --background-mesh: #0a1120;
-  --foreground: #f4f7ff;
-  --muted: #b4c0d4;
-  --accent: #2dd4bf;
-  --accent-hover: #14b8a6;
-  --accent-warm: #f472b6;
-  --accent-amber: #fcd34d;
-  --accent-violet: #c084fc;
-  --surface: #121c30;
-  --surface-elevated: #1a2742;
-  --border: #3d5270;
-  --glass: rgba(14, 22, 40, 0.82);
-  --grain-opacity: 0.055;
-  --aurora-1: rgba(45, 212, 191, 0.26);
-  --aurora-2: rgba(244, 114, 182, 0.16);
-  --aurora-3: rgba(192, 132, 252, 0.18);
-  --section-wash-about: rgba(34, 211, 238, 0.05);
-  --section-wash-skills: rgba(167, 139, 250, 0.055);
-  --section-wash-projects: rgba(45, 212, 191, 0.045);
-  --glow-cyan: rgba(34, 211, 238, 0.4);
-  --glow-coral: rgba(251, 113, 133, 0.28);
+  --background: #1e2330;
+  --background-mesh: #252b3c;
+  --foreground: #e6e8ee;
+  --muted: #a7adbd;
+  --accent: #45baab;
+  --accent-hover: #6dcec2;
+  --accent-warm: #e7a0c0;
+  --accent-amber: #e4c36a;
+  --accent-violet: #c4a3ea;
+  --surface: #262c3a;
+  --surface-elevated: #323a4c;
+  --border: #343b4d;
+  --glass: rgba(50, 58, 76, 0.94);
+  --grain-opacity: 0.04;
+  --aurora-1: rgba(69, 186, 171, 0.14);
+  --aurora-2: rgba(231, 160, 192, 0.09);
+  --aurora-3: rgba(196, 163, 234, 0.1);
+  --section-wash-about: rgba(69, 186, 171, 0.07);
+  --section-wash-skills: rgba(196, 163, 234, 0.07);
+  --section-wash-projects: rgba(69, 186, 171, 0.06);
+  --glow-cyan: rgba(69, 186, 171, 0.28);
+  --glow-coral: rgba(231, 160, 192, 0.18);
   /* Soft UI radii */
   --radius-sm: 0.75rem;
   --radius-md: 1rem;
@@ -176,6 +178,42 @@ h4,
     0 16px 48px rgba(15, 23, 42, 0.09),
     0 4px 12px rgba(15, 23, 42, 0.04),
     inset 0 1px 0 rgba(255, 255, 255, 1);
+}
+
+/* Cards and modals need a visible lift once the page is no longer near-black. */
+[data-theme="dark"] .rounded-2xl.border,
+[data-theme="dark"] .rounded-\[var\(--radius-lg\)\].border,
+[data-theme="dark"] .rounded-\[var\(--radius-xl\)\].border,
+[data-theme="dark"] .soft-panel {
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--foreground) 7%, transparent),
+    0 10px 28px rgba(8, 10, 16, 0.28);
+}
+
+[data-theme="dark"] .glass-panel {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--surface-elevated) 88%, var(--foreground)) 0%,
+    var(--surface-elevated) 100%
+  );
+  border-color: color-mix(in srgb, var(--foreground) 14%, var(--border));
+  box-shadow:
+    0 24px 56px rgba(8, 10, 16, 0.42),
+    inset 0 1px 0 color-mix(in srgb, var(--foreground) 10%, transparent);
+}
+
+/* Fields sit above the card fill. The edge is stronger than --border so
+   inputs still meet a clear boundary on the elevated surface. */
+[data-theme="dark"] :is(input, textarea, select).border:not(.bg-transparent) {
+  background-color: var(--surface-elevated);
+  border-color: color-mix(in srgb, var(--foreground) 22%, var(--border));
+}
+
+[data-theme="dark"] :is(input, textarea, select).border:focus,
+[data-theme="dark"] :is(input, textarea, select).border:focus-visible {
+  border-color: var(--accent);
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 28%, transparent);
 }
 
 [data-theme="light"] body {
