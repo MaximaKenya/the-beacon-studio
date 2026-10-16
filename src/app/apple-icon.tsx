@@ -22,17 +22,17 @@ export default function AppleIcon() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          background: "#0b1220",
+          background: "#1e2330",
           borderRadius: 40,
         }}
       >
         <svg width="132" height="132" viewBox="0 0 32 32" fill="none">
-          <path d={BEACON_BEAM_LEFT} fill="#2dd4bf" />
-          <path d={BEACON_BEAM_RIGHT} fill="#2dd4bf" />
-          <path d={BEACON_TOWER} fill="#eef2ff" />
-          <path d={BEACON_BASE} fill="#eef2ff" />
-          <path d={BEACON_LANTERN} fill="#eef2ff" />
-          <circle cx={BEACON_LIGHT.cx} cy={BEACON_LIGHT.cy} r={BEACON_LIGHT.r} fill="#2dd4bf" />
+          <path d={BEACON_BEAM_LEFT} fill="#45baab" />
+          <path d={BEACON_BEAM_RIGHT} fill="#45baab" />
+          <path d={BEACON_TOWER} fill="#e6e8ee" />
+          <path d={BEACON_BASE} fill="#e6e8ee" />
+          <path d={BEACON_LANTERN} fill="#e6e8ee" />
+          <circle cx={BEACON_LIGHT.cx} cy={BEACON_LIGHT.cy} r={BEACON_LIGHT.r} fill="#45baab" />
         </svg>
       </div>
     ),

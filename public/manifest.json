@@ -4,8 +4,8 @@
   "description": "Products, custom software, and IT from Nairobi.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#07070f",
-  "theme_color": "#2dd4bf",
+  "background_color": "#1e2330",
+  "theme_color": "#45baab",
   "icons": [
     {
       "src": "/icon",

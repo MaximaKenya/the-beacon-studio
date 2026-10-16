@@ -18,8 +18,8 @@ export function ProductVisual({
     const contain = product.id === "confirent";
     return (
       <div
-        className={`relative overflow-hidden bg-background ${frameClassName} ${
-          contain ? "bg-[#e7f3ee]" : "bg-[#070b14]"
+        className={`relative overflow-hidden bg-surface ${frameClassName} ${
+          contain ? "bg-[#e7f3ee]" : ""
         }`}
       >
         <Image

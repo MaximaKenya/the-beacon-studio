@@ -21,7 +21,7 @@ export default function OpenGraphImage() {
           height: "100%",
           display: "flex",
           alignItems: "center",
-          background: "#0b1220",
+          background: "#1e2330",
           padding: "72px 80px",
         }}
       >
@@ -33,17 +33,17 @@ export default function OpenGraphImage() {
             alignItems: "center",
             justifyContent: "center",
             borderRadius: 48,
-            background: "#121c30",
+            background: "#262c3a",
             marginRight: 56,
           }}
         >
           <svg width="150" height="150" viewBox="0 0 32 32" fill="none">
-            <path d={BEACON_BEAM_LEFT} fill="#2dd4bf" />
-            <path d={BEACON_BEAM_RIGHT} fill="#2dd4bf" />
-            <path d={BEACON_TOWER} fill="#eef2ff" />
-            <path d={BEACON_BASE} fill="#eef2ff" />
-            <path d={BEACON_LANTERN} fill="#eef2ff" />
-            <circle cx={BEACON_LIGHT.cx} cy={BEACON_LIGHT.cy} r={BEACON_LIGHT.r} fill="#2dd4bf" />
+            <path d={BEACON_BEAM_LEFT} fill="#45baab" />
+            <path d={BEACON_BEAM_RIGHT} fill="#45baab" />
+            <path d={BEACON_TOWER} fill="#e6e8ee" />
+            <path d={BEACON_BASE} fill="#e6e8ee" />
+            <path d={BEACON_LANTERN} fill="#e6e8ee" />
+            <circle cx={BEACON_LIGHT.cx} cy={BEACON_LIGHT.cy} r={BEACON_LIGHT.r} fill="#45baab" />
           </svg>
         </div>
         <div style={{ display: "flex", flexDirection: "column" }}>
@@ -51,7 +51,7 @@ export default function OpenGraphImage() {
             style={{
               fontSize: 28,
               letterSpacing: 6,
-              color: "#2dd4bf",
+              color: "#45baab",
               fontWeight: 600,
             }}
           >
@@ -62,7 +62,7 @@ export default function OpenGraphImage() {
               marginTop: 12,
               fontSize: 72,
               lineHeight: 1.05,
-              color: "#eef2ff",
+              color: "#e6e8ee",
               fontWeight: 700,
             }}
           >
@@ -72,7 +72,7 @@ export default function OpenGraphImage() {
             style={{
               marginTop: 20,
               fontSize: 28,
-              color: "#b4c0d4",
+              color: "#a7adbd",
               maxWidth: 640,
             }}
           >

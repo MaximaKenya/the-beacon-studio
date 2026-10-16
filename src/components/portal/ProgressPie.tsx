@@ -12,8 +12,8 @@ export function ProgressPie({
   const p = Math.max(0, Math.min(100, percent));
   const remaining = 100 - p;
   const slices: Slice[] = [
-    { label: "Done", value: p, color: "#0d9488" },
-    { label: "Remaining", value: remaining, color: "#e2e8f0" },
+    { label: "Done", value: p, color: "var(--accent)" },
+    { label: "Remaining", value: remaining, color: "var(--border)" },
   ];
 
   const r = 14;
