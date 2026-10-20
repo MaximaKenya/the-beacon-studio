@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState, type ComponentType, type FormEvent } from "react";
-import Link from "next/link";
 import {
   Activity,
   ArrowDownRight,
@@ -43,7 +42,7 @@ function StorageBadge({ health }: { health: StorageHealth | null }) {
         ? "unreachable"
         : "local dev";
   return (
-    <p className="mt-1 font-mono text-[10px] uppercase tracking-widest text-muted">
+    <p className="admin-kicker mt-2">
       Storage · {backend} · {detail}
     </p>
   );
@@ -61,14 +60,14 @@ function StatCard({
   icon: ComponentType<{ className?: string }>;
 }) {
   return (
-    <div className="rounded-2xl border border-border bg-gradient-to-br from-surface/80 to-background/40 p-5 shadow-sm">
+    <div className="admin-panel p-5">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="font-mono text-[10px] uppercase tracking-widest text-muted">{label}</p>
-          <p className="mt-2 font-display text-3xl font-semibold text-foreground">{value}</p>
-          {hint && <p className="mt-1 text-xs text-muted">{hint}</p>}
+          <p className="admin-kicker">{label}</p>
+          <p className="mt-2 font-display text-3xl font-semibold tracking-tight text-heading">{value}</p>
+          {hint && <p className="mt-1.5 text-xs leading-relaxed text-muted">{hint}</p>}
         </div>
-        <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-background/60 text-accent">
+        <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent/12 text-accent">
           <Icon className="h-4 w-4" />
         </span>
       </div>
@@ -177,28 +176,30 @@ export default function AdminPage() {
   if (auth === "out") {
     return (
       <div className="mx-auto flex min-h-[70vh] max-w-md flex-col justify-center px-6 pt-24 pb-16">
-        <div className="rounded-2xl border border-border bg-surface/60 p-8 shadow-lg">
+        <div className="admin-panel p-8">
           <div className="mb-6 flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-background text-accent">
+            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-accent/12 text-accent">
               <Lock className="h-4 w-4" />
             </span>
             <div>
-              <h1 className="font-display text-xl font-semibold text-foreground">Admin</h1>
-              <p className="text-xs text-muted">Beacon analytics · pin protected</p>
-              <StorageBadge health={storageHealth} />
+              <p className="admin-kicker">Studio</p>
+              <h1 className="font-display text-2xl font-semibold text-heading">Sign in</h1>
             </div>
           </div>
+          <p className="mb-5 text-sm leading-relaxed text-muted">
+            Inbox, client projects, and site analytics.
+          </p>
           <form onSubmit={login} className="space-y-4">
             <div>
-              <label htmlFor="admin-pin" className="mb-1.5 block text-xs text-muted">
-                Password / PIN
+              <label htmlFor="admin-pin" className="mb-1.5 block text-sm font-medium text-foreground">
+                Password
               </label>
               <input
                 id="admin-pin"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full rounded-xl border border-border bg-background/60 px-4 py-2.5 text-sm text-foreground focus:border-accent/50 focus:outline-none"
+                className="w-full rounded-xl border border-border bg-surface-elevated px-4 py-2.5 text-sm text-foreground focus:border-accent focus:outline-none"
                 autoComplete="current-password"
                 required
               />
@@ -215,14 +216,11 @@ export default function AdminPage() {
               Enter admin
             </button>
           </form>
-          <p className="mt-4 text-xs text-muted">
-            Password is the <code className="font-mono text-foreground">ADMIN_PASSWORD</code>{" "}
-            environment variable. On Heroku that is a config var. Locally it lives in{" "}
-            <code className="font-mono text-foreground">.env.local</code>.
+          <StorageBadge health={storageHealth} />
+          <p className="mt-4 text-xs leading-relaxed text-muted">
+            Uses the <code className="font-mono text-foreground">ADMIN_PASSWORD</code> environment
+            variable.
           </p>
-          <Link href="/" className="mt-6 inline-flex items-center gap-1 text-sm text-accent hover:underline">
-            ← Back to site
-          </Link>
         </div>
       </div>
     );
@@ -259,22 +257,14 @@ export default function AdminPage() {
     : [];
 
   return (
-    <div className="px-6 pb-24 pt-28 lg:px-8">
-      <div className="mx-auto max-w-6xl">
-        <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
+    <div className="px-4 pb-24 pt-20 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl">
+        <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="font-mono text-[10px] uppercase tracking-widest text-muted">
-              {siteConfig.brand.name}
-            </p>
-            <h1 className="mt-1 font-display text-3xl font-bold text-foreground">
-              Ops & analytics
+            <p className="admin-kicker">{siteConfig.brand.name}</p>
+            <h1 className="mt-1 font-display text-3xl font-semibold tracking-tight text-heading">
+              Overview
             </h1>
-            <Link
-              href="/"
-              className="mt-2 inline-flex text-sm text-accent hover:underline lg:hidden"
-            >
-              ← Back to site
-            </Link>
             <StorageBadge health={storageHealth} />
             {updatedAt && (
               <p className="mt-1 text-xs text-muted">
@@ -285,45 +275,41 @@ export default function AdminPage() {
           </div>
           <div className="flex flex-wrap gap-2">
             {summary && <AdminPdfExport summary={summary} />}
-            <a
-              href="/api/admin/stats?export=json"
-              className="inline-flex h-10 items-center gap-2 rounded-xl border border-border bg-surface px-4 text-sm font-medium text-foreground hover:border-accent/40"
-            >
+            <a href="/api/admin/stats?export=json" className="admin-btn">
               Export JSON
             </a>
-            <button
-              type="button"
-              onClick={() => void loadStats()}
-              className="inline-flex h-10 items-center gap-2 rounded-xl border border-border bg-surface px-4 text-sm font-medium text-foreground hover:border-accent/40"
-            >
+            <button type="button" onClick={() => void loadStats()} className="admin-btn">
               <Activity className="h-4 w-4" />
               Refresh
             </button>
-            <button
-              type="button"
-              onClick={() => void logout()}
-              className="inline-flex h-10 items-center gap-2 rounded-xl border border-border bg-surface px-4 text-sm font-medium text-muted hover:text-foreground"
-            >
+            <button type="button" onClick={() => void logout()} className="admin-btn text-muted">
               <LogOut className="h-4 w-4" />
               Log out
             </button>
           </div>
         </div>
 
-        <div className="mb-12">
+        <nav aria-label="Admin sections" className="admin-tabs sticky top-14 z-40 mb-8">
+          <a href="#inbox">Inbox</a>
+          <a href="#operations">Operations</a>
+          <a href="#projects">Projects</a>
+          <a href="#analytics">Analytics</a>
+        </nav>
+
+        <div className="mb-10">
           <AdminInbox />
         </div>
 
         {ops && (
-          <div className="mb-12 space-y-8">
+          <div className="mb-10 space-y-8">
             <AdminOpsHub ops={ops} onMarkRead={markRead} onRefresh={() => void loadStats()} />
             <AdminProjectsPanel />
           </div>
         )}
 
         {summary && (
-          <>
-            <h2 className="mb-4 font-display text-xl font-semibold text-foreground">
+          <div id="analytics" className="admin-section">
+            <h2 className="mb-4 font-display text-xl font-semibold text-heading">
               Analytics
             </h2>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -354,7 +340,7 @@ export default function AdminPage() {
             </div>
 
             <div className="mt-6 grid gap-6 lg:grid-cols-2">
-              <div className="rounded-2xl border border-border bg-surface/40 p-5">
+              <div className="admin-panel p-5 sm:p-6">
                 <h2 className="font-display text-lg font-semibold text-foreground">
                   Impressions over time
                 </h2>
@@ -364,7 +350,7 @@ export default function AdminPage() {
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-border bg-surface/40 p-5">
+              <div className="admin-panel p-5 sm:p-6">
                 <h2 className="font-display text-lg font-semibold text-foreground">
                   CTR comparison
                 </h2>
@@ -381,7 +367,7 @@ export default function AdminPage() {
             </div>
 
             <div className="mt-6 grid gap-6 lg:grid-cols-2">
-              <div className="rounded-2xl border border-border bg-surface/40 p-5">
+              <div className="admin-panel p-5 sm:p-6">
                 <h2 className="font-display text-lg font-semibold text-foreground">Funnel</h2>
                 <p className="mt-1 text-xs text-muted">Visit → product → intake → convert</p>
                 <div className="mt-6">
@@ -396,7 +382,7 @@ export default function AdminPage() {
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-border bg-surface/40 p-5">
+              <div className="admin-panel p-5 sm:p-6">
                 <div className="flex items-center gap-2">
                   <Smile className="h-4 w-4 text-accent" />
                   <h2 className="font-display text-lg font-semibold text-foreground">
@@ -462,7 +448,7 @@ export default function AdminPage() {
             </div>
 
             <div className="mt-6 grid gap-6 lg:grid-cols-2">
-              <div className="rounded-2xl border border-border bg-surface/40 p-5">
+              <div className="admin-panel p-5 sm:p-6">
                 <h2 className="font-display text-lg font-semibold text-foreground">Top products</h2>
                 <ul className="mt-5 space-y-3">
                   {summary.topProducts.length === 0 && (
@@ -482,7 +468,7 @@ export default function AdminPage() {
                 </ul>
               </div>
 
-              <div className="rounded-2xl border border-border bg-surface/40 p-5">
+              <div className="admin-panel p-5 sm:p-6">
                 <h2 className="font-display text-lg font-semibold text-foreground">
                   Activity by wing
                 </h2>
@@ -498,7 +484,7 @@ export default function AdminPage() {
               </div>
             </div>
 
-            <div className="mt-6 rounded-2xl border border-border bg-surface/40 p-5">
+            <div className="mt-6 admin-panel p-5 sm:p-6">
               <h2 className="font-display text-lg font-semibold text-foreground">
                 Recent activity
               </h2>
@@ -520,7 +506,7 @@ export default function AdminPage() {
                 ))}
               </ul>
             </div>
-          </>
+          </div>
         )}
       </div>
     </div>
