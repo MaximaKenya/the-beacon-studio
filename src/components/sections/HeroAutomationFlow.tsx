@@ -1,10 +1,5 @@
-"use client";
-
-import { useEffect, useRef, useState } from "react";
-import { useInView } from "framer-motion";
 import { Check, Clock, Inbox } from "lucide-react";
 import { BeaconMark } from "@/components/brand/BeaconMark";
-import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 const ARRIVALS = ["Lead", "Message", "Invoice"] as const;
 
@@ -18,35 +13,7 @@ const ACTIONS = [
 const FLOW_LABEL =
   "Workflow: a lead, message, or invoice arrives. Beacon AI classifies it and extracts the details. Actions then run: the CRM is updated, a reply is drafted, WhatsApp or email is sent, and a report is generated. Example outcome: hours saved.";
 
-function HoursSaved({ reduced }: { reduced: boolean }) {
-  const ref = useRef<HTMLSpanElement>(null);
-  const inView = useInView(ref, { once: true, margin: "-40px" });
-  const [value, setValue] = useState(0);
-
-  useEffect(() => {
-    if (reduced || !inView) return;
-
-    let frame = 0;
-    const start = performance.now();
-    const duration = 1400;
-
-    const tick = (now: number) => {
-      const progress = Math.min(1, (now - start) / duration);
-      const eased = 1 - (1 - progress) ** 3;
-      setValue(Math.round(eased * 12));
-      if (progress < 1) frame = requestAnimationFrame(tick);
-    };
-
-    frame = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(frame);
-  }, [inView, reduced]);
-
-  return <span ref={ref}>{reduced ? 12 : value}</span>;
-}
-
 export function HeroAutomationFlow() {
-  const reducedMotion = useReducedMotion();
-
   return (
     <div className="relative mx-auto w-full max-w-lg" role="img" aria-label={FLOW_LABEL}>
       <div className="hero-flow-wash" aria-hidden />
@@ -103,7 +70,7 @@ export function HeroAutomationFlow() {
                   Example outcome
                 </p>
                 <p className="mt-2 font-display text-4xl font-semibold tracking-tight text-heading">
-                  <HoursSaved reduced={reducedMotion} />
+                  12
                   <span className="ml-1 text-2xl text-accent">h</span>
                 </p>
               </div>
