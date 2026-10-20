@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { useRef, useState, type ReactNode, type MouseEvent } from "react";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 
@@ -12,6 +11,7 @@ type MagneticButtonProps = {
   strength?: number;
 };
 
+/** CSS tilt instead of a motion library, so the hero does not load animation code. */
 export function MagneticButton({
   children,
   className = "",
@@ -23,51 +23,43 @@ export function MagneticButton({
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const reducedMotion = useReducedMotion();
 
-  const handleMove = (e: MouseEvent) => {
+  const handleMove = (event: MouseEvent) => {
     if (reducedMotion || !ref.current) return;
     const rect = ref.current.getBoundingClientRect();
-    const x = e.clientX - rect.left - rect.width / 2;
-    const y = e.clientY - rect.top - rect.height / 2;
+    const x = event.clientX - rect.left - rect.width / 2;
+    const y = event.clientY - rect.top - rect.height / 2;
     setOffset({ x: x * strength, y: y * strength });
   };
 
-  const handleLeave = () => setOffset({ x: 0, y: 0 });
-
-  const motionProps = reducedMotion
-    ? {}
-    : {
-        whileHover: { scale: 1.04 },
-        whileTap: { scale: 0.96 },
-        transition: { type: "spring" as const, stiffness: 420, damping: 18 },
-        animate: { x: offset.x, y: offset.y },
-      };
+  const style = reducedMotion ? undefined : { transform: `translate(${offset.x}px, ${offset.y}px)` };
+  const motionClass = reducedMotion ? "" : "transition-transform duration-150 hover:scale-[1.04] active:scale-[0.96]";
 
   if (href) {
     return (
-      <motion.a
+      <a
         ref={ref as React.RefObject<HTMLAnchorElement>}
         href={href}
-        className={className}
+        className={`${className} ${motionClass}`}
+        style={style}
         onMouseMove={handleMove}
-        onMouseLeave={handleLeave}
-        {...motionProps}
+        onMouseLeave={() => setOffset({ x: 0, y: 0 })}
       >
         {children}
-      </motion.a>
+      </a>
     );
   }
 
   return (
-    <motion.button
+    <button
       ref={ref as React.RefObject<HTMLButtonElement>}
       type="button"
-      className={className}
+      className={`${className} ${motionClass}`}
+      style={style}
       onClick={onClick}
       onMouseMove={handleMove}
-      onMouseLeave={handleLeave}
-      {...motionProps}
+      onMouseLeave={() => setOffset({ x: 0, y: 0 })}
     >
       {children}
-    </motion.button>
+    </button>
   );
 }

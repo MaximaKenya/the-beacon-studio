@@ -9,6 +9,7 @@ import {
   type BeaconChatMessage,
 } from "@/lib/beacon-ai";
 import { saveBeaconLeadFromMessages } from "@/lib/beacon-lead";
+import { attributionFromRecord } from "@/lib/attribution";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -159,9 +160,13 @@ async function streamGroq(
 
 export async function POST(request: Request) {
   let messages: BeaconChatMessage[] | null = null;
+  let attribution = attributionFromRecord({});
   try {
-    const body = (await request.json()) as { messages?: unknown };
+    const body = (await request.json()) as { messages?: unknown; attribution?: unknown };
     messages = sanitizeBeaconMessages(body.messages);
+    if (body.attribution && typeof body.attribution === "object" && !Array.isArray(body.attribution)) {
+      attribution = attributionFromRecord(body.attribution as Record<string, unknown>);
+    }
   } catch {
     messages = null;
   }
@@ -181,7 +186,7 @@ export async function POST(request: Request) {
 
     let leadSaved = false;
     try {
-      const result = await saveBeaconLeadFromMessages(transcript);
+      const result = await saveBeaconLeadFromMessages(transcript, attribution);
       leadSaved = result === "created";
     } catch (error) {
       console.error("Beacon AI lead save failed", error);

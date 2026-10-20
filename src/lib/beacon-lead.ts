@@ -9,8 +9,9 @@ import { upsertClient } from "@/lib/clients";
 import { isResendConfigured, sendResendEmail } from "@/lib/resend";
 import { readJsonFile, writeJsonFile } from "@/lib/storage";
 import { isValidEmail } from "@/lib/validation";
+import { mergeAttribution, type LeadAttribution } from "@/lib/attribution";
 
-type ContactRow = {
+type ContactRow = LeadAttribution & {
   id: string;
   createdAt: string;
   name: string;
@@ -42,7 +43,8 @@ function escapeHtml(value: string): string {
  * A repeat email or phone updates the existing beacon-ai row instead of duplicating it.
  */
 export async function saveBeaconLeadFromMessages(
-  messages: BeaconChatMessage[]
+  messages: BeaconChatMessage[],
+  attribution: LeadAttribution = {}
 ): Promise<BeaconLeadSaveResult> {
   const userText = messages
     .filter((message) => message.role === "user")
@@ -71,6 +73,7 @@ export async function saveBeaconLeadFromMessages(
     if (emailOk) existing.email = extracted.email;
     if (phoneOk) existing.phone = extracted.phone;
     existing.message = message;
+    Object.assign(existing, mergeAttribution(existing, attribution));
     await writeJsonFile("contacts.json", all);
     if (emailOk) {
       await upsertClient({
@@ -98,6 +101,7 @@ export async function saveBeaconLeadFromMessages(
     ...(phoneOk ? { phone: extracted.phone } : {}),
     topic: "ai-automation",
     source: "beacon-ai",
+    ...attribution,
     message,
     read: false,
     status: "new",

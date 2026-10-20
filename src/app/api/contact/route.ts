@@ -2,10 +2,11 @@ import { NextResponse } from "next/server";
 import { parseRequestJson, readJsonFile, writeJsonFile } from "@/lib/storage";
 import { isValidEmail } from "@/lib/validation";
 import { randomUUID } from "crypto";
+import { attributionFromRecord, attributionNote, type LeadAttribution } from "@/lib/attribution";
 
 export const runtime = "nodejs";
 
-type ContactSubmission = {
+type ContactSubmission = LeadAttribution & {
   id: string;
   createdAt: string;
   name: string;
@@ -30,6 +31,8 @@ export async function POST(request: Request) {
     const topic = typeof body.topic === "string" ? body.topic.trim() : "";
     const message = typeof body.message === "string" ? body.message.trim() : "";
     const source = typeof body.source === "string" ? body.source.trim().slice(0, 80) : "";
+    const attribution = attributionFromRecord(body);
+    const campaign = attributionNote(attribution);
     const emailOk = Boolean(email) && isValidEmail(email);
     const phoneOk = phone.replace(/\D/g, "").length >= 7;
 
@@ -51,6 +54,7 @@ export async function POST(request: Request) {
       ...(phone ? { phone } : {}),
       ...(topic ? { topic } : {}),
       ...(source ? { source } : { source: "contact-form" }),
+      ...attribution,
       message,
       read: false,
       status: "new",
@@ -76,7 +80,7 @@ export async function POST(request: Request) {
         ...(emailOk ? { email } : {}),
         ...(phone ? { phone } : {}),
         subject: `Contact form — ${name}`,
-        text: [`Source: ${entry.source}`, phone ? `Phone: ${phone}` : "", message].filter(Boolean).join("\n"),
+        text: [`Source: ${entry.source}`, campaign, phone ? `Phone: ${phone}` : "", message].filter(Boolean).join("\n"),
         confirmationSubject: `We received your message — ${siteConfig.brand.name}`,
       });
     } catch (error) {

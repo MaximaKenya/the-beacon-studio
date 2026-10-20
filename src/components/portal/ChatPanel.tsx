@@ -32,11 +32,14 @@ export function ChatPanel({
   }, [projectId]);
 
   useEffect(() => {
-    void load();
+    const kick = window.setTimeout(() => {
+      void load();
+    }, 0);
     const id = window.setInterval(() => void load(), pollMs);
     const onFocus = () => void load();
     window.addEventListener("focus", onFocus);
     return () => {
+      window.clearTimeout(kick);
       window.clearInterval(id);
       window.removeEventListener("focus", onFocus);
     };

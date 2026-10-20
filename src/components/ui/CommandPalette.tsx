@@ -22,6 +22,7 @@ import {
   Boxes,
 } from "lucide-react";
 import { siteConfig } from "@/data/site";
+import { categoryLandings, industryLandings } from "@/data/landings";
 import { useFeatures } from "@/providers/FeatureProvider";
 
 type CommandPaletteContextValue = {
@@ -117,8 +118,26 @@ export function CommandPaletteProvider({ children }: { children: ReactNode }) {
       keywords: `${product.name} ${product.tags.join(" ")} product suite`.toLowerCase(),
     }));
 
+    const pageItems: CommandItem[] = [
+      { path: "/book", title: "Book the free audit" },
+      { path: "/checklist", title: "SME checklist" },
+      ...categoryLandings.map((page) => ({ path: page.path, title: page.title })),
+      ...industryLandings.map((page) => ({ path: page.path, title: page.title })),
+    ].map((page) => ({
+      id: `page-${page.path}`,
+      label: page.title,
+      group: "Pages",
+      icon: <Command className="h-4 w-4" aria-hidden />,
+      action: () => {
+        window.location.href = page.path;
+        setOpen(false);
+      },
+      keywords: `${page.title} ${page.path}`.toLowerCase(),
+    }));
+
     return [
       ...navItems,
+      ...pageItems,
       ...productItems,
       {
         id: "copy-email",

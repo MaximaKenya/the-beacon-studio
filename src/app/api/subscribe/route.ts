@@ -1,16 +1,18 @@
 import { NextResponse } from "next/server";
 import { ensureDataFiles, parseRequestJson, readJsonFile, writeJsonFile } from "@/lib/storage";
 import { isValidEmail, normalizeEmail } from "@/lib/validation";
+import { attributionFromRecord, type LeadAttribution } from "@/lib/attribution";
 
 export const runtime = "nodejs";
 
-export type Subscriber = {
+export type Subscriber = LeadAttribution & {
   id: string;
   email: string;
   firstName?: string;
   subscribedAt: string;
   createdAt: string;
   read?: boolean;
+  source?: string;
 };
 
 export async function POST(request: Request) {
@@ -40,6 +42,8 @@ export async function POST(request: Request) {
       id: crypto.randomUUID(),
       email,
       ...(firstName ? { firstName } : {}),
+      source: "newsletter",
+      ...attributionFromRecord(body),
       subscribedAt: now,
       createdAt: now,
       read: false,

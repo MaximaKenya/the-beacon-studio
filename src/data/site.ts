@@ -978,6 +978,24 @@ export const siteConfig = {
         "Nairobi, Kenya (EAT). We work with people anywhere and reply within one business day.",
     },
     {
+      id: "faq-audit-page",
+      question: "How do I book the free 20-minute audit?",
+      answer:
+        "Open /book and pick a weekday slot between 09:00 and 17:00 East Africa Time. The audit is free. The slot is saved. A confirmation email with a calendar file is sent when email delivery is configured.",
+    },
+    {
+      id: "faq-checklist",
+      question: "Where is the free AI automation checklist for Kenyan SMEs?",
+      answer:
+        "At /checklist. Leave your email and download it as HTML or PDF. It is a planning list for one repetitive job, not a quote. Your email is saved as a lead.",
+    },
+    {
+      id: "faq-examples",
+      question: "Are the example results from real clients?",
+      answer:
+        "No. Example results on this site are illustrative. They show the shape of a workflow, not a measured client outcome. Testimonials stay hidden until a client has given a real quote we can share.",
+    },
+    {
       id: "faq-6",
       question: "Do you handle day-to-day IT?",
       answer:
@@ -1326,6 +1344,7 @@ export const siteConfig = {
     },
   ] satisfies ExperienceEntry[],
 
+  /** Real quotes only. The homepage hides this section while the list is empty. */
   testimonials: [] as Testimonial[],
 
   projects: [] as Project[],

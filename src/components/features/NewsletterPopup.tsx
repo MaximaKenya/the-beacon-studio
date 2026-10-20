@@ -8,6 +8,7 @@ import { useFeatures } from "@/providers/FeatureProvider";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { trackEvent } from "@/lib/analytics";
+import { readStoredAttribution } from "@/lib/attribution-client";
 import { fetchWithTimeout, FetchTimeoutError } from "@/lib/fetch-with-timeout";
 import { fireConfetti } from "@/lib/confetti";
 import { parseResponseJson } from "@/lib/safe-json";
@@ -109,7 +110,7 @@ export function NewsletterPopup() {
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, firstName: firstName || undefined }),
+          body: JSON.stringify({ email, firstName: firstName || undefined, ...readStoredAttribution() }),
         },
         SUBSCRIBE_TIMEOUT_MS
       );

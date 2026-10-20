@@ -7,6 +7,7 @@ import { useFeatures } from "@/providers/FeatureProvider";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
 import { isValidEmail } from "@/lib/validation";
 import { trackEvent } from "@/lib/analytics";
+import { readStoredAttribution } from "@/lib/attribution-client";
 import { PayButton } from "@/components/features/PayButton";
 import { DocumentActions } from "@/components/documents/DocumentActions";
 import type { QuotationRecord } from "@/lib/documents";
@@ -134,6 +135,7 @@ export function ProjectIntakeWizard() {
       email: email.trim(),
       company: company.trim() || undefined,
       phone: phone.trim() || undefined,
+      ...readStoredAttribution(),
     };
 
     try {

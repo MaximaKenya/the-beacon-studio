@@ -1,4 +1,5 @@
 import { siteConfig } from "@/data/site";
+import { beaconGroundingFacts } from "@/lib/beacon-grounding";
 import { describeTierMoney } from "@/lib/fx";
 
 export function buildAssistantSystemPrompt(): string {
@@ -114,7 +115,8 @@ Pricing section: /#pricing
 - Hours: ${siteConfig.booking.hoursStart}–${siteConfig.booking.hoursEnd}, Mon–Fri
 - Slot: ${siteConfig.booking.slotDuration} minutes
 - Types: ${siteConfig.booking.meetingTypes.map((m) => m.label).join(", ")}
-- The Book a call button opens the scheduler. There is no separate /book page. Point people to [Contact](/#contact) or the Book a call button.
+- The free 20-minute audit has its own page: [Book the audit](/book). The Book a call button still opens the scheduler. Point people to [Book the audit](/book) for a slot.
+- ${beaconGroundingFacts()}
 
 ## Client portal
 - Login: /portal/login (OTP via Resend when configured, else on-screen)

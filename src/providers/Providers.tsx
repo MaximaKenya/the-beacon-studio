@@ -9,6 +9,7 @@ import { GrainOverlay } from "@/components/ui/GrainOverlay";
 import { ScrollProgress } from "@/components/ui/ScrollProgress";
 import { SectionNav } from "@/components/ui/SectionNav";
 import { AnalyticsBeacon } from "@/components/features/AnalyticsBeacon";
+import { AttributionCapture } from "@/components/attribution/AttributionCapture";
 import type { ReactNode } from "react";
 
 export function Providers({ children }: { children: ReactNode }) {
@@ -18,6 +19,7 @@ export function Providers({ children }: { children: ReactNode }) {
         <CommandPaletteProvider>
           <FeatureLayer>
             <AnalyticsBeacon />
+            <AttributionCapture />
             <GrainOverlay />
             <ScrollProgress />
             <SectionNav />

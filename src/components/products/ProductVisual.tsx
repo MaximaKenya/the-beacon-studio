@@ -22,6 +22,7 @@ export function ProductVisual({
           alt={product.imageAlt || product.name}
           fill
           sizes="(min-width: 768px) 560px, 100vw"
+          quality={75}
           className="object-cover object-top"
         />
       </div>

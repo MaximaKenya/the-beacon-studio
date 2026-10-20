@@ -59,7 +59,11 @@ export function Hero() {
             </MagneticButton>
           </div>
           <p className="mt-5 text-sm text-muted">
-            Free 20-minute audit. We agree success criteria before you pay a deposit.
+            Free 20-minute audit. We agree success criteria before you pay a deposit.{" "}
+            <a href="/book" className="text-accent underline-offset-4 hover:underline">
+              Pick a time
+            </a>
+            .
           </p>
         </div>
 

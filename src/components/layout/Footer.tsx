@@ -157,6 +157,13 @@ export function Footer() {
             <ul className="mt-3 space-y-2">
               {[
                 { href: pathname === "/" ? "#faq" : "/#faq", label: "FAQ" },
+                { href: "/book", label: "Free 20-min audit" },
+                { href: "/checklist", label: "SME checklist" },
+                { href: "/industries/real-estate", label: "Real estate" },
+                { href: "/industries/schools", label: "Schools" },
+                { href: "/industries/clinics", label: "Clinics" },
+                { href: "/industries/saccos", label: "SACCOs" },
+                { href: "/industries/retail", label: "Retail" },
                 { href: "/portal/login", label: "Client portal" },
               ].map((link) => (
                 <li key={link.href}>

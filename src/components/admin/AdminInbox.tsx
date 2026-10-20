@@ -35,6 +35,16 @@ function sourceLabel(source: string) {
       return "Review";
     case "portal":
       return "Portal";
+    case "lead-magnet":
+      return "Checklist";
+    case "beacon-ai":
+      return "Beacon AI";
+    case "invoice-request":
+      return "Invoice request";
+    case "audit-booking":
+      return "Audit booking";
+    case "newsletter":
+      return "Newsletter";
     default:
       return source || "Website";
   }
@@ -85,6 +95,7 @@ export function AdminInbox() {
 
   async function openItem(id: string, clearNote = true) {
     setSelectedId(id);
+    setMailThreadId(null);
     if (clearNote) {
       setNote(null);
       setError(null);
@@ -95,7 +106,10 @@ export function AdminInbox() {
   }
 
   useEffect(() => {
-    void loadList(null);
+    const handle = window.setTimeout(() => {
+      void loadList(null);
+    }, 0);
+    return () => window.clearTimeout(handle);
     // Initial load only.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -113,10 +127,7 @@ export function AdminInbox() {
   }, []);
 
   useEffect(() => {
-    if (!selectedId) {
-      setMailThreadId(null);
-      return;
-    }
+    if (!selectedId) return;
     let cancel = false;
     void fetch(`/api/admin/mailbox?leadId=${encodeURIComponent(selectedId)}`)
       .then((res) => parseResponseJson<{ threadId?: string | null }>(res, {}))

@@ -1,20 +1,38 @@
 import { siteConfig } from "@/data/site";
+import { absoluteUrl } from "@/lib/seo";
+
+export function JsonLd({ data }: { data: object }) {
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
+    />
+  );
+}
 
 export function OrganizationJsonLd() {
-  const baseUrl = siteConfig.seo.siteUrl.replace(/\/$/, "");
+  const baseUrl = absoluteUrl("/");
+  const phone = siteConfig.phone;
 
-  const softwareApps = siteConfig.products.map((product) => ({
-    "@type": "SoftwareApplication",
+  const products = siteConfig.products.map((product) => ({
+    "@type": ["Product", "SoftwareApplication"],
     name: product.name,
     applicationCategory: "BusinessApplication",
     operatingSystem: "Web",
-    description: product.pricing
-      ? `${product.description} ${product.pricing}`
-      : product.description,
-    url: product.liveUrl || `${baseUrl}/products/${product.id}`,
-    ...(product.pricing
-      ? { offers: { "@type": "Offer", description: product.pricing } }
-      : {}),
+    description: product.pricing ? `${product.description} ${product.pricing}` : product.description,
+    url: product.liveUrl || absoluteUrl(`/products/${product.id}`),
+    brand: { "@id": `${baseUrl}/#organization` },
+    ...(product.pricing ? { offers: { "@type": "Offer", description: product.pricing } } : {}),
+  }));
+
+  const services = siteConfig.services.map((service) => ({
+    "@type": "Service",
+    name: service.title,
+    description: service.description,
+    serviceType: service.title,
+    provider: { "@id": `${baseUrl}/#organization` },
+    areaServed: { "@type": "Country", name: "Kenya" },
+    url: service.id === "ai-automation" ? absoluteUrl("/automation") : baseUrl,
   }));
 
   const jsonLd = {
@@ -28,10 +46,9 @@ export function OrganizationJsonLd() {
         description: siteConfig.seo.description,
         url: baseUrl,
         email: siteConfig.email,
-        logo: `${baseUrl}${siteConfig.seo.ogImage}`,
-        sameAs: siteConfig.social
-          .filter((link) => link.icon !== "email")
-          .map((link) => link.href),
+        telephone: phone,
+        logo: absoluteUrl(siteConfig.seo.ogImage),
+        sameAs: siteConfig.social.filter((link) => link.icon !== "email").map((link) => link.href),
         address: {
           "@type": "PostalAddress",
           addressLocality: "Nairobi",
@@ -41,34 +58,33 @@ export function OrganizationJsonLd() {
           "@type": "Person",
           name: siteConfig.founder.name,
           jobTitle: siteConfig.founder.role,
-          image: `${baseUrl}${siteConfig.profileImage}`,
         },
         knowsAbout: [
-          "Custom software development",
-          "Cloud applications",
-          "SaaS",
-          "API development",
-          "Product design",
+          "AI automation",
+          "Custom software",
+          "Managed IT",
+          "M-Pesa payments",
+          "Kenyan SMEs",
         ],
       },
       {
-        "@type": "Person",
-        "@id": `${baseUrl}/#founder`,
-        name: siteConfig.founder.name,
-        jobTitle: siteConfig.founder.role,
-        description: siteConfig.founder.bio.split("\n\n")[0],
-        email: siteConfig.email,
+        "@type": "LocalBusiness",
+        "@id": `${baseUrl}/#localbusiness`,
+        name: siteConfig.brand.name,
+        description: siteConfig.brand.description,
         url: baseUrl,
-        image: `${baseUrl}${siteConfig.profileImage}`,
-        worksFor: { "@id": `${baseUrl}/#organization` },
+        telephone: phone,
+        email: siteConfig.email,
+        image: absoluteUrl(siteConfig.seo.ogImage),
+        priceRange: "KES 2500-6500/month",
         address: {
           "@type": "PostalAddress",
           addressLocality: "Nairobi",
+          addressRegion: "Nairobi",
           addressCountry: "KE",
         },
-        sameAs: siteConfig.social
-          .filter((link) => link.icon !== "email")
-          .map((link) => link.href),
+        areaServed: { "@type": "Country", name: "Kenya" },
+        parentOrganization: { "@id": `${baseUrl}/#organization` },
       },
       {
         "@type": "WebSite",
@@ -78,14 +94,10 @@ export function OrganizationJsonLd() {
         description: siteConfig.seo.description,
         publisher: { "@id": `${baseUrl}/#organization` },
       },
-      ...softwareApps,
+      ...services,
+      ...products,
     ],
   };
 
-  return (
-    <script
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-    />
-  );
+  return <JsonLd data={jsonLd} />;
 }

@@ -1,13 +1,15 @@
-import type { Metadata } from "next";
 import { BuffetBuilder } from "@/components/automations/BuffetBuilder";
 import { pricedTemplates } from "@/automations/templates/public";
 import { siteConfig } from "@/data/site";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Automations",
-  description: "Tick the ready-made automations you need. Pay monthly or annually with Paystack, or ask for an invoice.",
-  alternates: { canonical: "/automations" },
-};
+export const metadata = pageMetadata({
+  title: "Ready-made automations",
+  description:
+    "Tick the ready-made automations you need. Pay monthly or annually with Paystack, or ask for an invoice. AI automation Kenya.",
+  path: "/automations",
+  keywords: ["AI automation Kenya", "ready-made automations", siteConfig.brand.name],
+});
 
 export default function AutomationsPage() {
   const templates = pricedTemplates();

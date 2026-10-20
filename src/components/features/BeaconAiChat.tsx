@@ -10,6 +10,7 @@ import { useFeatures } from "@/providers/FeatureProvider";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { trackEvent } from "@/lib/analytics";
+import { readStoredAttribution } from "@/lib/attribution-client";
 import { beaconAiUnavailableText, BEACON_AI_MAX_MESSAGE_CHARS } from "@/lib/beacon-ai";
 
 type Message = { role: "user" | "assistant"; content: string };
@@ -135,6 +136,7 @@ export function BeaconAiChat() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           messages: history.map((message) => ({ role: message.role, content: message.content })),
+          attribution: readStoredAttribution(),
         }),
       });
 

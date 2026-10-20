@@ -102,6 +102,19 @@ export function AnimatedBarChart({
   );
 }
 
+function pieArcs(
+  slices: { label: string; value: number; color: string }[],
+  total: number
+) {
+  let angle = -90;
+  return slices.map((slice) => {
+    const sweep = (slice.value / total) * 360;
+    const start = angle;
+    angle += sweep;
+    return { ...slice, start, sweep };
+  });
+}
+
 export function AnimatedPieChart({
   slices,
   size = 160,
@@ -110,15 +123,8 @@ export function AnimatedPieChart({
   size?: number;
 }) {
   const reduced = useReducedMotion();
-  const total = slices.reduce((a, s) => a + s.value, 0) || 1;
-  let angle = -90;
-
-  const arcs = slices.map((s) => {
-    const sweep = (s.value / total) * 360;
-    const start = angle;
-    angle += sweep;
-    return { ...s, start, sweep };
-  });
+  const total = slices.reduce((sum, slice) => sum + slice.value, 0) || 1;
+  const arcs = pieArcs(slices, total);
 
   function polar(cx: number, cy: number, r: number, deg: number) {
     const rad = (deg * Math.PI) / 180;

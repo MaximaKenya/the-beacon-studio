@@ -1,36 +1,37 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
 import { useFeatures } from "@/providers/FeatureProvider";
-import { NewsletterPopup } from "@/components/features/NewsletterPopup";
-import { BookingModal } from "@/components/features/BookingModal";
-import { ChatWidget } from "@/components/features/ChatWidget";
-import { FloatingBookCTA } from "@/components/features/FloatingBookCTA";
-import { WhatsAppButton } from "@/components/features/WhatsAppButton";
-import { BeaconAiChat } from "@/components/features/BeaconAiChat";
-import { MobileAuditBar } from "@/components/features/MobileAuditBar";
-import { ExitOffer } from "@/components/features/ExitOffer";
-import { KeyboardShortcuts } from "@/components/features/KeyboardShortcuts";
-import { TerminalEasterEgg } from "@/components/features/TerminalEasterEgg";
-import { ProductDrawer } from "@/components/features/ProductDrawer";
-import { ProjectIntakeWizard } from "@/components/features/ProjectIntakeWizard";
-import { SavedQuoteReminder } from "@/components/features/SavedQuoteReminder";
 import type { ReactNode } from "react";
+
+const DeferredOverlays = dynamic(
+  () => import("@/components/features/DeferredOverlays").then((mod) => mod.DeferredOverlays),
+  { ssr: false }
+);
 
 export function FeatureLayer({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const { openBooking } = useFeatures();
+  const [overlays, setOverlays] = useState(false);
 
   useEffect(() => {
     const openFromHash = () => {
       if (window.location.hash === "#book") openBooking();
     };
-    openFromHash();
     window.addEventListener("hashchange", openFromHash);
-    return () => window.removeEventListener("hashchange", openFromHash);
+    const handle = window.setTimeout(() => {
+      setOverlays(true);
+      openFromHash();
+    }, 1200);
+    return () => {
+      window.removeEventListener("hashchange", openFromHash);
+      window.clearTimeout(handle);
+    };
   }, [openBooking]);
-  const hideMarketingOverlays =
+
+  const hideMarketing =
     pathname?.startsWith("/admin") ||
     pathname?.startsWith("/dashboard") ||
     pathname?.startsWith("/portal");
@@ -38,24 +39,7 @@ export function FeatureLayer({ children }: { children: ReactNode }) {
   return (
     <>
       {children}
-      {/* Glow FAB available on every page (including /admin and /portal) */}
-      <ChatWidget />
-      {!hideMarketingOverlays && (
-        <>
-          <NewsletterPopup />
-          <BookingModal />
-          <ProductDrawer />
-          <ProjectIntakeWizard />
-          <FloatingBookCTA />
-          <WhatsAppButton />
-          <BeaconAiChat />
-          <MobileAuditBar />
-          <ExitOffer />
-          <TerminalEasterEgg />
-          <KeyboardShortcuts />
-          <SavedQuoteReminder />
-        </>
-      )}
+      {overlays ? <DeferredOverlays hideMarketing={Boolean(hideMarketing)} /> : null}
     </>
   );
 }

@@ -6,6 +6,7 @@ import { siteConfig } from "@/data/site";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { useFeatures } from "@/providers/FeatureProvider";
 import { trackEvent } from "@/lib/analytics";
+import { readStoredAttribution } from "@/lib/attribution-client";
 import { isValidEmail } from "@/lib/validation";
 
 const NEEDS = [
@@ -94,6 +95,7 @@ export function LeadCapture() {
           topic: selected.topic,
           source: selected.source,
           message: `Quick lead: ${selected.label}. ${selected.detail}`,
+          ...readStoredAttribution(),
         }),
       });
       if (!res.ok) {
