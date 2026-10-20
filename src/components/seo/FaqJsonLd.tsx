@@ -1,26 +1,19 @@
-import { siteConfig } from "@/data/site";
+import type { FaqItem } from "@/data/site";
+import { JsonLd } from "@/components/seo/OrganizationJsonLd";
 
-export function FaqJsonLd() {
-  const faq = siteConfig.faq;
-  if (!faq?.length) return null;
-
-  const data = {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    mainEntity: faq.map((item) => ({
-      "@type": "Question",
-      name: item.question,
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: item.answer,
-      },
-    })),
-  };
-
+export function FaqJsonLd({ items }: { items?: readonly FaqItem[] }) {
+  if (!items?.length) return null;
   return (
-    <script
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
+    <JsonLd
+      data={{
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        mainEntity: items.map((item) => ({
+          "@type": "Question",
+          name: item.question,
+          acceptedAnswer: { "@type": "Answer", text: item.answer },
+        })),
+      }}
     />
   );
 }

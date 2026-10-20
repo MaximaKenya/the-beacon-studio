@@ -97,7 +97,10 @@ export function AdminMailbox() {
   }
 
   useEffect(() => {
-    void loadList(folder, query);
+    const handle = window.setTimeout(() => {
+      void loadList(folder, query);
+    }, 0);
+    return () => window.clearTimeout(handle);
     // Reload when the folder or search changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [folder, query]);

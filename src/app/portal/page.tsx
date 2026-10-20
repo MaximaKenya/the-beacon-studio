@@ -81,9 +81,14 @@ export default function PortalDashboardPage() {
   }, [router]);
 
   useEffect(() => {
-    void load();
+    const kick = window.setTimeout(() => {
+      void load();
+    }, 0);
     const id = window.setInterval(() => void load(), 8000);
-    return () => window.clearInterval(id);
+    return () => {
+      window.clearTimeout(kick);
+      window.clearInterval(id);
+    };
   }, [load]);
 
   async function logout() {

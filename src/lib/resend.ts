@@ -8,7 +8,7 @@ import { siteConfig } from "@/data/site";
 
 export type ResendAttachment = {
   filename: string;
-  content: string;
+  content: string | Buffer;
   contentType?: string;
 };
 

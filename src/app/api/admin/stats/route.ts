@@ -3,6 +3,7 @@ import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { getAnalyticsStore, summarizeAnalytics } from "@/lib/analytics-store";
 import { getStorageHealth, readJsonFile, writeJsonFile } from "@/lib/storage";
 import { listPayments } from "@/lib/payments";
+import { buildStudioKpis, collectLeads, leadsToCsv } from "@/lib/lead-kpis";
 
 export const runtime = "nodejs";
 
@@ -176,8 +177,20 @@ export async function GET(request: Request) {
     },
   };
 
+  const leads = collectLeads({ contacts, intakes, bookings, subscribers });
+  const kpis = await buildStudioKpis(leads, summary);
+
+  if (searchParams.get("export") === "csv") {
+    return new NextResponse(leadsToCsv(leads), {
+      headers: {
+        "Content-Type": "text/csv; charset=utf-8",
+        "Content-Disposition": 'attachment; filename="beacon-leads.csv"',
+      },
+    });
+  }
+
   if (searchParams.get("export") === "json") {
-    return new NextResponse(JSON.stringify({ summary, store, ops }, null, 2), {
+    return new NextResponse(JSON.stringify({ summary, store, ops, kpis }, null, 2), {
       headers: {
         "Content-Type": "application/json",
         "Content-Disposition": `attachment; filename="beacon-analytics-${Date.now()}.json"`,
@@ -192,6 +205,7 @@ export async function GET(request: Request) {
     updatedAt: store.updatedAt,
     ops,
     storage,
+    kpis,
   });
 }
 

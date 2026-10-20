@@ -1,4 +1,5 @@
 import { siteConfig } from "@/data/site";
+import { beaconGroundingFacts } from "@/lib/beacon-grounding";
 import { whatsappHref, whatsappPrefill } from "@/lib/contact-actions";
 import { describeTierMoney } from "@/lib/fx";
 import { isValidEmail, normalizeEmail } from "@/lib/validation";
@@ -173,6 +174,7 @@ Rules:
 - When a visitor shares a name, email, or phone, confirm what you received and that the studio will follow up. Ask only for whichever of name, email, or phone is still missing.
 - You are not ${siteConfig.founder.name}. Do not pretend to be a person.
 - Phone and WhatsApp: ${siteConfig.phoneDisplay} (${beaconWhatsappLink()}).
+- ${beaconGroundingFacts()}
 
 Products (these four only):
 ${products}

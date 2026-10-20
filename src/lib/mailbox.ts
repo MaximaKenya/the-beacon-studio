@@ -623,6 +623,8 @@ export async function recordSiteForm(input: {
   text: string;
   clientId?: string;
   confirmationSubject?: string;
+  /** The caller sends its own confirmation, for example a booking with a calendar file. */
+  skipConfirmation?: boolean;
 }): Promise<{ threadId: string; emailed: boolean }> {
   const doc = await readDoc();
   const now = new Date().toISOString();
@@ -658,7 +660,7 @@ export async function recordSiteForm(input: {
   doc.threads.unshift(thread);
 
   let emailed = false;
-  if (email && isMailboxConfigured()) {
+  if (email && isMailboxConfigured() && !input.skipConfirmation) {
     const note = brandedEmail({
       heading: input.confirmationSubject || `We received your message`,
       greeting: `Hi ${input.name || "there"},`,

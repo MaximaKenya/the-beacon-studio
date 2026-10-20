@@ -156,7 +156,7 @@ export async function POST(request: Request) {
     if (idx < 0) return NextResponse.json({ error: "Not found" }, { status: 404 });
     const intake = intakes[idx];
 
-    let projectId = intake.projectId ? String(intake.projectId) : "";
+    const projectId = intake.projectId ? String(intake.projectId) : "";
     if (!projectId) {
       const client = await upsertClient({
         email: String(intake.email ?? ""),

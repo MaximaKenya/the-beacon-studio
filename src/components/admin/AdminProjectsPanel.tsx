@@ -26,7 +26,10 @@ export function AdminProjectsPanel() {
   }
 
   useEffect(() => {
-    void load();
+    const handle = window.setTimeout(() => {
+      void load();
+    }, 0);
+    return () => window.clearTimeout(handle);
   }, []);
 
   function select(p: ProjectRecord) {

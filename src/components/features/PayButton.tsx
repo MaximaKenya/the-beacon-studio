@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Building2, CreditCard, Loader2, Smartphone } from "lucide-react";
 import { siteConfig } from "@/data/site";
 import { trackEvent } from "@/lib/analytics";
+import { readStoredAttribution } from "@/lib/attribution-client";
 import { formatKes, formatUsd, kesForCharge } from "@/lib/fx";
 import { useFeatures } from "@/providers/FeatureProvider";
 import { parseResponseJson } from "@/lib/safe-json";
@@ -198,6 +199,7 @@ export function PayButton({
           email,
           ...(note ? { note } : {}),
           ...(projectId ? { projectId } : {}),
+          ...readStoredAttribution(),
         }),
       });
       const data = await parseResponseJson<{ ok?: boolean; message?: string }>(res, {});

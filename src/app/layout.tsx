@@ -3,11 +3,14 @@ import { Outfit, Plus_Jakarta_Sans } from "next/font/google";
 import { siteConfig } from "@/data/site";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import dynamic from "next/dynamic";
 import { OrganizationJsonLd } from "@/components/seo/OrganizationJsonLd";
-import { FaqJsonLd } from "@/components/seo/FaqJsonLd";
 import { Providers } from "@/providers/Providers";
-import { WaveField } from "@/components/ui/WaveField";
 import "./globals.css";
+
+const WaveField = dynamic(() => import("@/components/ui/WaveField").then((mod) => mod.WaveField), {
+  loading: () => null,
+});
 
 const plusJakarta = Plus_Jakarta_Sans({
   variable: "--font-plus-jakarta",
@@ -59,6 +62,7 @@ export const metadata: Metadata = {
   },
   manifest: "/manifest.json",
   alternates: {
+    canonical: siteConfig.seo.siteUrl,
     types: {
       "application/json": "/api/feed",
     },
@@ -86,7 +90,6 @@ export default function RootLayout({
           Skip to content
         </a>
         <OrganizationJsonLd />
-        <FaqJsonLd />
         <Providers>
           <Header />
           {/* pb-24 (~6rem) clears fixed FABs without inventing a blank page after the footer */}

@@ -448,7 +448,7 @@ function buildReply(intent: Intent): string {
     case "projects":
       return projects.length
         ? `Selected work:\n• ${formatProjects()}\nAlso see the [products](/#products).`
-        : `The public work is the four products: ${formatProductPageLinks()}. Client projects are not listed here.`;
+        : `The public work is the four products: ${formatProductPageLinks()}. Example results on the site are illustrative, not client results. Client projects are not listed here.`;
 
     case "contact":
       return `Reach ${brand.name} at ${email} — typically 1–2 business days (EAT). Or use [Contact](/#contact), [Book a Call](/#book), or call ${siteConfig.phoneDisplay}.`;
@@ -457,7 +457,7 @@ function buildReply(intent: Intent): string {
       return `Subscribe via the newsletter popup or footer for ${brand.name} product launches and studio notes. No spam. Prefer a call? [Book](/#book).`;
 
     case "booking":
-      return `Book a ${booking.slotDuration}-minute call — Mon–Fri, ${booking.hoursStart}–${booking.hoursEnd} (EAT / ${booking.timezone.replace("_", " ")}). Types: ${booking.meetingTypes.map((m) => m.label).join(", ")}. Open [Book a Call](/#book).`;
+      return `The free 20-minute automation audit is on [the booking page](/book) — weekdays, ${booking.hoursStart}–${booking.hoursEnd} (EAT). Other calls use the same hours. The checklist for Kenyan SMEs is at [the checklist](/checklist).`;
 
     case "about":
       return `${assistant.name} here. ${brand.name} is ${founder.name}'s software studio in ${location} — ${brand.tagline}\n\n${founder.bio.trim().split("\n\n")[0]}\n\n[Products](/#products) · [Contact](/#contact) · [Book a call](/#contact).`;

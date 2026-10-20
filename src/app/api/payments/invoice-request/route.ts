@@ -6,10 +6,11 @@ import { recordSiteForm } from "@/lib/mailbox";
 import { computeCheckoutAmount, createPayment } from "@/lib/payments";
 import { parseRequestJson, readJsonFile, writeJsonFile } from "@/lib/storage";
 import { isValidEmail, normalizeEmail } from "@/lib/validation";
+import { attributionFromRecord, attributionNote, type LeadAttribution } from "@/lib/attribution";
 
 export const runtime = "nodejs";
 
-type ContactSubmission = {
+type ContactSubmission = LeadAttribution & {
   id: string;
   createdAt: string;
   name: string;
@@ -73,7 +74,8 @@ export async function POST(request: Request) {
       email,
       topic: "invoice",
       source: "invoice-request",
-      message: summary,
+      ...attributionFromRecord(body),
+      message: [summary, attributionNote(attributionFromRecord(body))].filter(Boolean).join("\n"),
       read: false,
       status: "new",
     };

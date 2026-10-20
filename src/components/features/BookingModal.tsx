@@ -19,6 +19,7 @@ import {
   formatDateDisplay,
   formatDateKey,
   formatTimeDisplay,
+  durationForMeeting,
   generateTimeSlots,
   getMonthDays,
   getNowInTimezone,
@@ -27,6 +28,7 @@ import {
   type BookedSlot,
 } from "@/lib/booking-utils";
 import { trackEvent } from "@/lib/analytics";
+import { readStoredAttribution } from "@/lib/attribution-client";
 import { fetchWithTimeout, FetchTimeoutError } from "@/lib/fetch-with-timeout";
 import { fireConfetti } from "@/lib/confetti";
 
@@ -105,10 +107,11 @@ export function BookingModal() {
   const leadingBlanks = monthDays[0]?.getDay() ?? 0;
   const todayKey = getNowInTimezone().dateKey;
 
+  const slotDuration = durationForMeeting(meetingType);
   const timeSlots = useMemo(() => {
     if (!selectedDate) return [];
-    return generateTimeSlots(selectedDate, booked);
-  }, [selectedDate, booked]);
+    return generateTimeSlots(selectedDate, booked, slotDuration);
+  }, [selectedDate, booked, slotDuration]);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -131,6 +134,8 @@ export function BookingModal() {
             phone: phone || undefined,
             message: message || undefined,
             meetingType,
+            source: meetingType === "automation-audit" ? "audit-booking" : "booking",
+            ...readStoredAttribution(),
           }),
         },
         BOOK_TIMEOUT_MS

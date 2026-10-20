@@ -1,29 +1,16 @@
+import dynamic from "next/dynamic";
 import { Hero } from "@/components/sections/Hero";
-import { ProductSuite } from "@/components/sections/ProductSuite";
-import { Services } from "@/components/sections/Services";
-import { RoiCalculator } from "@/components/sections/RoiCalculator";
-import { HowItWorks } from "@/components/sections/HowItWorks";
-import { Pricing } from "@/components/sections/Pricing";
-import { Faq } from "@/components/sections/Faq";
-import { LeadCapture } from "@/components/sections/LeadCapture";
-import { FinalCta } from "@/components/sections/FinalCta";
-import { PublicReviews } from "@/components/sections/PublicReviews";
-import { Contact } from "@/components/sections/Contact";
+import { FaqJsonLd } from "@/components/seo/FaqJsonLd";
+import { siteConfig } from "@/data/site";
+
+const HomeRest = dynamic(() => import("@/components/home/HomeRest").then((mod) => mod.HomeRest));
 
 export default function Home() {
   return (
     <>
+      <FaqJsonLd items={[...siteConfig.faq]} />
       <Hero />
-      <ProductSuite />
-      <Services />
-      <RoiCalculator />
-      <HowItWorks />
-      <Pricing />
-      <Faq />
-      <LeadCapture />
-      <FinalCta />
-      <PublicReviews />
-      <Contact />
+      <HomeRest />
     </>
   );
 }

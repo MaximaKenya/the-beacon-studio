@@ -7,10 +7,11 @@ import { createProjectFromIntake, updateProject } from "@/lib/projects";
 import { createQuotation } from "@/lib/documents";
 import { createAccessToken } from "@/lib/portal-auth";
 import { ensureThread } from "@/lib/messages";
+import { attributionFromRecord, attributionNote, type LeadAttribution } from "@/lib/attribution";
 
 export const runtime = "nodejs";
 
-export type IntakeEntry = {
+export type IntakeEntry = LeadAttribution & {
   id: string;
   projectType: string;
   budget: string;
@@ -20,6 +21,7 @@ export type IntakeEntry = {
   email: string;
   company?: string;
   phone?: string;
+  source?: string;
   submittedAt: string;
   createdAt?: string;
   read?: boolean;
@@ -50,6 +52,8 @@ export async function POST(request: Request) {
         ? body.company.trim()
         : undefined;
     const phone = typeof body.phone === "string" ? body.phone.trim() : "";
+    const attribution = attributionFromRecord(body);
+    const campaign = attributionNote(attribution);
 
     const validType = siteConfig.intake.projectTypes.some((t) => t.id === projectType);
     const validBudget = siteConfig.intake.budgets.some((b) => b.id === budget);
@@ -83,6 +87,8 @@ export async function POST(request: Request) {
       email,
       ...(company ? { company } : {}),
       ...(phone ? { phone } : {}),
+      source: "intake",
+      ...attribution,
       submittedAt: new Date().toISOString(),
       createdAt: new Date().toISOString(),
       read: false,
@@ -131,7 +137,7 @@ export async function POST(request: Request) {
         ...(phone ? { phone } : {}),
         clientId: client.id,
         subject: `Project intake — ${typeLabel} — ${name}`,
-        text: [`${typeLabel}`, company ? `Company: ${company}` : "", phone ? `Phone: ${phone}` : "", brief]
+        text: [`${typeLabel}`, company ? `Company: ${company}` : "", phone ? `Phone: ${phone}` : "", campaign, brief]
           .filter(Boolean)
           .join("\n"),
         confirmationSubject: `We received your project brief — ${siteConfig.brand.name}`,

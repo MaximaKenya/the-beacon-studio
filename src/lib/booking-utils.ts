@@ -1,6 +1,47 @@
 import { siteConfig } from "@/data/site";
 
-export type BookedSlot = { date: string; time: string };
+export type BookedSlot = { date: string; time: string; durationMinutes?: number };
+
+export function durationForMeeting(meetingType: string): number {
+  const meeting =
+    siteConfig.booking.meetingTypes.find((item) => item.id === meetingType) ??
+    siteConfig.booking.meetingTypes.find((item) => item.label === meetingType);
+  return meeting?.duration ?? siteConfig.booking.slotDuration;
+}
+
+export function clockMinutes(time: string): number | null {
+  const match = /^(\d{1,2}):(\d{2})$/.exec(time);
+  if (!match) return null;
+  const hour = Number(match[1]);
+  const minute = Number(match[2]);
+  if (hour > 23 || minute > 59) return null;
+  return hour * 60 + minute;
+}
+
+export function rangesOverlap(startA: number, durationA: number, startB: number, durationB: number): boolean {
+  return startA < startB + durationB && startB < startA + durationA;
+}
+
+export function slotTaken(
+  booked: BookedSlot[],
+  date: string,
+  time: string,
+  durationMinutes: number
+): boolean {
+  const start = clockMinutes(time);
+  if (start === null) return true;
+  return booked.some((slot) => {
+    if (slot.date !== date) return false;
+    const other = clockMinutes(slot.time);
+    if (other === null) return false;
+    return rangesOverlap(
+      start,
+      durationMinutes,
+      other,
+      slot.durationMinutes ?? siteConfig.booking.slotDuration
+    );
+  });
+}
 
 const TZ = siteConfig.booking.timezone;
 
@@ -101,8 +142,13 @@ export function getTimezoneLabel(): string {
   return "East Africa Time (EAT)";
 }
 
-export function generateTimeSlots(dateKey: string, booked: BookedSlot[]): string[] {
-  const { hoursStart, hoursEnd, slotDuration } = siteConfig.booking;
+export function generateTimeSlots(
+  dateKey: string,
+  booked: BookedSlot[],
+  duration: number = siteConfig.booking.slotDuration
+): string[] {
+  const { hoursStart, hoursEnd } = siteConfig.booking;
+  const slotDuration = duration;
   const [startH, startM] = hoursStart.split(":").map(Number);
   const [endH, endM] = hoursEnd.split(":").map(Number);
   const startMinutes = startH * 60 + startM;
@@ -118,8 +164,7 @@ export function generateTimeSlots(dateKey: string, booked: BookedSlot[]): string
     const h = Math.floor(m / 60);
     const min = m % 60;
     const time = `${String(h).padStart(2, "0")}:${String(min).padStart(2, "0")}`;
-    const taken = booked.some((b) => b.date === dateKey && b.time === time);
-    if (!taken) slots.push(time);
+    if (!slotTaken(booked, dateKey, time, slotDuration)) slots.push(time);
   }
 
   return slots;

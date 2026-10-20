@@ -27,6 +27,8 @@ import { AdminOpsHub, type AdminOpsData } from "@/components/admin/AdminOpsHub";
 import { AdminProjectsPanel } from "@/components/admin/AdminProjectsPanel";
 import { AdminAutomations } from "@/components/automations/AdminAutomations";
 import { parseResponseJson } from "@/lib/safe-json";
+import { formatKes, formatUsd } from "@/lib/fx";
+import type { StudioKpis } from "@/lib/lead-kpis";
 
 type StorageHealth = {
   ok?: boolean;
@@ -86,6 +88,7 @@ export default function AdminPage() {
   const [updatedAt, setUpdatedAt] = useState<string | null>(null);
   const [loadingStats, setLoadingStats] = useState(false);
   const [storageHealth, setStorageHealth] = useState<StorageHealth | null>(null);
+  const [kpis, setKpis] = useState<StudioKpis | null>(null);
 
   const wingLabels = useMemo(() => {
     const map = new Map(siteConfig.products.map((p) => [p.id, p.name]));
@@ -114,9 +117,11 @@ export default function AdminPage() {
         summary?: AnalyticsSummary;
         updatedAt?: string;
         ops?: AdminOpsData;
+        kpis?: StudioKpis;
       }>(res, {});
       if (data.summary) setSummary(data.summary);
       if (data.ops) setOps(data.ops);
+      if (data.kpis) setKpis(data.kpis);
       setUpdatedAt(data.updatedAt ?? null);
     } finally {
       setLoadingStats(false);
@@ -133,15 +138,22 @@ export default function AdminPage() {
   }
 
   useEffect(() => {
-    void checkAuth();
-    void fetch("/api/health")
-      .then((res) => parseResponseJson<StorageHealth>(res, {}))
-      .then((data) => setStorageHealth(data))
-      .catch(() => setStorageHealth(null));
+    const handle = window.setTimeout(() => {
+      void checkAuth();
+      void fetch("/api/health")
+        .then((res) => parseResponseJson<StorageHealth>(res, {}))
+        .then((data) => setStorageHealth(data))
+        .catch(() => setStorageHealth(null));
+    }, 0);
+    return () => window.clearTimeout(handle);
   }, []);
 
   useEffect(() => {
-    if (auth === "in") void loadStats();
+    if (auth !== "in") return;
+    const handle = window.setTimeout(() => {
+      void loadStats();
+    }, 0);
+    return () => window.clearTimeout(handle);
   }, [auth]);
 
   async function login(e: FormEvent) {
@@ -277,6 +289,9 @@ export default function AdminPage() {
           </div>
           <div className="flex flex-wrap gap-2">
             {summary && <AdminPdfExport summary={summary} />}
+            <a href="/api/admin/stats?export=csv" className="admin-btn">
+              Export leads CSV
+            </a>
             <a href="/api/admin/stats?export=json" className="admin-btn">
               Export JSON
             </a>
@@ -299,6 +314,51 @@ export default function AdminPage() {
           <a href="#projects">Projects</a>
           <a href="#analytics">Analytics</a>
         </nav>
+
+        {kpis && (
+          <section id="pipeline" className="admin-section mb-10" aria-labelledby="pipeline-heading">
+            <h2 id="pipeline-heading" className="mb-4 font-display text-xl font-semibold text-heading">
+              Pipeline
+            </h2>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <StatCard label="MRR" value={formatKes(kpis.mrrKes)} hint={formatUsd(kpis.mrrUsd)} icon={Sparkles} />
+              <StatCard
+                label="Automations live"
+                value={kpis.activeAutomations}
+                hint="Active, excluding demos"
+                icon={Activity}
+              />
+              <StatCard label="Leads" value={kpis.leadCount} hint="Contacts, intakes, bookings, subscribers" icon={MousePointerClick} />
+              <StatCard label="Audit bookings" value={kpis.auditBookings} hint="Free 20-minute audits" icon={ArrowUpRight} />
+            </div>
+            <div className="mt-6 grid gap-6 lg:grid-cols-2">
+              <div className="admin-panel p-5 sm:p-6">
+                <h3 className="font-display text-lg font-semibold text-foreground">Leads by source</h3>
+                <div className="mt-4">
+                  <AnimatedBarChart data={kpis.leadsBySource} />
+                </div>
+              </div>
+              <div className="admin-panel p-5 sm:p-6">
+                <h3 className="font-display text-lg font-semibold text-foreground">Leads by campaign</h3>
+                <p className="mt-1 text-xs text-muted">utm_source on the lead</p>
+                <div className="mt-4">
+                  {kpis.leadsByUtm.length > 0 ? (
+                    <AnimatedBarChart data={kpis.leadsByUtm} color="var(--accent-violet)" />
+                  ) : (
+                    <p className="py-8 text-sm text-muted">No campaign data yet.</p>
+                  )}
+                </div>
+              </div>
+            </div>
+            <div className="mt-6 admin-panel p-5 sm:p-6">
+              <h3 className="font-display text-lg font-semibold text-foreground">Conversion funnel</h3>
+              <p className="mt-1 text-xs text-muted">Visitors, leads, audits booked, automations live</p>
+              <div className="mt-6">
+                <AnimatedFunnel steps={kpis.funnel} />
+              </div>
+            </div>
+          </section>
+        )}
 
         <div className="mb-10 space-y-8">
           <AdminMailbox />

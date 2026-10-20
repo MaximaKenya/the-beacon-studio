@@ -1,35 +1,17 @@
 import type { MetadataRoute } from "next";
+import { categoryLandings, industryLandings } from "@/data/landings";
 import { siteConfig } from "@/data/site";
+import { absoluteUrl } from "@/lib/seo";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = siteConfig.seo.siteUrl.replace(/\/$/, "");
+  const staticPaths = ["/", "/automation", "/automations", "/book", "/checklist"];
+  const landingPaths = [...categoryLandings, ...industryLandings].map((page) => page.path);
+  const productPaths = siteConfig.products.map((product) => `/products/${product.id}`);
 
-  const productRoutes = siteConfig.products.map((p) => ({
-    url: `${baseUrl}/products/${p.id}`,
+  return [...staticPaths, ...landingPaths, ...productPaths].map((path) => ({
+    url: absoluteUrl(path),
     lastModified: new Date(),
-    changeFrequency: "weekly" as const,
-    priority: 0.8,
+    changeFrequency: path === "/" ? "weekly" : "weekly",
+    priority: path === "/" ? 1 : path === "/automation" || path === "/automations" ? 0.9 : 0.8,
   }));
-
-  return [
-    {
-      url: baseUrl,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 1,
-    },
-    {
-      url: `${baseUrl}/automation`,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/automations`,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 0.9,
-    },
-    ...productRoutes,
-  ];
 }

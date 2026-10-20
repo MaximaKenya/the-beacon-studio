@@ -1,25 +1,18 @@
-import type { Metadata } from "next";
 import { AutomationOffer } from "@/components/sections/AutomationOffer";
 import { siteConfig } from "@/data/site";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "AI Automation",
+export const metadata = pageMetadata({
+  title: "AI automation Kenya",
   description: siteConfig.automation.supporting,
+  path: "/automation",
   keywords: [
     "AI automation Kenya",
     "WhatsApp automation",
     "lead follow-up automation",
     siteConfig.brand.name,
   ],
-  alternates: {
-    canonical: "/automation",
-  },
-  openGraph: {
-    title: `AI Automation | ${siteConfig.brand.name}`,
-    description: siteConfig.automation.supporting,
-    url: "/automation",
-  },
-};
+});
 
 export default function AutomationPage() {
   return (

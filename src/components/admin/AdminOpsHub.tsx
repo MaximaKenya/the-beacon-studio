@@ -381,7 +381,7 @@ export function AdminOpsHub({
                     </p>
                     <p className="text-xs text-muted">{b.email}</p>
                     <p className="mt-1 font-mono text-[10px] text-muted">
-                      {when(b.createdAt)}
+                      {b.date ? `${b.date} ${b.time ?? ""}` : when(b.createdAt)}
                       {b.status ? ` · ${b.status}` : ""}
                     </p>
                   </button>

@@ -55,7 +55,10 @@ export function AdminAutomations() {
   }, []);
 
   useEffect(() => {
-    void load();
+    const handle = window.setTimeout(() => {
+      void load();
+    }, 0);
+    return () => window.clearTimeout(handle);
   }, [load]);
 
   const selected = data?.clients.find((client) => client.email === email) || null;

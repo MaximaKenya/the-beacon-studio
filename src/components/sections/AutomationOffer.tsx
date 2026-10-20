@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { siteConfig } from "@/data/site";
 import { ScrollReveal, StaggerChild } from "@/components/ui/ScrollReveal";
@@ -55,7 +56,13 @@ export function AutomationOffer({ id = "automation", titleAs = "h2" }: Automatio
             <StaggerChild key={useCase.id}>
               <article className="rounded-3xl border border-border/60 bg-surface/50 px-6 py-6">
                 <h3 className="font-display text-lg font-semibold text-foreground">
-                  {useCase.industry}
+                  {useCase.id === "smes" ? (
+                    useCase.industry
+                  ) : (
+                    <Link href={`/industries/${useCase.id}`} className="hover:text-accent">
+                      {useCase.industry}
+                    </Link>
+                  )}
                 </h3>
                 <p className="mt-2 text-base leading-relaxed text-muted">{useCase.line}</p>
               </article>
@@ -85,6 +92,9 @@ export function AutomationOffer({ id = "automation", titleAs = "h2" }: Automatio
           >
             Or start a project
           </button>
+          <Link href="/book" className="text-sm font-medium text-accent hover:underline">
+            Pick a time on the booking page
+          </Link>
         </div>
       </div>
     </section>
