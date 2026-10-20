@@ -23,6 +23,7 @@ What must be true before calling the site live for clients. Full setup: `INTEGRA
 | **Stripe** (card deposits) | `STRIPE_SECRET_KEY` (+ optional Price IDs / publishable key) | Pay UI → coming soon + mailto/book |
 | **M-Pesa Daraja** (STK Push) | `MPESA_*` | Same coming-soon fallbacks |
 | **OpenAI** (Glow + brief helper) | `OPENAI_API_KEY` | On-site knowledge base only |
+| **Groq** (Beacon AI chat, `POST /api/ai/chat`) | `GROQ_API_KEY`, optional `GROQ_MODEL` | Widget still opens. Replies fall back to WhatsApp. Default model is `llama-3.3-70b-versatile`. Free and developer Groq tiers retired that id on 2026-08-16; the route then retries `openai/gpt-oss-120b`. Set `GROQ_MODEL` to pin one model. |
 | Stripe webhook / M-Pesa callback | Point at your domain `/api/payments/...` | Needed once keys are live |
 
 ## Product suite
@@ -78,6 +79,7 @@ Check the backend:
 4. `/admin` login with `ADMIN_PASSWORD`
 5. Pricing Pay buttons (coming soon until Stripe/M-Pesa)
 6. Client portal OTP flow
-7. Mobile + light/dark
+7. Beacon AI (button above WhatsApp) answers from the site facts, or shows the WhatsApp fallback when `GROQ_API_KEY` is missing. A name plus email or phone in the chat lands in `/admin`.
+8. Mobile + light/dark
 
 When placeholders and secrets above are filled, soft-launch to your network, then public post with suite + Start a Project CTA.
