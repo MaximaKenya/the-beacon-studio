@@ -205,7 +205,14 @@ export async function createReceiptFromPayment(input: {
     createdAt: now.toISOString(),
     amountPaid,
     currency,
-    method: payment.provider === "mpesa" ? "M-Pesa" : "Stripe",
+    method:
+      payment.provider === "mpesa"
+        ? "M-Pesa"
+        : payment.provider === "paystack"
+          ? "Paystack"
+          : payment.provider === "bank"
+            ? "Bank transfer"
+            : "Stripe",
     reference: ref,
     remainingBalance: remaining,
     totalQuoted,

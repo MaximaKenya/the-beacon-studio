@@ -390,12 +390,12 @@ export const siteConfig = {
   tagline: "Products and custom software.",
   bio: `I'm Max, founder of The Beacon Studio. I build software from Nairobi for people anywhere.`,
 
-  /** TODO(go-live): replace email, phone, LinkedIn, Twitter before public launch */
+  /** TODO(go-live): replace email, LinkedIn, and Twitter before public launch */
   email: "hello@example.com",
-  /** Kenya E.164 — edit to your real number */
-  phone: "+254700000000",
+  /** Kenya E.164. tel: links and https://wa.me/254706397373 */
+  phone: "+254706397373",
   /** Display form for UI */
-  phoneDisplay: "+254 700 000 000",
+  phoneDisplay: "0706 397 373",
   location: "Nairobi, Kenya",
 
   profileImage: "/images/profile/profile.jpg",
@@ -664,29 +664,31 @@ export const siteConfig = {
 
   /**
    * Direct-pay path for deposits / invoices.
-   * Live Stripe Checkout requires STRIPE_SECRET_KEY (+ optional STRIPE_PRICE_*) in .env.local.
-   * M-Pesa STK Push requires MPESA_* Daraja credentials (see .env.example).
+   * Paystack is the primary checkout (PAYSTACK_SECRET_KEY). Prices stay in USD;
+   * checkout shows a KES equivalent and can charge KES (M-Pesa or card) or USD card.
+   * Stripe stays hidden unless STRIPE_SECRET_KEY is set. Daraja STK stays hidden
+   * unless the MPESA_* keys are set. Bank transfer / invoice is always available.
    *
    * Deposit rationale (depositPercent = 30):
    * Industry-fair for custom software: enough to reserve capacity and cover discovery/kickoff,
    * without locking the client into a full prepay. Common studio practice is 25–40% upfront;
    * 30% balances cashflow for the studio with buyer comfort. Checkout amounts always use
-   * tier.fromAmount × depositPercent (Stripe Checkout + M-Pesa STK). Invoice mode = 100%.
+   * tier.fromAmount × depositPercent. Invoice mode = 100%.
    */
   payments: {
     enabled: true,
     currency: "USD" as const,
-    currencyNote: "Prices in USD · KES via M-Pesa STK (sandbox or live Daraja).",
+    currencyNote: "Prices in USD. Checkout shows the KES equivalent for M-Pesa and Kenyan cards.",
     depositLabel: "Pay deposit",
     invoiceLabel: "Pay invoice",
-    /** Enforce 30% of tier floor on all deposit checkouts (Stripe + M-Pesa). */
+    /** Enforce 30% of tier floor on deposit checkouts. */
     depositPercent: 30,
     /** @deprecated use depositPercent — kept as alias for older reads */
     defaultDepositPercent: 30,
     comingSoonMessage:
-      "Online payments need Stripe or M-Pesa keys in .env.local. Book a call or email us to pay securely.",
+      "Paystack is not configured yet. Pay by bank transfer, or book a call and we will send an invoice.",
     mpesaComingSoonMessage:
-      "M-Pesa STK is not configured yet (set MPESA_* in .env.local). Book a call or try Stripe, or email us.",
+      "M-Pesa STK is not configured yet (set MPESA_* in .env.local). Use Paystack or request an invoice.",
   },
 
   pricingDisclaimer:

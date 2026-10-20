@@ -48,16 +48,20 @@ export async function POST(request: Request) {
     subscribers.unshift(entry);
     await writeJsonFile("subscribers.json", subscribers);
 
-    // Optional confirmation email (graceful no-op without RESEND_API_KEY)
-    const { sendResendEmail, isResendConfigured } = await import("@/lib/resend");
     const { siteConfig } = await import("@/data/site");
-    if (isResendConfigured()) {
-      await sendResendEmail({
-        to: email,
-        subject: `You're subscribed — ${siteConfig.brand.name}`,
-        html: `<p>Thanks for subscribing to ${siteConfig.brand.name} updates.</p><p>Occasional launch notes — no spam.</p>`,
-        text: `Thanks for subscribing to ${siteConfig.brand.name} updates.`,
+    try {
+      const { recordSiteForm } = await import("@/lib/mailbox");
+      await recordSiteForm({
+        kind: "subscribe",
+        sourceId: entry.id,
+        name: firstName || email,
+        email,
+        subject: `Newsletter — ${email}`,
+        text: `${firstName || "Someone"} subscribed to ${siteConfig.brand.name} updates.`,
+        confirmationSubject: `You're subscribed — ${siteConfig.brand.name}`,
       });
+    } catch (error) {
+      console.error("[subscribe] mailbox", error instanceof Error ? error.message : "mailbox failed");
     }
 
     return NextResponse.json({ success: true, subscriber: entry });

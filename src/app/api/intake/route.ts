@@ -120,6 +120,26 @@ export async function POST(request: Request) {
     intakes.push(entry);
     await writeJsonFile("intakes.json", intakes);
 
+    const typeLabel = siteConfig.intake.projectTypes.find((item) => item.id === projectType)?.label ?? projectType;
+    try {
+      const { recordSiteForm } = await import("@/lib/mailbox");
+      await recordSiteForm({
+        kind: "intake",
+        sourceId: entry.id,
+        name,
+        email,
+        ...(phone ? { phone } : {}),
+        clientId: client.id,
+        subject: `Project intake — ${typeLabel} — ${name}`,
+        text: [`${typeLabel}`, company ? `Company: ${company}` : "", phone ? `Phone: ${phone}` : "", brief]
+          .filter(Boolean)
+          .join("\n"),
+        confirmationSubject: `We received your project brief — ${siteConfig.brand.name}`,
+      });
+    } catch (error) {
+      console.error("[intake] mailbox", error instanceof Error ? error.message : "mailbox failed");
+    }
+
     return NextResponse.json({
       success: true,
       intake: entry,

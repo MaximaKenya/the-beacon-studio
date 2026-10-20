@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { siteConfig } from "@/data/site";
 import { parseRequestJson } from "@/lib/storage";
 import { computeCheckoutAmount, createPayment, updatePaymentById } from "@/lib/payments";
+import { kesFromUsd, usdToKesRate } from "@/lib/fx";
 import { getMpesaConfig, normalizeMpesaPhone, stkPush } from "@/lib/mpesa";
 
 export const runtime = "nodejs";
@@ -52,10 +53,8 @@ export async function POST(request: Request) {
       });
     }
 
-    // USD floor → approximate KES for STK (sandbox often uses small amounts).
-    // Prefer MPESA_KES_RATE env; default 130 for rough USD→KES.
-    const rate = Number(process.env.MPESA_KES_RATE || "130") || 130;
-    const amountKes = Math.max(1, Math.round(computed.amountMajor * rate));
+    const rate = usdToKesRate();
+    const amountKes = kesFromUsd(computed.amountMajor, rate);
 
     const payment = await createPayment({
       provider: "mpesa",

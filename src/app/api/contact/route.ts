@@ -65,9 +65,23 @@ export async function POST(request: Request) {
     all.unshift(entry);
     await writeJsonFile("contacts.json", all);
 
-    // Notify studio + optional auto-ack (graceful without Resend keys)
     const { sendResendEmail, isResendConfigured } = await import("@/lib/resend");
     const { siteConfig } = await import("@/data/site");
+    const { recordSiteForm } = await import("@/lib/mailbox");
+    try {
+      await recordSiteForm({
+        kind: "contact",
+        sourceId: entry.id,
+        name,
+        ...(emailOk ? { email } : {}),
+        ...(phone ? { phone } : {}),
+        subject: `Contact form — ${name}`,
+        text: [`Source: ${entry.source}`, phone ? `Phone: ${phone}` : "", message].filter(Boolean).join("\n"),
+        confirmationSubject: `We received your message — ${siteConfig.brand.name}`,
+      });
+    } catch (error) {
+      console.error("[contact] mailbox", error instanceof Error ? error.message : "mailbox failed");
+    }
     if (isResendConfigured()) {
       await sendResendEmail({
         to: siteConfig.email,
@@ -76,14 +90,6 @@ export async function POST(request: Request) {
         html: `<p><strong>${name}</strong> (${email || phone})</p><p>Source: ${entry.source}</p><p>${message.replace(/\n/g, "<br/>")}</p>`,
         text: `${name} (${email || phone})\nSource: ${entry.source}\n\n${message}`,
       });
-      if (emailOk) {
-        await sendResendEmail({
-          to: email,
-          subject: `We got your message — ${siteConfig.brand.name}`,
-          html: `<p>Hi ${name},</p><p>Thanks for reaching out to ${siteConfig.brand.name}. We'll reply within 1–2 business days (EAT).</p>`,
-          text: `Hi ${name}, thanks for reaching out to ${siteConfig.brand.name}. We'll reply within 1–2 business days (EAT).`,
-        });
-      }
     }
 
     return NextResponse.json({ ok: true, id: entry.id });
