@@ -507,7 +507,9 @@ export function AdminOpsHub({
                       <td className="py-2 font-mono text-xs">
                         {p.provider === "stripe"
                           ? `$${(p.amount / 100).toFixed(2)}`
-                          : `${p.amount} ${p.currency}`}
+                          : p.currency === "USD"
+                            ? `$${Number(p.amount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                            : `${Number(p.amount).toLocaleString("en-KE")} ${p.currency}`}
                       </td>
                       <td className="py-2 font-mono text-[10px] text-muted">
                         {p.receipt || p.checkoutRequestID || "—"}
@@ -890,8 +892,16 @@ export function AdminOpsHub({
                 <p className="font-mono text-xs">
                   {drawer.item.provider === "stripe"
                     ? `$${(drawer.item.amount / 100).toFixed(2)}`
-                    : `${drawer.item.amount} ${drawer.item.currency}`}
+                    : drawer.item.currency === "USD"
+                      ? `$${Number(drawer.item.amount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                      : `${Number(drawer.item.amount).toLocaleString("en-KE")} ${drawer.item.currency}`}
                 </p>
+                {(drawer.item.payerName || drawer.item.payerEmail) && (
+                  <p>
+                    {drawer.item.payerName} {drawer.item.payerEmail}
+                  </p>
+                )}
+                {drawer.item.note && <p className="whitespace-pre-wrap text-muted">{drawer.item.note}</p>}
                 <p className="text-muted">{drawer.item.receipt || drawer.item.checkoutRequestID}</p>
                 {drawer.item.status !== "success" && (
                   <button

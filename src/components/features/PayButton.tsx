@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { CreditCard, Loader2, Smartphone } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Building2, CreditCard, Loader2, Smartphone } from "lucide-react";
 import { siteConfig } from "@/data/site";
 import { trackEvent } from "@/lib/analytics";
 import { useFeatures } from "@/providers/FeatureProvider";
@@ -13,12 +13,23 @@ type PayButtonProps = {
   variant?: "primary" | "secondary" | "ghost";
   className?: string;
   label?: string;
-  /** Optional project id (portal / intake) stored on the payment record */
   projectId?: string;
 };
 
+type PayOptions = {
+  paystack: boolean;
+  stripe: boolean;
+  mpesa: boolean;
+  usdKesRate: number;
+  depositPercent: number;
+};
+
+type PayCurrency = "KES" | "USD";
+
 /**
- * Pay deposit with Stripe Checkout OR M-Pesa STK Push (30% of tier floor).
+ * Deposit checkout. Paystack is the primary path (KES M-Pesa/card, or USD card).
+ * Stripe and Daraja stay available only when their env keys are set.
+ * Bank transfer always creates an invoice request in admin.
  */
 export function PayButton({
   tierId,
@@ -29,36 +40,49 @@ export function PayButton({
   projectId,
 }: PayButtonProps) {
   const { openBooking } = useFeatures();
-  const [loading, setLoading] = useState<"stripe" | "mpesa" | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
+  const [options, setOptions] = useState<PayOptions | null>(null);
+  const [currency, setCurrency] = useState<PayCurrency>("KES");
+  const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
+  const [note, setNote] = useState("");
   const [phone, setPhone] = useState("");
+  const [showBank, setShowBank] = useState(false);
   const [showMpesa, setShowMpesa] = useState(false);
+  const [loading, setLoading] = useState<"paystack" | "stripe" | "mpesa" | "bank" | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    void fetch("/api/payments/options")
+      .then((res) => parseResponseJson<PayOptions>(res, { paystack: false, stripe: false, mpesa: false, usdKesRate: 130, depositPercent: 30 }))
+      .then((data) => setOptions(data))
+      .catch(() => setOptions(null));
+  }, []);
 
   if (!siteConfig.payments.enabled) return null;
 
-  const depositPct =
-    siteConfig.payments.depositPercent ?? siteConfig.payments.defaultDepositPercent ?? 30;
-  const text =
-    label ??
-    (mode === "deposit"
-      ? `${siteConfig.payments.depositLabel} (${depositPct}%)`
-      : siteConfig.payments.invoiceLabel);
+  const tier = siteConfig.pricingTiers.find((item) => item.id === tierId);
+  if (!tier || tier.fromAmount <= 0 || tier.quoteOnly) return null;
 
-  const styles =
+  const depositPct = options?.depositPercent ?? siteConfig.payments.depositPercent ?? siteConfig.payments.defaultDepositPercent ?? 30;
+  const usd =
+    mode === "deposit"
+      ? Math.round(tier.fromAmount * (depositPct / 100) * 100) / 100
+      : tier.fromAmount;
+  const rate = options?.usdKesRate || 130;
+  const kes = Math.max(1, Math.round(usd * rate));
+  const text = label ?? (mode === "deposit" ? `${siteConfig.payments.depositLabel} (${depositPct}%)` : siteConfig.payments.invoiceLabel);
+  const usdLabel = usd.toLocaleString("en-US", { style: "currency", currency: "USD" });
+  const kesLabel = `KES ${kes.toLocaleString("en-KE")}`;
+
+  const primary =
     variant === "primary"
-      ? "bg-accent text-background hover:bg-accent-hover"
-      : variant === "ghost"
-        ? "bg-surface-elevated/70 text-muted hover:text-accent"
-        : "bg-surface-elevated/80 text-foreground";
+      ? "bg-accent text-background"
+      : "bg-accent text-background";
 
   function FallbackLinks() {
     return (
       <div className="mt-2 flex flex-wrap gap-2">
-        <a
-          href={`mailto:${siteConfig.email}`}
-          onClick={() => trackEvent("cta_click", { type: "mailto", source: "pay_fallback" })}
-          className="font-medium text-accent hover:text-accent-hover"
-        >
+        <a href={`mailto:${siteConfig.email}`} className="font-medium text-accent">
           Email us
         </a>
         <span aria-hidden>·</span>
@@ -68,7 +92,7 @@ export function PayButton({
             openBooking();
             trackEvent("cta_click", { type: "book", source: "pay_fallback" });
           }}
-          className="font-medium text-accent hover:text-accent-hover"
+          className="font-medium text-accent"
         >
           Book a call
         </button>
@@ -76,28 +100,51 @@ export function PayButton({
     );
   }
 
+  async function checkoutPaystack() {
+    setLoading("paystack");
+    setMessage(null);
+    trackEvent("cta_click", { type: "pay_paystack", tier: tierId, mode, currency });
+    try {
+      const res = await fetch("/api/paystack/initialize", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tierId,
+          mode,
+          currency,
+          email,
+          ...(name ? { name } : {}),
+          ...(projectId ? { projectId } : {}),
+        }),
+      });
+      const data = await parseResponseJson<{ ok?: boolean; url?: string; message?: string }>(res, {});
+      if (data.ok && data.url) {
+        window.location.href = data.url;
+        return;
+      }
+      setMessage(data.message || "Paystack is not configured yet. Request an invoice instead.");
+    } catch {
+      setMessage("Paystack is not configured yet. Request an invoice instead.");
+    } finally {
+      setLoading(null);
+    }
+  }
+
   async function checkoutStripe() {
     setLoading("stripe");
     setMessage(null);
     trackEvent("cta_click", { type: "pay_stripe", tier: tierId, mode });
-
     try {
       const res = await fetch("/api/payments/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ tierId, mode, ...(projectId ? { projectId } : {}) }),
       });
-      const data = await parseResponseJson<{
-        ok?: boolean;
-        url?: string;
-        message?: string;
-      }>(res, {});
-
+      const data = await parseResponseJson<{ ok?: boolean; url?: string; message?: string }>(res, {});
       if (data.ok && data.url) {
         window.location.href = data.url;
         return;
       }
-
       setMessage(data.message || siteConfig.payments.comingSoonMessage);
     } catch {
       setMessage(siteConfig.payments.comingSoonMessage);
@@ -110,32 +157,18 @@ export function PayButton({
     setLoading("mpesa");
     setMessage(null);
     trackEvent("cta_click", { type: "pay_mpesa", tier: tierId, mode });
-
     try {
       const res = await fetch("/api/payments/mpesa/stk", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ tierId, mode, phone, ...(projectId ? { projectId } : {}) }),
       });
-      const data = await parseResponseJson<{
-        ok?: boolean;
-        message?: string;
-        status?: string;
-      }>(res, {});
-
+      const data = await parseResponseJson<{ ok?: boolean; message?: string; status?: string }>(res, {});
       if (data.ok && data.status === "pending") {
-        setMessage(
-          data.message ||
-            "Check your phone and enter your M-Pesa PIN to complete payment."
-        );
+        setMessage(data.message || "Check your phone and enter your M-Pesa PIN.");
         return;
       }
-
-      setMessage(
-        data.message ||
-          siteConfig.payments.mpesaComingSoonMessage ||
-          siteConfig.payments.comingSoonMessage
-      );
+      setMessage(data.message || siteConfig.payments.mpesaComingSoonMessage);
     } catch {
       setMessage(siteConfig.payments.mpesaComingSoonMessage);
     } finally {
@@ -143,40 +176,153 @@ export function PayButton({
     }
   }
 
+  async function requestInvoice() {
+    setLoading("bank");
+    setMessage(null);
+    trackEvent("cta_click", { type: "pay_bank", tier: tierId, mode });
+    try {
+      const res = await fetch("/api/payments/invoice-request", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tierId,
+          mode,
+          name,
+          email,
+          ...(note ? { note } : {}),
+          ...(projectId ? { projectId } : {}),
+        }),
+      });
+      const data = await parseResponseJson<{ ok?: boolean; message?: string }>(res, {});
+      setMessage(data.message || (data.ok ? "Invoice request received." : "Could not send the request."));
+      if (data.ok) setShowBank(false);
+    } catch {
+      setMessage("Could not send the invoice request.");
+    } finally {
+      setLoading(null);
+    }
+  }
+
   return (
-    <div className={`w-full ${className}`}>
-      <p className="mb-2 font-mono text-[10px] uppercase tracking-wider text-muted">
-        {mode === "deposit"
-          ? `${depositPct}% deposit of tier floor · Stripe or M-Pesa`
-          : "Full tier floor · Stripe or M-Pesa"}
+    <div className={`w-full rounded-2xl bg-background/40 p-3 ${className}`}>
+      <p className="font-mono text-[10px] uppercase tracking-wider text-muted">
+        {mode === "deposit" ? `${depositPct}% deposit` : "Full amount"} · shown in USD
       </p>
-      <div className="flex flex-col gap-2">
+      <p className="mt-1 font-display text-2xl font-semibold text-foreground">{usdLabel}</p>
+      <p className="text-xs text-muted">About {kesLabel} at checkout</p>
+
+      <div className="mt-3 grid grid-cols-2 gap-1 rounded-xl bg-surface/70 p-1">
+        <button
+          type="button"
+          onClick={() => setCurrency("KES")}
+          className={`rounded-lg px-2 py-1.5 text-xs font-semibold ${currency === "KES" ? "bg-accent text-background" : "text-muted"}`}
+        >
+          KES · M-Pesa & card
+        </button>
+        <button
+          type="button"
+          onClick={() => setCurrency("USD")}
+          className={`rounded-lg px-2 py-1.5 text-xs font-semibold ${currency === "USD" ? "bg-accent text-background" : "text-muted"}`}
+        >
+          USD · card
+        </button>
+      </div>
+
+      <label className="mt-3 block text-xs text-muted" htmlFor={`pay-email-${tierId}`}>
+        Email for the receipt
+      </label>
+      <input
+        id={`pay-email-${tierId}`}
+        type="email"
+        autoComplete="email"
+        value={email}
+        onChange={(event) => setEmail(event.target.value)}
+        placeholder="you@example.com"
+        className="mt-1 w-full rounded-xl px-3 py-2 text-sm"
+      />
+
+      <button
+        type="button"
+        onClick={() => void checkoutPaystack()}
+        disabled={!!loading || !email.trim()}
+        className={`mt-3 inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl text-sm font-semibold disabled:opacity-60 ${primary}`}
+      >
+        {loading === "paystack" ? <Loader2 className="h-4 w-4 animate-spin" /> : <CreditCard className="h-4 w-4" />}
+        {text} · Paystack
+      </button>
+      <p className="mt-1 text-[11px] leading-relaxed text-muted">
+        {currency === "KES"
+          ? `${kesLabel} via M-Pesa or card.`
+          : `${usdLabel} on an international card, when the Paystack account allows USD.`}
+      </p>
+
+      {!showBank ? (
+        <button
+          type="button"
+          onClick={() => setShowBank(true)}
+          className="mt-2 inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-surface-elevated/80 text-sm font-semibold text-foreground"
+        >
+          <Building2 className="h-4 w-4" />
+          Pay by bank transfer / invoice
+        </button>
+      ) : (
+        <div className="mt-2 space-y-2 rounded-xl bg-surface/70 p-3">
+          <label className="block text-xs text-muted" htmlFor={`pay-name-${tierId}`}>
+            Name
+          </label>
+          <input
+            id={`pay-name-${tierId}`}
+            value={name}
+            onChange={(event) => setName(event.target.value)}
+            className="w-full rounded-xl px-3 py-2 text-sm"
+          />
+          <label className="block text-xs text-muted" htmlFor={`pay-note-${tierId}`}>
+            Note (optional)
+          </label>
+          <textarea
+            id={`pay-note-${tierId}`}
+            rows={2}
+            value={note}
+            onChange={(event) => setNote(event.target.value)}
+            className="w-full rounded-xl px-3 py-2 text-sm"
+          />
+          <button
+            type="button"
+            onClick={() => void requestInvoice()}
+            disabled={!!loading || !name.trim() || !email.trim()}
+            className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-accent text-sm font-semibold text-background disabled:opacity-60"
+          >
+            {loading === "bank" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Building2 className="h-4 w-4" />}
+            Request invoice · {usdLabel}
+          </button>
+        </div>
+      )}
+
+      {options?.stripe && (
         <button
           type="button"
           onClick={() => void checkoutStripe()}
           disabled={!!loading}
-          className={`inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl text-sm font-semibold transition-colors disabled:opacity-60 ${styles}`}
+          className="mt-2 inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-surface-elevated/80 text-sm font-semibold text-foreground disabled:opacity-60"
         >
-          {loading === "stripe" ? (
-            <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
-          ) : (
-            <CreditCard className="h-4 w-4" aria-hidden />
-          )}
-          {text} · Stripe
+          {loading === "stripe" ? <Loader2 className="h-4 w-4 animate-spin" /> : <CreditCard className="h-4 w-4" />}
+          Pay with Stripe
         </button>
+      )}
 
-        {!showMpesa ? (
+      {options?.mpesa &&
+        (!showMpesa ? (
           <button
             type="button"
             onClick={() => setShowMpesa(true)}
             disabled={!!loading}
-            className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-surface-elevated/80 text-sm font-semibold text-foreground transition-colors disabled:opacity-60"
+            className="mt-2 inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-surface-elevated/80 text-sm font-semibold text-foreground disabled:opacity-60"
           >
-            <Smartphone className="h-4 w-4" aria-hidden />
-            Pay with M-Pesa
+            <Smartphone className="h-4 w-4" />
+            Daraja STK Push
           </button>
         ) : (
-          <div className="rounded-xl border border-border bg-surface/60 p-3">
+          <div className="mt-2 rounded-xl bg-surface/70 p-3">
             <label htmlFor={`mpesa-${tierId}`} className="mb-1.5 block text-xs text-muted">
               M-Pesa phone (07… or 2547…)
             </label>
@@ -185,29 +331,24 @@ export function PayButton({
               type="tel"
               inputMode="tel"
               value={phone}
-              onChange={(e) => setPhone(e.target.value)}
+              onChange={(event) => setPhone(event.target.value)}
               placeholder="2547XXXXXXXX"
-              className="mb-2 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-accent/50 focus:outline-none"
+              className="mb-2 w-full rounded-xl px-3 py-2 text-sm"
             />
             <button
               type="button"
               onClick={() => void checkoutMpesa()}
               disabled={!!loading || !phone.trim()}
-              className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-accent text-sm font-semibold text-background hover:bg-accent-hover disabled:opacity-60"
+              className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-accent text-sm font-semibold text-background disabled:opacity-60"
             >
-              {loading === "mpesa" ? (
-                <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
-              ) : (
-                <Smartphone className="h-4 w-4" aria-hidden />
-              )}
-              Send STK Push
+              {loading === "mpesa" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Smartphone className="h-4 w-4" />}
+              Send STK Push · {kesLabel}
             </button>
           </div>
-        )}
-      </div>
+        ))}
 
       {message && (
-        <div className="mt-2 rounded-lg border border-border bg-surface/80 px-3 py-2 text-xs leading-relaxed text-muted">
+        <div className="mt-2 rounded-xl bg-surface/80 px-3 py-2 text-xs leading-relaxed text-muted">
           <p>{message}</p>
           <FallbackLinks />
         </div>

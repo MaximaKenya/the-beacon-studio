@@ -22,6 +22,7 @@ import {
 } from "@/components/admin/AdminCharts";
 import { AdminPdfExport } from "@/components/admin/AdminPdfExport";
 import { AdminInbox } from "@/components/admin/AdminInbox";
+import { AdminMailbox } from "@/components/admin/AdminMailbox";
 import { AdminOpsHub, type AdminOpsData } from "@/components/admin/AdminOpsHub";
 import { AdminProjectsPanel } from "@/components/admin/AdminProjectsPanel";
 import { parseResponseJson } from "@/lib/safe-json";
@@ -187,7 +188,7 @@ export default function AdminPage() {
             </div>
           </div>
           <p className="mb-5 text-sm leading-relaxed text-muted">
-            Inbox, client projects, and site analytics.
+            Mailbox, leads, client projects, and site analytics.
           </p>
           <form onSubmit={login} className="space-y-4">
             <div>
@@ -290,13 +291,15 @@ export default function AdminPage() {
         </div>
 
         <nav aria-label="Admin sections" className="admin-tabs sticky top-14 z-40 mb-8">
+          <a href="#mailbox">Mailbox</a>
           <a href="#inbox">Inbox</a>
           <a href="#operations">Operations</a>
           <a href="#projects">Projects</a>
           <a href="#analytics">Analytics</a>
         </nav>
 
-        <div className="mb-10">
+        <div className="mb-10 space-y-8">
+          <AdminMailbox />
           <AdminInbox />
         </div>
 

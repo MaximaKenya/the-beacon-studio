@@ -62,13 +62,14 @@ In `src/data/site.ts`:
 
 ```ts
 email: "hello@example.com",
-phone: "+254700000000",       // E.164 — used by tel: links
-phoneDisplay: "+254 700 000 000",
+phone: "+254706397373",       // E.164 — tel: links
+phoneDisplay: "0706 397 373", // UI
+// WhatsApp: https://wa.me/254706397373
 ```
 
 ## Deposits (30%)
 
-Custom software deposits are **`payments.depositPercent = 30`**. That is industry-fair (typical studio range 25–40%): enough to reserve capacity and cover discovery/kickoff without full prepay. Stripe Checkout and M-Pesa STK both charge **tier.fromAmount × 30%** for deposit mode.
+Custom software deposits are **`payments.depositPercent = 30`**. That is industry-fair (typical studio range 25–40%): enough to reserve capacity and cover discovery/kickoff without full prepay. Paystack is the primary checkout and charges **tier.fromAmount × 30%** (USD on the page, KES equivalent at checkout). Stripe and Daraja stay hidden unless their keys are set. See `GO_LIVE.md`.
 
 ## Stripe direct pay
 

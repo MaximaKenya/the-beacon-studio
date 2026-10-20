@@ -2,7 +2,7 @@ import { siteConfig } from "@/data/site";
 import { readJsonFile, writeJsonFile } from "@/lib/storage";
 import { randomUUID } from "crypto";
 
-export type PaymentProvider = "stripe" | "mpesa";
+export type PaymentProvider = "stripe" | "mpesa" | "paystack" | "bank";
 export type PaymentStatus = "pending" | "success" | "failed" | "cancelled";
 
 export type PaymentRecord = {
@@ -22,7 +22,10 @@ export type PaymentRecord = {
   /** Linked project (portal / intake payments) */
   projectId?: string;
   phone?: string;
-  /** Stripe session id or M-Pesa CheckoutRequestID */
+  payerName?: string;
+  payerEmail?: string;
+  note?: string;
+  /** Stripe session id, Paystack reference, or M-Pesa CheckoutRequestID */
   checkoutRequestID?: string;
   merchantRequestID?: string;
   receipt?: string;

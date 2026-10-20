@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Loader2, Send } from "lucide-react";
 import { formatNairobi } from "@/lib/time";
 import { parseResponseJson } from "@/lib/safe-json";
@@ -63,6 +63,7 @@ export function AdminInbox() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [mailThreadId, setMailThreadId] = useState<string | null>(null);
 
   const visible = useMemo(
     () => (filter === "all" ? items : items.filter((item) => item.kind === filter)),
@@ -98,6 +99,37 @@ export function AdminInbox() {
     // Initial load only.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const openRef = useRef(openItem);
+  openRef.current = openItem;
+
+  useEffect(() => {
+    function onOpen(event: Event) {
+      const id = (event as CustomEvent<{ id?: string }>).detail?.id;
+      if (id) void openRef.current(id);
+    }
+    window.addEventListener("beacon-open-lead", onOpen);
+    return () => window.removeEventListener("beacon-open-lead", onOpen);
+  }, []);
+
+  useEffect(() => {
+    if (!selectedId) {
+      setMailThreadId(null);
+      return;
+    }
+    let cancel = false;
+    void fetch(`/api/admin/mailbox?leadId=${encodeURIComponent(selectedId)}`)
+      .then((res) => parseResponseJson<{ threadId?: string | null }>(res, {}))
+      .then((data) => {
+        if (!cancel) setMailThreadId(data.threadId ?? null);
+      })
+      .catch(() => {
+        if (!cancel) setMailThreadId(null);
+      });
+    return () => {
+      cancel = true;
+    };
+  }, [selectedId]);
 
   async function sendReply() {
     if (!selected || !reply.trim()) return;
@@ -278,6 +310,20 @@ export function AdminInbox() {
                   {selected.phone !== "—" ? ` · ${selected.phone}` : ""}
                 </p>
                 <p className="mt-3 whitespace-pre-wrap text-sm text-foreground">{selected.message}</p>
+                {mailThreadId && (
+                  <button
+                    type="button"
+                    className="mt-3 text-sm font-semibold text-accent"
+                    onClick={() => {
+                      document.getElementById("mailbox")?.scrollIntoView({ behavior: "smooth" });
+                      window.dispatchEvent(
+                        new CustomEvent("beacon-open-mail", { detail: { threadId: mailThreadId } })
+                      );
+                    }}
+                  >
+                    Open mailbox thread
+                  </button>
+                )}
               </div>
 
               {selected.kind === "review" && selected.projectId && selected.reviewId && (

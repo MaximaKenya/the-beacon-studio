@@ -9,6 +9,7 @@ const DEFAULT_FILES: Record<string, unknown> = {
   "bookings.json": [],
   "intakes.json": [],
   "payments.json": [],
+  "mailbox.json": { threads: [] },
   "contacts.json": [],
   "clients.json": [],
   "projects.json": [],

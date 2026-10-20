@@ -92,9 +92,9 @@ Section: /#pricing
 
 ## Deposits & payments
 - Default deposit: ${depositPct}% of tier floor
-- Providers: Stripe Checkout + M-Pesa Daraja STK Push
-- Without keys: graceful coming-soon + mailto / book fallbacks
-- Client portal payments also support Stripe + M-Pesa when configured
+- Primary: Paystack (KES M-Pesa or card, USD card when the account allows it). Prices display in USD with a KES equivalent at checkout.
+- Bank transfer / invoice requests are stored for the studio.
+- Stripe and Daraja STK stay available only when their keys are set.
 
 ## Ways of working
 ${siteConfig.engagementModels

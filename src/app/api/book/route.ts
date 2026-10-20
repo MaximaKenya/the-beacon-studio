@@ -94,16 +94,24 @@ export async function POST(request: Request) {
       attendeeName: name,
     });
 
-    // Confirm to guest + notify studio (optional Resend)
+    const when = `${date} at ${time} (${siteConfig.booking.timezone.replace("_", " ")})`;
+    const { recordSiteForm } = await import("@/lib/mailbox");
+    try {
+      await recordSiteForm({
+        kind: "booking",
+        sourceId: booking.id,
+        name,
+        email,
+        ...(phone ? { phone } : {}),
+        subject: `Booking — ${meetingLabel} — ${name}`,
+        text: [`${meetingLabel} on ${when}.`, phone ? `Phone: ${phone}` : "", message].filter(Boolean).join("\n"),
+        confirmationSubject: `Booking confirmed — ${meetingLabel}`,
+      });
+    } catch (error) {
+      console.error("[book] mailbox", error instanceof Error ? error.message : "mailbox failed");
+    }
     const { sendResendEmail, isResendConfigured } = await import("@/lib/resend");
     if (isResendConfigured()) {
-      const when = `${date} at ${time} (${siteConfig.booking.timezone.replace("_", " ")})`;
-      await sendResendEmail({
-        to: email,
-        subject: `Booking confirmed — ${meetingLabel}`,
-        html: `<p>Hi ${name},</p><p>Your <strong>${meetingLabel}</strong> with ${siteConfig.brand.name} is booked for <strong>${when}</strong>.</p><p>Add it to your calendar with the ICS from the booking confirmation page.</p>`,
-        text: `Hi ${name}, your ${meetingLabel} with ${siteConfig.brand.name} is booked for ${when}.`,
-      });
       await sendResendEmail({
         to: siteConfig.email,
         subject: `New booking — ${name} · ${meetingLabel}`,

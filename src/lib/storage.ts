@@ -10,7 +10,7 @@ import * as files from "@/lib/storage-file";
 
 /**
  * Active store for contacts, intakes, bookings, projects (including reviews),
- * portal threads, and the other data/*.json documents.
+ * portal threads, the mailbox, and the other data/*.json documents.
  * DATABASE_URL set → Postgres. Unset → JSON files, which Heroku wipes on restart.
  * When Resend is configured, submissions and admin replies are also emailed.
  */

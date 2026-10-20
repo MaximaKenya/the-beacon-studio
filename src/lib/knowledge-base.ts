@@ -190,7 +190,7 @@ const INTENT_RULES: IntentRule[] = [
   },
   {
     intent: "deposits",
-    keywords: ["deposit", "stripe", "m-pesa", "mpesa", "payment", "checkout", "pay"],
+    keywords: ["deposit", "stripe", "paystack", "m-pesa", "mpesa", "payment", "checkout", "pay", "invoice"],
     patterns: [/30%|thirty percent/i, /pay (a )?deposit/i],
     weight: 1.45,
   },
@@ -411,10 +411,10 @@ function buildReply(intent: Intent): string {
       return `${brand.name} engagement models:\n• ${formatEngagement()}\nSee [Pricing](/#pricing) for USD ranges, or [Start a Project](/#services) / [Book a Call](/#book) to talk through fit.`;
 
     case "pricing":
-      return `${brand.name} pricing (USD estimates):\n• ${formatPricing()}\n${pricingDisclaimer}\nDeposits: ${depositPct}% via Stripe or M-Pesa — details at [Pricing](/#pricing). [Book a Call](/#book) for a scoped quote.`;
+      return `${brand.name} pricing (USD estimates):\n• ${formatPricing()}\n${pricingDisclaimer}\nDeposits: ${depositPct}% via Paystack (KES M-Pesa or card, or USD card). Bank transfer is available if you need an invoice. Details at [Pricing](/#pricing). [Book a Call](/#book) for a scoped quote.`;
 
     case "deposits":
-      return `Kick off with a **${depositPct}% deposit** of the tier floor. Pay via **Stripe Checkout** or **M-Pesa STK Push** on [Pricing](/#pricing) or during intake. Client portal: [Portal login](/portal/login). Without payment keys configured, you'll get a graceful “coming soon” with email / book fallbacks.`;
+      return `Kick off with a **${depositPct}% deposit** of the tier floor. Prices stay in USD, and checkout shows the KES equivalent. Pay with **Paystack** (M-Pesa or card in KES, or a USD card when the account allows it) on [Pricing](/#pricing). You can also request a bank-transfer invoice. Client portal: [Portal login](/portal/login).`;
 
     case "intake":
       return intake.enabled
