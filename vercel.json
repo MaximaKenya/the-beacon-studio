@@ -1,0 +1,1 @@
+{"framework":"nextjs","crons":[{"path":"/api/automations/tick","schedule":"0 6 * * *"}]}
