@@ -1,12 +1,10 @@
 "use client";
 
-import Image from "next/image";
-import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { siteConfig } from "@/data/site";
 import { useFeatures } from "@/providers/FeatureProvider";
-import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { MagneticButton } from "@/components/ui/MagneticButton";
+import { HeroAutomationFlow } from "@/components/sections/HeroAutomationFlow";
 import { trackEvent } from "@/lib/analytics";
 
 const ACCENT_PHRASE = "repetitive work";
@@ -23,9 +21,7 @@ function headlineParts(text: string) {
 
 export function Hero() {
   const { openBooking } = useFeatures();
-  const reducedMotion = useReducedMotion();
   const parts = headlineParts(siteConfig.heroHeadline);
-  const shots = siteConfig.products.filter((product) => product.image);
 
   function bookAudit() {
     trackEvent("cta_click", { type: "book", source: "hero" });
@@ -67,47 +63,7 @@ export function Hero() {
           </p>
         </div>
 
-        {shots.length > 0 && (
-          <div className="relative mx-auto w-full max-w-lg pb-6">
-            {shots.slice(0, 2).map((product, index) => (
-              <motion.figure
-                key={product.id}
-                className={
-                  index === 0
-                    ? "relative z-10"
-                    : "relative z-20 -mt-16 ml-auto w-[84%] sm:-mt-20"
-                }
-                animate={reducedMotion ? undefined : { y: [0, index === 0 ? -8 : -12, 0] }}
-                transition={
-                  reducedMotion
-                    ? undefined
-                    : { duration: 6 + index * 1.4, repeat: Infinity, ease: "easeInOut" }
-                }
-              >
-                <div className="sleek-card overflow-hidden rounded-3xl p-2 sm:p-3">
-                  <div className="flex items-center gap-1.5 px-2 py-1.5" aria-hidden>
-                    <span className="h-2 w-2 rounded-full bg-accent/80" />
-                    <span className="h-2 w-2 rounded-full bg-accent-violet/80" />
-                    <span className="h-2 w-2 rounded-full bg-accent-warm/80" />
-                  </div>
-                  <div className="relative aspect-[16/10] overflow-hidden rounded-2xl">
-                    <Image
-                      src={product.image}
-                      alt={product.imageAlt || product.name}
-                      fill
-                      priority={index === 0}
-                      sizes="(min-width: 1024px) 480px, 90vw"
-                      className="object-cover object-top"
-                    />
-                  </div>
-                  <figcaption className="px-2 py-2 text-xs text-muted">
-                    {product.name} · {product.statusLabel}
-                  </figcaption>
-                </div>
-              </motion.figure>
-            ))}
-          </div>
-        )}
+        <HeroAutomationFlow />
       </div>
     </section>
   );

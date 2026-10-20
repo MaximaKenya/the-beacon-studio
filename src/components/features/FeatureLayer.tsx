@@ -8,6 +8,7 @@ import { BookingModal } from "@/components/features/BookingModal";
 import { ChatWidget } from "@/components/features/ChatWidget";
 import { FloatingBookCTA } from "@/components/features/FloatingBookCTA";
 import { WhatsAppButton } from "@/components/features/WhatsAppButton";
+import { BeaconAiChat } from "@/components/features/BeaconAiChat";
 import { MobileAuditBar } from "@/components/features/MobileAuditBar";
 import { ExitOffer } from "@/components/features/ExitOffer";
 import { KeyboardShortcuts } from "@/components/features/KeyboardShortcuts";
@@ -47,6 +48,7 @@ export function FeatureLayer({ children }: { children: ReactNode }) {
           <ProjectIntakeWizard />
           <FloatingBookCTA />
           <WhatsAppButton />
+          <BeaconAiChat />
           <MobileAuditBar />
           <ExitOffer />
           <TerminalEasterEgg />
