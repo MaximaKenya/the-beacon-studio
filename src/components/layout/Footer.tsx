@@ -125,6 +125,7 @@ export function Footer() {
             <p className="font-mono text-[10px] uppercase tracking-widest text-muted">Studio</p>
             <ul className="mt-3 space-y-2">
               {[
+                { href: "/automations", label: "Automations" },
                 { href: "/automation", label: "AI Automation" },
                 { href: pathname === "/" ? "#services" : "/#services", label: "Services" },
                 { href: pathname === "/" ? "#pricing" : "/#pricing", label: "Pricing" },

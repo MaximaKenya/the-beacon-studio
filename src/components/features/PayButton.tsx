@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Building2, CreditCard, Loader2, Smartphone } from "lucide-react";
 import { siteConfig } from "@/data/site";
 import { trackEvent } from "@/lib/analytics";
+import { formatKes, formatUsd, kesForCharge } from "@/lib/fx";
 import { useFeatures } from "@/providers/FeatureProvider";
 import { parseResponseJson } from "@/lib/safe-json";
 
@@ -69,10 +70,16 @@ export function PayButton({
       ? Math.round(tier.fromAmount * (depositPct / 100) * 100) / 100
       : tier.fromAmount;
   const rate = options?.usdKesRate || 130;
-  const kes = Math.max(1, Math.round(usd * rate));
+  const kes = kesForCharge({
+    usdFloor: tier.fromAmount,
+    usdCharge: usd,
+    kesFloor: tier.kesAmount,
+    rate,
+  });
+  const kesPriced = Boolean(tier.kesAmount);
   const text = label ?? (mode === "deposit" ? `${siteConfig.payments.depositLabel} (${depositPct}%)` : siteConfig.payments.invoiceLabel);
-  const usdLabel = usd.toLocaleString("en-US", { style: "currency", currency: "USD" });
-  const kesLabel = `KES ${kes.toLocaleString("en-KE")}`;
+  const usdLabel = formatUsd(usd);
+  const kesLabel = formatKes(kes);
 
   const primary =
     variant === "primary"
@@ -206,10 +213,10 @@ export function PayButton({
   return (
     <div className={`w-full rounded-2xl bg-background/40 p-3 ${className}`}>
       <p className="font-mono text-[10px] uppercase tracking-wider text-muted">
-        {mode === "deposit" ? `${depositPct}% deposit` : "Full amount"} · shown in USD
+        {mode === "deposit" ? `${depositPct}% deposit` : "Full amount"} · {kesPriced ? "KES" : "USD"} and {kesPriced ? "USD" : "KES"}
       </p>
-      <p className="mt-1 font-display text-2xl font-semibold text-foreground">{usdLabel}</p>
-      <p className="text-xs text-muted">About {kesLabel} at checkout</p>
+      <p className="mt-1 font-display text-2xl font-semibold text-foreground">{kesPriced ? kesLabel : usdLabel}</p>
+      <p className="text-xs text-muted">About {kesPriced ? usdLabel : kesLabel} at checkout</p>
 
       <div className="mt-3 grid grid-cols-2 gap-1 rounded-xl bg-surface/70 p-1">
         <button

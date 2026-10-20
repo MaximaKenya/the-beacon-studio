@@ -164,9 +164,48 @@ Endpoints:
 
 - `POST /api/paystack/initialize` — starts a transaction and returns the Paystack URL
 - `GET /api/paystack/callback` — verifies the reference, then returns the visitor to pricing
-- `POST /api/paystack/webhook` — raw body, header `x-paystack-signature`, HMAC SHA512 of the body with `PAYSTACK_SECRET_KEY`
+- `POST /api/paystack/webhook` — company-wide router (below)
 
 In the Paystack dashboard set the webhook URL to `https://<domain>/api/paystack/webhook` and enable the `charge.success` event. Turn on KES (card + mobile money) and USD card if international clients should pay in dollars.
+
+### Company-wide webhook router
+
+One Paystack account can serve every product. `POST /api/paystack/webhook` is the shared receiver.
+
+1. Read the raw body. Do not parse it before the signature check.
+2. Require header `x-paystack-signature`. It must equal HMAC SHA512 of that raw body, keyed with `PAYSTACK_SECRET_KEY`. A mismatch returns 401 and is not forwarded.
+3. Route the event:
+   - `data.metadata.app` wins when it is set.
+   - Otherwise use the reference prefix (the letters before the first `-`).
+4. Beacon Studio stays on this app. Every Beacon Studio transaction is created with reference `BS-<payment id>` and `metadata.app` = `beacon-studio`. A reference with no prefix is treated as Beacon Studio so older checkouts still record.
+5. Every other product is forwarded. The router returns 200 to Paystack immediately, then POSTs the **same raw body** and the **original** `x-paystack-signature` header to the URL in `PAYSTACK_FORWARD_<SLUG>`. The forward and its HTTP status are written to the server log (`[paystack/router]`).
+
+| Prefix | `metadata.app` | Env var |
+|---|---|---|
+| `BS-` | `beacon-studio` | handled here, not forwarded |
+| `CR-` | `confirent` | `PAYSTACK_FORWARD_CONFIRENT` |
+| `CA-` | `cadenceapp` | `PAYSTACK_FORWARD_CADENCEAPP` |
+| `LF-` | `lookfinesse` | `PAYSTACK_FORWARD_LOOKFINESSE` |
+| `CL-` | `confilearn` | `PAYSTACK_FORWARD_CONFILEARN` |
+| `CT-` | `confitrade` | `PAYSTACK_FORWARD_CONFITRADE` |
+| `TY-` | `triviayard` | `PAYSTACK_FORWARD_TRIVIAYARD` |
+| `CV-` | `convoria` | `PAYSTACK_FORWARD_CONVORIA` |
+
+Example: `PAYSTACK_FORWARD_CONFIRENT=https://confirent.co.ke/api/paystack/webhook`
+
+If a forward URL is unset, the event is logged and not sent. Paystack still gets 200 so it does not retry forever. An unknown prefix is logged as unrouted and also gets 200.
+
+## Ready-made automations
+
+The buffet lives at `/automations`. Checkout uses the same Paystack account, always with reference `BS-<id>` and `metadata.app` = `beacon-studio`.
+
+Reminders, digests, and renewals run from `GET` or `POST /api/automations/tick`. Set `CRON_SECRET` and schedule it hourly on Heroku Scheduler:
+
+```bash
+curl -X POST https://<app>.herokuapp.com/api/automations/tick -H "Authorization: Bearer $CRON_SECRET"
+```
+
+`GROQ_API_KEY` powers qualification, FAQ answers, drafts, and field suggestions. `RESEND_API_KEY` and `RESEND_FROM_EMAIL` send the emails. SMS is optional (`AT_API_KEY`, `AT_USERNAME`, `AT_SENDER_ID`); without them the studio sends email and a `wa.me` link.
 
 **Bank transfer / invoice** is always on the checkout panel. It writes a pending payment (`provider: bank`), a lead in the admin inbox, and a mailbox thread. No bank account number is invented in the email — you reply with details.
 

@@ -14,7 +14,7 @@ import { mailtoHref, phoneHref, trackCallClick, trackEmailClick } from "@/lib/co
 import { trackEvent } from "@/lib/analytics";
 
 /** Primary nav stays single-line; overflow items live in More */
-const PRIMARY_NAV_IDS = new Set(["products", "services", "pricing", "contact"]);
+const PRIMARY_NAV_IDS = new Set(["products", "services", "automations", "pricing", "contact"]);
 
 export function Header() {
   const pathname = usePathname();
@@ -28,7 +28,11 @@ export function Header() {
 
   const primaryNav = siteConfig.navigation.filter((l) => PRIMARY_NAV_IDS.has(l.id));
   const moreNav = siteConfig.navigation.filter((l) => !PRIMARY_NAV_IDS.has(l.id));
-  const sectionHref = (id: string) => (pathname === "/" ? `#${id}` : `/#${id}`);
+  const sectionHref = (id: string) => {
+    const item = siteConfig.navigation.find((link) => link.id === id);
+    if (item?.href) return item.href;
+    return pathname === "/" ? `#${id}` : `/#${id}`;
+  };
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);

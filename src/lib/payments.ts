@@ -25,6 +25,10 @@ export type PaymentRecord = {
   payerName?: string;
   payerEmail?: string;
   note?: string;
+  /** Ready-made automations unlocked by this checkout. */
+  automationInstanceIds?: string[];
+  /** Customer invoice / rent charge settled by this Paystack event. */
+  automationChargeId?: string;
   /** Stripe session id, Paystack reference, or M-Pesa CheckoutRequestID */
   checkoutRequestID?: string;
   merchantRequestID?: string;

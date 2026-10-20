@@ -1,5 +1,6 @@
 import { siteConfig } from "@/data/site";
 import { whatsappHref, whatsappPrefill } from "@/lib/contact-actions";
+import { describeTierMoney } from "@/lib/fx";
 import { isValidEmail, normalizeEmail } from "@/lib/validation";
 
 /** Requested Llama default. Override with GROQ_MODEL. */
@@ -131,9 +132,22 @@ export function buildBeaconAiSystemPrompt(): string {
   const pricing = siteConfig.pricingTiers
     .map(
       (tier) =>
-        `- ${tier.name}: ${tier.fromPrice} (${tier.unit}). ${tier.headline} Includes: ${tier.includes.join("; ")}.`
+        `- ${tier.name}: ${describeTierMoney(tier)} (${tier.unit}). ${tier.headline} Includes: ${tier.includes.join("; ")}.`
     )
     .join("\n");
+
+  const offer = siteConfig.automationPricing;
+  const flexibility = offer.flexibility.map((point) => `${point.title}: ${point.detail}`).join("; ");
+  const howItWorks = offer.howItWorks.map((step) => `${step.title}: ${step.detail}`).join(" → ");
+
+  const catalog = siteConfig.automationCatalog;
+  const buffet = catalog.templates
+    .map(
+      (item) =>
+        `- ${item.name} (${item.category}): KES ${item.priceKes.toLocaleString("en-KE")}/mo (about $${item.priceUsd})${item.setupFeeKes ? `, optional setup KES ${item.setupFeeKes.toLocaleString("en-KE")}` : ""}. ${item.outcome}`
+    )
+    .join("\n");
+  const discounts = catalog.bundleDiscounts.map((tier) => `${tier.label} ${tier.percent}% off`).join(", ");
 
   const faq = siteConfig.faq.map((item) => `Q: ${item.question}\nA: ${item.answer}`).join("\n\n");
 
@@ -147,7 +161,14 @@ Rules:
 - Do not describe AI voice calling. CadenceApp calling is manual, power, or auto on office lines, cloud voice, or the agent's mobile.
 - Custom software has no public price. It is quoted after a free call.
 - Managed IT has no public price. It is quoted after a free assessment. It covers backup and disaster recovery, antivirus and endpoint protection, firewall and network security, and Microsoft 365 (setup, migration, licensing, and support).
-- AI automation prices you may quote, and only these: Pilot from $1,350 for one workflow in 2–3 weeks; Retainer from $450 per month; Multi-workflow from $4,500, quoted after discovery. The 20-minute audit is free.
+- Quote AI automation prices only from the Pricing list below. Do not invent other automation prices. State both KES and USD when the pricing line has both.
+- ${offer.buildTitle}. ${offer.buildBody}
+- ${offer.careTitle}. ${offer.careBody}
+- ${offer.flexibilityTitle}. ${offer.flexibilityIntro} Options: ${flexibility}
+- How it works: ${howItWorks}
+- The 20-minute audit is free. Ready-made automations are chosen on /automations and paid as one Paystack checkout or one invoice for the whole bundle. A custom Pilot paid online is a 30% deposit unless a flexibility option is agreed in writing.
+- Bundle discounts: ${discounts}. Paying annually takes a further ${catalog.annualDiscountPercent}% off the monthly total. Setup fees are optional.
+- Custom automations can use fields of these types: ${catalog.customFieldTypes.join(", ")}. Groq can suggest fields from a plain description when GROQ_API_KEY is set.
 - Keep replies under 120 words. Short paragraphs. No hype and no bullet walls unless the visitor asks for a list.
 - When a visitor shares a name, email, or phone, confirm what you received and that the studio will follow up. Ask only for whichever of name, email, or phone is still missing.
 - You are not ${siteConfig.founder.name}. Do not pretend to be a person.
@@ -161,6 +182,9 @@ ${services}
 
 Pricing:
 ${pricing}
+
+Ready-made automations (monthly, KES and USD):
+${buffet}
 Note: ${siteConfig.pricingDisclaimer}
 ${siteConfig.servicesPricingNote}
 

@@ -17,6 +17,16 @@ const DEFAULT_FILES: Record<string, unknown> = {
   "quotations.json": [],
   "receipts.json": [],
   "portal-codes.json": [],
+  "automations.json": {
+    seeded: false,
+    instances: [],
+    logs: [],
+    jobs: [],
+    leads: [],
+    charges: [],
+    bookings: [],
+    reviews: [],
+  },
   "analytics.json": {
     events: [],
     reactions: [],

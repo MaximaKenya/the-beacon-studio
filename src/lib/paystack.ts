@@ -1,6 +1,6 @@
 import { createHmac, timingSafeEqual } from "crypto";
 import { siteConfig } from "@/data/site";
-import { kesFromUsd, usdToKesRate } from "@/lib/fx";
+import { kesForCharge, usdToKesRate } from "@/lib/fx";
 import {
   computeCheckoutAmount,
   createPayment,
@@ -10,6 +10,36 @@ import {
 } from "@/lib/payments";
 
 export type PaystackCurrency = "KES" | "USD";
+
+export const BEACON_PAYSTACK_APP = "beacon-studio";
+
+/** Beacon Studio Paystack references are `BS-<payment id>`. */
+export function beaconPaystackReference(id: string): string {
+  return id.startsWith("BS-") ? id : `BS-${id}`;
+}
+
+export function beaconPaymentIdFromReference(reference: string): string {
+  return reference.startsWith("BS-") ? reference.slice(3) : reference;
+}
+
+export function beaconPaystackMetadata(extra: Record<string, unknown> = {}): Record<string, unknown> {
+  return { ...extra, app: BEACON_PAYSTACK_APP };
+}
+
+export function readPaystackMetadata(metadata: unknown): Record<string, unknown> {
+  if (!metadata) return {};
+  if (typeof metadata === "string") {
+    try {
+      const parsed = JSON.parse(metadata) as unknown;
+      if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) return parsed as Record<string, unknown>;
+    } catch {
+      return {};
+    }
+    return {};
+  }
+  if (typeof metadata === "object" && !Array.isArray(metadata)) return metadata as Record<string, unknown>;
+  return {};
+}
 
 export function paystackSecret(): string {
   return process.env.PAYSTACK_SECRET_KEY?.trim() || "";
@@ -51,7 +81,12 @@ export async function initializePaystackCheckout(input: {
   }
 
   const rate = usdToKesRate();
-  const kes = kesFromUsd(computed.amountMajor, rate);
+  const kes = kesForCharge({
+    usdFloor: computed.tier.fromAmount,
+    usdCharge: computed.amountMajor,
+    kesFloor: computed.tier.kesAmount,
+    rate,
+  });
   const currency = input.currency === "USD" ? "USD" : "KES";
   const amountMinor = currency === "USD" ? computed.amountMinor : kes * 100;
   const amountMajor = currency === "USD" ? computed.amountMajor : kes;
@@ -71,6 +106,9 @@ export async function initializePaystackCheckout(input: {
     raw: { usd: computed.amountMajor, kes, rate, amountMinor },
   });
 
+  const reference = beaconPaystackReference(payment.id);
+  await updatePaymentById(payment.id, { checkoutRequestID: reference });
+
   const response = await fetch("https://api.paystack.co/transaction/initialize", {
     method: "POST",
     headers: {
@@ -81,10 +119,10 @@ export async function initializePaystackCheckout(input: {
       email: input.email,
       amount: amountMinor,
       currency,
-      reference: payment.id,
+      reference,
       callback_url: input.callbackUrl,
       channels: currency === "KES" ? ["card", "mobile_money"] : ["card"],
-      metadata: {
+      metadata: beaconPaystackMetadata({
         paymentId: payment.id,
         tierId: computed.tier.id,
         mode: input.mode,
@@ -93,7 +131,7 @@ export async function initializePaystackCheckout(input: {
         ...(input.name ? { payerName: input.name } : {}),
         ...(input.projectId ? { projectId: input.projectId } : {}),
         studio: siteConfig.brand.name,
-      },
+      }),
     }),
   });
 
@@ -147,7 +185,7 @@ type VerifyData = {
   gateway_response?: string;
   id?: number;
   customer?: { email?: string };
-  metadata?: { paymentId?: string };
+  metadata?: unknown;
 };
 
 export function verifyPaystackSignature(raw: string, signature: string | null): boolean {
@@ -174,7 +212,9 @@ export async function verifyPaystackReference(reference: string): Promise<Paymen
 
 export async function applyPaystackData(data: VerifyData): Promise<PaymentRecord | null> {
   const reference = data.reference || "";
-  const paymentId = data.metadata?.paymentId || reference;
+  const metadata = readPaystackMetadata(data.metadata);
+  const paymentId =
+    (typeof metadata.paymentId === "string" && metadata.paymentId) || beaconPaymentIdFromReference(reference);
   const success = data.status === "success";
   const patch = {
     status: success ? "success" : data.status === "failed" ? "failed" : "pending",
