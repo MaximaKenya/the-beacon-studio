@@ -35,7 +35,7 @@ export function ProductVisual({
       aria-label={`${product.name} mark`}
     >
       <div className="text-center">
-        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-border bg-background font-display text-xl font-semibold text-foreground">
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-surface-elevated font-display text-xl font-semibold text-foreground">
           {initials(product.name)}
         </div>
         <p className="mt-3 font-display text-lg font-semibold text-foreground">{product.name}</p>

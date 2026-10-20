@@ -1,10 +1,40 @@
+"use client";
+
+import { useEffect, useRef } from "react";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
+
 /**
  * One set of wave shapes for both themes.
  * Fills read --wave-1..4, so dark indigo and light mint share the geometry.
+ * A light scroll parallax sits on top of the slow drift in CSS.
  */
 export function WaveField() {
+  const ref = useRef<HTMLDivElement>(null);
+  const reducedMotion = useReducedMotion();
+
+  useEffect(() => {
+    const node = ref.current;
+    if (!node || reducedMotion) return;
+
+    let frame = 0;
+    const onScroll = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        const shift = Math.min(window.scrollY * 0.06, 140);
+        node.style.transform = `translate3d(0, ${shift}px, 0)`;
+      });
+    };
+
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", onScroll);
+    };
+  }, [reducedMotion]);
+
   return (
-    <div className="wave-field" aria-hidden>
+    <div ref={ref} className="wave-field" aria-hidden>
       <svg viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <filter id="beacon-wave-blur" x="-45%" y="-45%" width="190%" height="190%">

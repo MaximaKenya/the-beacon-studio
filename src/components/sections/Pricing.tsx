@@ -2,6 +2,8 @@
 
 import { siteConfig } from "@/data/site";
 import { SectionHeading } from "@/components/ui/SectionHeading";
+import { CountUp } from "@/components/ui/CountUp";
+import { LiftCard } from "@/components/ui/LiftCard";
 import { useFeatures } from "@/providers/FeatureProvider";
 import { PayButton } from "@/components/features/PayButton";
 import { trackEvent } from "@/lib/analytics";
@@ -28,7 +30,7 @@ export function Pricing() {
   const itTiers = siteConfig.pricingTiers.filter((tier) => tier.group === "it");
 
   return (
-    <section id="pricing" className="relative border-t border-border py-20 lg:py-28">
+    <section id="pricing" className="relative py-20 lg:py-28">
       <div className="mx-auto max-w-6xl px-6 lg:px-8">
         <SectionHeading
           label="Pricing"
@@ -36,7 +38,7 @@ export function Pricing() {
           description="Automation has published starting prices. Custom software is quoted after a free call. Outsourced IT is quoted after a free assessment."
         />
 
-        <div className="mb-10 flex flex-col gap-4 rounded-2xl border border-border bg-surface p-6 sm:flex-row sm:items-center sm:justify-between">
+        <div className="sleek-card mb-10 flex flex-col gap-4 rounded-3xl p-6 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h3 className="font-display text-lg font-semibold text-foreground">AI Automation</h3>
             <p className="mt-1 max-w-xl text-sm leading-relaxed text-muted">
@@ -49,49 +51,79 @@ export function Pricing() {
               trackEvent("cta_click", { type: "book", source: "pricing_audit" });
               openBooking("automation-audit");
             }}
-            className="inline-flex h-11 shrink-0 items-center gap-2 rounded-xl bg-accent px-4 text-sm font-semibold text-background hover:bg-accent-hover"
+            className="inline-flex h-11 shrink-0 items-center gap-2 rounded-2xl bg-accent px-4 text-sm font-semibold text-background"
           >
             {siteConfig.automation.cta}
             <ArrowRight className="h-4 w-4" aria-hidden />
           </button>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-3">
-          {automationTiers.map((tier) => (
-            <article key={tier.id} className="flex h-full flex-col rounded-2xl border border-border bg-surface p-6">
-              <h3 className="font-display text-xl font-semibold text-foreground">{tier.name}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-muted">{tier.headline}</p>
-              <p className="mt-5 font-display text-3xl font-semibold text-foreground">{tier.fromPrice}</p>
-              <p className="mt-1 text-sm text-muted">{tier.unit}</p>
-              <ul className="mt-5 flex-1 space-y-2">
-                {tier.includes.map((item) => (
-                  <li key={item} className="flex gap-2 text-sm leading-relaxed text-foreground">
-                    <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-accent" aria-hidden />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-              <div className="mt-6 space-y-2">
-                <button
-                  type="button"
-                  onClick={() => handleCta(tier)}
-                  className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-border text-sm font-semibold text-foreground hover:border-accent/40"
+        <div className="grid items-stretch gap-6 lg:grid-cols-3">
+          {automationTiers.map((tier) => {
+            const popular = Boolean(tier.featured) || tier.id === "automation-pilot";
+            return (
+              <LiftCard key={tier.id} className={`h-full ${popular ? "lg:-mt-3" : ""}`}>
+                <article
+                  className={`sleek-card flex h-full flex-col rounded-3xl p-6 ${
+                    popular ? "sleek-card-popular" : ""
+                  }`}
                 >
-                  {tier.cta}
-                </button>
-                {tier.fromAmount > 0 && !tier.quoteOnly && (
-                  <PayButton tierId={tier.id} mode="deposit" variant="ghost" />
-                )}
-              </div>
-            </article>
-          ))}
+                  <div className="flex items-center justify-between gap-3">
+                    <h3 className="font-display text-xl font-semibold text-foreground">{tier.name}</h3>
+                    {popular && (
+                      <span className="rounded-full bg-accent px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-background">
+                        Most popular
+                      </span>
+                    )}
+                  </div>
+                  <p className="mt-2 text-sm leading-relaxed text-muted">{tier.headline}</p>
+                  <p className="mt-5 font-display text-3xl font-semibold text-foreground">
+                    {tier.fromAmount > 0 ? (
+                      <>
+                        From $<CountUp value={String(tier.fromAmount)} />
+                      </>
+                    ) : (
+                      tier.fromPrice
+                    )}
+                  </p>
+                  <p className="mt-1 text-sm text-muted">{tier.unit}</p>
+                  <ul className="mt-5 flex-1 space-y-2">
+                    {tier.includes.map((item) => (
+                      <li key={item} className="flex gap-2 text-sm leading-relaxed text-foreground">
+                        <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-accent" aria-hidden />
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="mt-6 space-y-2">
+                    <button
+                      type="button"
+                      onClick={() => handleCta(tier)}
+                      className={`inline-flex h-11 w-full items-center justify-center gap-2 rounded-2xl text-sm font-semibold ${
+                        popular ? "bg-accent text-background" : "bg-surface-elevated/80 text-foreground"
+                      }`}
+                    >
+                      {tier.cta}
+                    </button>
+                    {tier.fromAmount > 0 && !tier.quoteOnly && (
+                      <PayButton tierId={tier.id} mode="deposit" variant="ghost" />
+                    )}
+                  </div>
+                </article>
+              </LiftCard>
+            );
+          })}
         </div>
+
+        <p className="mt-6 max-w-3xl text-sm leading-relaxed text-foreground">
+          The 20-minute audit is free. We agree clear success criteria before you pay the deposit.
+        </p>
 
         <div className="mt-8 grid gap-6">
           {[...customTiers, ...itTiers].map((tier) => (
             <article
               key={tier.id}
-              className="flex flex-col gap-6 rounded-2xl border border-border bg-surface p-6 md:flex-row md:items-center md:justify-between"
+              className="sleek-card flex flex-col gap-6 rounded-3xl p-6 md:flex-row md:items-center md:justify-between"
             >
               <div className="max-w-xl">
                 <p className="text-xs font-medium uppercase tracking-wide text-muted">
@@ -103,7 +135,7 @@ export function Pricing() {
                 <ul className="mt-4 space-y-2">
                   {tier.includes.map((item) => (
                     <li key={item} className="flex gap-2 text-sm text-foreground">
-                      <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-accent" aria-hidden />
+                      <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-accent" aria-hidden />
                       {item}
                     </li>
                   ))}
@@ -112,7 +144,7 @@ export function Pricing() {
               <button
                 type="button"
                 onClick={() => handleCta(tier)}
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-accent px-5 text-sm font-semibold text-background hover:bg-accent-hover"
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-accent px-5 text-sm font-semibold text-background"
               >
                 {tier.cta}
                 <ArrowRight className="h-4 w-4" aria-hidden />

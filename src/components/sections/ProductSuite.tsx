@@ -5,6 +5,8 @@ import { ArrowUpRight } from "lucide-react";
 import { siteConfig } from "@/data/site";
 import { ProductVisual } from "@/components/products/ProductVisual";
 import { SectionHeading } from "@/components/ui/SectionHeading";
+import { LiftCard } from "@/components/ui/LiftCard";
+import { ScrollReveal, StaggerChild } from "@/components/ui/ScrollReveal";
 import { useFeatures } from "@/providers/FeatureProvider";
 import { trackEvent } from "@/lib/analytics";
 
@@ -12,7 +14,7 @@ export function ProductSuite() {
   const { openNewsletter } = useFeatures();
 
   return (
-    <section id="products" className="relative py-20 lg:py-28">
+    <section id="products" className="relative py-16 lg:py-24">
       <div className="mx-auto max-w-6xl px-6 lg:px-8">
         <SectionHeading
           label="Products"
@@ -20,13 +22,14 @@ export function ProductSuite() {
           description="Two are open now. Two are still being built."
         />
 
-        <div className="grid gap-6 md:grid-cols-2">
+        <ScrollReveal stagger className="grid gap-6 md:grid-cols-2">
           {siteConfig.products.map((product) => {
             const isOpen = Boolean(product.liveUrl);
             return (
+              <StaggerChild key={product.id} className="h-full">
+              <LiftCard className="h-full">
               <article
-                key={product.id}
-                className="flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-surface"
+                className="sleek-card flex h-full flex-col overflow-hidden rounded-3xl bg-surface"
               >
                 <ProductVisual product={product} />
                 <div className="flex flex-1 flex-col p-6 sm:p-7">
@@ -76,14 +79,14 @@ export function ProductSuite() {
                     {isOpen ? (
                       <Link
                         href={`/products/${product.id}`}
-                        className="inline-flex h-11 items-center rounded-xl border border-border px-4 text-sm font-medium text-foreground hover:border-accent/40"
+                        className="inline-flex h-11 items-center rounded-2xl bg-surface-elevated/80 px-4 text-sm font-medium text-foreground"
                       >
                         Details
                       </Link>
                     ) : (
                       <a
                         href="#contact"
-                        className="inline-flex h-11 items-center rounded-xl border border-border px-4 text-sm font-medium text-foreground hover:border-accent/40"
+                        className="inline-flex h-11 items-center rounded-2xl bg-surface-elevated/80 px-4 text-sm font-medium text-foreground"
                       >
                         Contact
                       </a>
@@ -91,9 +94,11 @@ export function ProductSuite() {
                   </div>
                 </div>
               </article>
+              </LiftCard>
+              </StaggerChild>
             );
           })}
-        </div>
+        </ScrollReveal>
       </div>
     </section>
   );

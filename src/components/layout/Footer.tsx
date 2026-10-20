@@ -28,7 +28,7 @@ export function Footer() {
     return null;
   }
   return (
-    <footer className="border-t border-border bg-surface/30">
+    <footer className="bg-surface/30">
       <div className="mx-auto max-w-6xl px-6 py-12 lg:px-8 lg:py-14">
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-8">
           <div>
@@ -54,7 +54,7 @@ export function Footer() {
                       onClick={() => {
                         if (link.icon === "email") trackEmailClick("footer_social");
                       }}
-                      className="flex h-9 w-9 items-center justify-center rounded-md border border-border text-muted transition-colors hover:border-accent/30 hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                      className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-elevated/80 text-muted transition-colors hover:text-accent"
                       aria-label={link.name}
                     >
                       <Icon className="h-4 w-4" />
@@ -66,7 +66,7 @@ export function Footer() {
                 <a
                   href={phoneHref()}
                   onClick={() => trackCallClick("footer")}
-                  className="flex h-9 w-9 items-center justify-center rounded-md border border-border text-muted transition-colors hover:border-accent/30 hover:text-accent"
+                  className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-elevated/80 text-muted transition-colors hover:text-accent"
                   aria-label="Call"
                 >
                   <Phone className="h-4 w-4" />
@@ -76,7 +76,7 @@ export function Footer() {
                 <a
                   href={mailtoHref("Hello Beacon")}
                   onClick={() => trackEmailClick("footer")}
-                  className="flex h-9 w-9 items-center justify-center rounded-md border border-border text-muted transition-colors hover:border-accent/30 hover:text-accent"
+                  className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-elevated/80 text-muted transition-colors hover:text-accent"
                   aria-label="Email"
                 >
                   <Mail className="h-4 w-4" />

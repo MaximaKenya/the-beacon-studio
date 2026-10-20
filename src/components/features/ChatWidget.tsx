@@ -75,7 +75,10 @@ export function ChatWidget() {
     const saved = loadFabPos();
     const next = saved
       ? clampPos(saved.x, saved.y)
-      : clampPos(window.innerWidth - 80, window.innerHeight - 88);
+      : clampPos(
+          window.innerWidth - 80,
+          window.innerHeight - (window.innerWidth < 768 ? 156 : 88)
+        );
     fabPosRef.current = next;
     setFabPos(next);
   }, []);

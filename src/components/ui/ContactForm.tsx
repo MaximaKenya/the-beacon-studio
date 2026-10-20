@@ -4,6 +4,7 @@ import { FormEvent, useState } from "react";
 import { CheckCircle2, Loader2, Send } from "lucide-react";
 import { siteConfig } from "@/data/site";
 import { SmartContactRouter } from "@/components/features/SmartContactRouter";
+import { trackEvent } from "@/lib/analytics";
 
 type FormStatus = "idle" | "submitting" | "success" | "error";
 
@@ -25,7 +26,7 @@ export function ContactForm() {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, phone, topic, message }),
+        body: JSON.stringify({ name, email, phone, topic, message, source: "contact-form" }),
       });
       if (!res.ok) {
         setStatus("error");
@@ -48,6 +49,7 @@ export function ContactForm() {
       /* ignore */
     }
 
+    trackEvent("lead_submit", { source: "contact-form" });
     setStatus("success");
     setName("");
     setEmail("");

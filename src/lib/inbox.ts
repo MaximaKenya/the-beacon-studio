@@ -22,6 +22,8 @@ export type InboxItem = {
   message: string;
   createdAt: string;
   status: string;
+  /** Where the lead came from, e.g. quick-lead:automation or contact-form. */
+  leadSource: string;
   projectId?: string;
   clientId?: string;
   reviewId?: string;
@@ -35,6 +37,7 @@ type ContactRow = {
   phone?: string;
   message?: string;
   topic?: string;
+  source?: string;
   read?: boolean;
   replied?: boolean;
   archived?: boolean;
@@ -119,6 +122,7 @@ export async function listInbox(): Promise<InboxItem[]> {
       email: shown(row.email),
       phone: shown(row.phone || clientPhone(clients, text(row.email))),
       message: topic ? `${topicLabel(topic)}${message ? ` — ${message}` : ""}` : message || "—",
+      leadSource: text(row.source) || "contact-form",
       createdAt: text(row.createdAt) || new Date(0).toISOString(),
       status: row.archived
         ? "archived"
@@ -141,6 +145,7 @@ export async function listInbox(): Promise<InboxItem[]> {
       email: shown(row.email),
       phone: shown(row.phone || clientPhone(clients, text(row.email), row.clientId)),
       message: `${label}: ${text(row.brief) || "—"}`,
+      leadSource: "intake",
       createdAt: text(row.submittedAt) || text(row.createdAt) || new Date(0).toISOString(),
       status: text(row.status) || "new",
       projectId: row.projectId,
@@ -160,6 +165,7 @@ export async function listInbox(): Promise<InboxItem[]> {
       email: shown(row.email),
       phone: shown(row.phone || clientPhone(clients, text(row.email))),
       message: [row.meetingType || "Call", when, note].filter(Boolean).join(" · "),
+      leadSource: "booking",
       createdAt: text(row.createdAt) || new Date(0).toISOString(),
       status: row.replied ? "replied" : text(row.status) || "pending",
     });
@@ -178,6 +184,7 @@ export async function listInbox(): Promise<InboxItem[]> {
         email: shown(client?.email),
         phone: shown(client?.phone),
         message: `${review.rating}/5 — ${review.comment}`,
+        leadSource: "review",
         createdAt: review.at,
         status: visibility,
         projectId: project.id,
@@ -200,6 +207,7 @@ export async function listInbox(): Promise<InboxItem[]> {
       email: shown(client?.email),
       phone: shown(client?.phone),
       message: last?.body || "—",
+      leadSource: "portal",
       createdAt: thread.updatedAt || last?.at || new Date(0).toISOString(),
       status: unread ? "unread" : last?.sender === "admin" ? "replied" : "open",
       projectId: thread.projectId.startsWith("client:") ? undefined : thread.projectId,

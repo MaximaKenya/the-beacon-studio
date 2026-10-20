@@ -7,6 +7,9 @@ import { NewsletterPopup } from "@/components/features/NewsletterPopup";
 import { BookingModal } from "@/components/features/BookingModal";
 import { ChatWidget } from "@/components/features/ChatWidget";
 import { FloatingBookCTA } from "@/components/features/FloatingBookCTA";
+import { WhatsAppButton } from "@/components/features/WhatsAppButton";
+import { MobileAuditBar } from "@/components/features/MobileAuditBar";
+import { ExitOffer } from "@/components/features/ExitOffer";
 import { KeyboardShortcuts } from "@/components/features/KeyboardShortcuts";
 import { TerminalEasterEgg } from "@/components/features/TerminalEasterEgg";
 import { ProductDrawer } from "@/components/features/ProductDrawer";
@@ -43,6 +46,9 @@ export function FeatureLayer({ children }: { children: ReactNode }) {
           <ProductDrawer />
           <ProjectIntakeWizard />
           <FloatingBookCTA />
+          <WhatsAppButton />
+          <MobileAuditBar />
+          <ExitOffer />
           <TerminalEasterEgg />
           <KeyboardShortcuts />
           <SavedQuoteReminder />

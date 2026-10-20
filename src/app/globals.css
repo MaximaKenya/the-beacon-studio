@@ -194,19 +194,23 @@ h4 {
   color: var(--foreground);
 }
 
+:focus {
+  outline: none;
+}
+
 :focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
+  outline: none !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 46%, transparent) !important;
 }
 
 .glass-panel {
   background: var(--glass);
   backdrop-filter: blur(22px);
   -webkit-backdrop-filter: blur(22px);
-  border: 1px solid color-mix(in srgb, var(--accent) 18%, var(--border));
+  border: 0;
   box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.14),
-    inset 0 1px 0 color-mix(in srgb, var(--foreground) 6%, transparent);
+    0 18px 44px rgba(8, 4, 20, 0.28),
+    inset 0 1px 0 color-mix(in srgb, var(--heading) 12%, transparent);
 }
 
 [data-theme="light"] .glass-panel {
@@ -215,7 +219,6 @@ h4 {
     rgba(255, 255, 255, 0.94) 0%,
     rgba(232, 248, 245, 0.9) 100%
   );
-  border-color: color-mix(in srgb, var(--accent) 28%, var(--border));
   box-shadow:
     0 16px 48px rgba(27, 42, 51, 0.1),
     0 4px 12px rgba(27, 42, 51, 0.05),
@@ -237,24 +240,34 @@ h4 {
     rgba(62, 42, 108, 0.94) 0%,
     rgba(36, 22, 66, 0.94) 100%
   );
-  border-color: var(--border);
   box-shadow:
     0 24px 56px rgba(8, 4, 20, 0.5),
     inset 0 1px 0 color-mix(in srgb, var(--heading) 12%, transparent);
 }
 
-/* Fields sit on the elevated fill with an edge that clears 3:1. */
-:is(input, textarea, select).border:not(.bg-transparent) {
-  background-color: var(--surface-elevated);
-  border-color: var(--input-border);
+/* Filled fields. The glow appears only while the field is focused. */
+:is(
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="hidden"]):not([type="color"]):not([type="submit"]):not([type="button"]),
+  textarea,
+  select
+) {
+  background-color: color-mix(in srgb, var(--surface-elevated) 94%, var(--background));
   color: var(--foreground);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--heading) 10%, transparent);
 }
 
-:is(input, textarea, select).border:focus,
-:is(input, textarea, select).border:focus-visible {
-  border-color: var(--accent);
+:is(
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="hidden"]):not([type="color"]):not([type="submit"]):not([type="button"]),
+  textarea,
+  select
+):focus,
+:is(
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="hidden"]):not([type="color"]):not([type="submit"]):not([type="button"]),
+  textarea,
+  select
+):focus-visible {
   outline: none;
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 32%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 42%, transparent);
 }
 
 [data-theme="light"] .soft-panel {
@@ -396,24 +409,7 @@ h4 {
 }
 
 .gradient-border::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  padding: 1px;
-  background: linear-gradient(
-    135deg,
-    color-mix(in srgb, var(--accent) 60%, transparent),
-    color-mix(in srgb, var(--accent-violet) 40%, transparent) 50%,
-    color-mix(in srgb, var(--accent-warm) 50%, transparent)
-  );
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.3s ease;
+  content: none;
 }
 
 .gradient-border:hover::before,
@@ -534,12 +530,14 @@ h4 {
 }
 
 .admin-panel {
-  border-radius: 1.25rem;
-  border: 1px solid color-mix(in srgb, var(--border) 62%, transparent);
-  background: color-mix(in srgb, var(--surface-elevated) 86%, var(--background));
+  border-radius: 1.5rem;
+  border: 0;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--heading) 6%, transparent), transparent 24%),
+    color-mix(in srgb, var(--surface-elevated) 90%, var(--background));
   box-shadow:
-    inset 0 1px 0 color-mix(in srgb, var(--heading) 10%, transparent),
-    0 18px 40px color-mix(in srgb, var(--background) 42%, transparent);
+    inset 0 1px 0 color-mix(in srgb, var(--heading) 12%, transparent),
+    0 22px 48px rgba(8, 4, 20, 0.28);
 }
 
 .admin-kicker {
@@ -556,8 +554,9 @@ h4 {
   gap: 0.25rem;
   padding: 0.3rem;
   border-radius: 1rem;
-  border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+  border: 0;
   background: color-mix(in srgb, var(--surface-elevated) 88%, transparent);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--heading) 10%, transparent);
   backdrop-filter: blur(16px);
 }
 
@@ -580,8 +579,11 @@ h4 {
   align-items: center;
   gap: 0.45rem;
   border-radius: 0.85rem;
-  border: 1px solid color-mix(in srgb, var(--border) 75%, transparent);
+  border: 0;
   background: color-mix(in srgb, var(--surface-elevated) 92%, transparent);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--heading) 12%, transparent),
+    0 8px 20px rgba(8, 4, 20, 0.16);
   padding: 0 0.9rem;
   font-size: 0.875rem;
   font-weight: 500;
@@ -589,7 +591,7 @@ h4 {
 }
 
 .admin-btn:hover {
-  border-color: color-mix(in srgb, var(--accent) 50%, var(--border));
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface-elevated));
 }
 
 .theme-transition::view-transition-old(root),
@@ -639,4 +641,121 @@ h4 {
   [data-hide-print] {
     display: none !important;
   }
+}
+
+/* Finished surfaces: glass, layered shadow, inner highlight. No stroke. */
+.sleek-card {
+  border: 0;
+  border-radius: 1.5rem;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--heading) 8%, transparent), transparent 32%),
+    color-mix(in srgb, var(--glass) 94%, transparent);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--heading) 14%, transparent),
+    0 18px 44px rgba(8, 4, 20, 0.28),
+    0 2px 8px rgba(8, 4, 20, 0.12);
+}
+
+[data-theme="light"] .sleek-card {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.72), transparent 36%),
+    color-mix(in srgb, var(--glass) 96%, white);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    0 18px 40px rgba(27, 42, 51, 0.08),
+    0 2px 8px rgba(27, 42, 51, 0.04);
+}
+
+.sleek-card-popular {
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--heading) 16%, transparent),
+    0 0 0 0 transparent,
+    0 22px 50px color-mix(in srgb, var(--accent) 28%, transparent),
+    0 18px 44px rgba(8, 4, 20, 0.3);
+}
+
+.gradient-text {
+  background-image: linear-gradient(
+    110deg,
+    var(--accent) 0%,
+    var(--accent-violet) 42%,
+    var(--accent-warm) 78%,
+    var(--accent) 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: gradient-shimmer 7s ease-in-out infinite;
+}
+
+.field {
+  width: 100%;
+  border: 0;
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--surface-elevated) 94%, var(--background));
+  color: var(--foreground);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--heading) 10%, transparent);
+}
+
+.field:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 42%, transparent);
+}
+
+/* Owner preference: no outlines or borders on chrome anywhere on the site. */
+[class*="border"] {
+  border-style: none !important;
+  border-width: 0 !important;
+}
+
+[class*="outline"] {
+  outline: none !important;
+}
+
+.divide-y > :not([hidden]) ~ :not([hidden]),
+.divide-x > :not([hidden]) ~ :not([hidden]) {
+  border-style: none !important;
+  border-width: 0 !important;
+}
+
+[class*="rounded-2xl"][class*="bg-"],
+[class*="rounded-3xl"][class*="bg-"],
+[class*="rounded-[var(--radius"][class*="bg-"] {
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--heading) 12%, transparent),
+    0 16px 36px rgba(8, 4, 20, 0.22);
+}
+
+[data-theme="light"] [class*="rounded-2xl"][class*="bg-"],
+[data-theme="light"] [class*="rounded-3xl"][class*="bg-"],
+[data-theme="light"] [class*="rounded-[var(--radius"][class*="bg-"] {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 16px 36px rgba(27, 42, 51, 0.08);
+}
+
+.sleek-card.rounded-3xl,
+.sleek-card.rounded-2xl {
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--heading) 14%, transparent),
+    0 18px 44px rgba(8, 4, 20, 0.28),
+    0 2px 8px rgba(8, 4, 20, 0.12);
+}
+
+[data-theme="light"] .sleek-card.rounded-3xl,
+[data-theme="light"] .sleek-card.rounded-2xl {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    0 18px 40px rgba(27, 42, 51, 0.08),
+    0 2px 8px rgba(27, 42, 51, 0.04);
+}
+
+.sleek-card.sleek-card-popular {
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--heading) 16%, transparent),
+    0 22px 50px color-mix(in srgb, var(--accent) 32%, transparent),
+    0 18px 44px rgba(8, 4, 20, 0.3);
 }

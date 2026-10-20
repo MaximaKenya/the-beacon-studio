@@ -8,7 +8,7 @@ export function ThemeToggle() {
 
   if (!mounted) {
     return (
-      <div className="h-9 w-9 rounded-lg border border-border bg-surface/50" aria-hidden />
+      <div className="h-9 w-9 rounded-full bg-surface/70" aria-hidden />
     );
   }
 
@@ -16,7 +16,7 @@ export function ThemeToggle() {
     <button
       type="button"
       onClick={toggleTheme}
-      className="flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-surface/50 text-muted transition-all hover:border-accent/30 hover:text-accent"
+      className="flex h-9 w-9 items-center justify-center rounded-full bg-surface/70 text-muted transition-all hover:text-accent"
       aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
     >
       {theme === "dark" ? (

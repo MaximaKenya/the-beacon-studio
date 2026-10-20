@@ -11,7 +11,7 @@ export function Faq() {
   const baseId = useId();
 
   return (
-    <section id="faq" className="relative border-t border-border py-20 lg:py-28">
+    <section id="faq" className="relative py-20 lg:py-28">
       <div className="relative mx-auto max-w-3xl px-6 lg:px-8">
         <ScrollReveal>
           <SectionHeading
@@ -22,12 +22,12 @@ export function Faq() {
         </ScrollReveal>
 
         <ScrollReveal delay={0.06}>
-          <div className="mt-2 divide-y divide-border rounded-2xl border border-border bg-surface/80">
+          <div className="mt-2 space-y-3">
             {siteConfig.faq.map((item) => {
               const isOpen = openId === item.id;
               const panelId = `${baseId}-${item.id}`;
               return (
-                <div key={item.id}>
+                <div key={item.id} className="sleek-card overflow-hidden rounded-3xl">
                   <h3>
                     <button
                       type="button"

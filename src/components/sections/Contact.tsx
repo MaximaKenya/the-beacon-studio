@@ -12,7 +12,7 @@ export function Contact() {
   const { openBooking } = useFeatures();
 
   return (
-    <section id="contact" className="relative border-t border-border bg-surface/20 py-20 lg:py-28">
+    <section id="contact" className="relative py-20 lg:py-28">
       <div className="relative mx-auto max-w-6xl px-6 lg:px-8">
         <ScrollReveal variant="fade-down">
           <SectionHeading
@@ -71,7 +71,7 @@ export function Contact() {
                 <a
                   href={mailtoHref("Hello Beacon")}
                   onClick={() => trackEmailClick("contact_cta")}
-                  className="inline-flex h-11 items-center gap-2 rounded-xl border border-border bg-surface px-5 text-sm font-semibold text-foreground hover:border-accent/40"
+                  className="inline-flex h-11 items-center gap-2 rounded-2xl bg-surface-elevated/80 px-5 text-sm font-semibold text-foreground"
                 >
                   <Mail className="h-4 w-4 text-accent" />
                   Email
