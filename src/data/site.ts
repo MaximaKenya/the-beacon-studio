@@ -119,6 +119,7 @@ export type Testimonial = {
 export type NavSection = {
   id: string;
   label: string;
+  href?: string;
 };
 
 export type PersonalityTrait = {
@@ -201,8 +202,56 @@ export type PricingTier = {
   stripePriceEnv?: string;
   /** Studio builds vs AI automation offer ladder */
   group?: "studio" | "automation" | "it";
+  /** Build is a one-off. Care is a monthly plan after go-live. */
+  lane?: "build" | "care";
+  /**
+   * Exact KES floor when the public price is set in shillings.
+   * Paystack and Daraja charge this (or the deposit share of it) instead of converting USD.
+   */
+  kesAmount?: number;
   /** No online deposit — price is quoted after discovery */
   quoteOnly?: boolean;
+};
+
+export type PricingFlowStep = {
+  id: string;
+  title: string;
+  detail: string;
+};
+
+export type PricingFlexibilityPoint = {
+  id: string;
+  title: string;
+  detail: string;
+};
+
+export type AutomationCategory =
+  | "Sales"
+  | "Finance"
+  | "Customers"
+  | "Operations"
+  | "Education"
+  | "Health"
+  | "Property"
+  | "Custom";
+
+export type CatalogTemplate = {
+  id: string;
+  name: string;
+  category: AutomationCategory;
+  outcome: string;
+  summary: string;
+  priceKes: number;
+  priceUsd: number;
+  setupFeeKes: number;
+  setupFeeUsd: number;
+};
+
+export type BundleDiscount = {
+  id: string;
+  minItems: number;
+  percent: number;
+  label: string;
 };
 
 export type FaqItem = {
@@ -491,6 +540,7 @@ export const siteConfig = {
   navigation: [
     { id: "products", label: "Products" },
     { id: "services", label: "Services" },
+    { id: "automations", label: "Automations", href: "/automations" },
     { id: "pricing", label: "Pricing" },
     { id: "contact", label: "Contact" },
   ] satisfies NavSection[],
@@ -593,12 +643,12 @@ export const siteConfig = {
     {
       id: "automation-pilot",
       name: "Automation Pilot",
-      headline: "One workflow, in 2–3 weeks.",
+      headline: "A one-off build of one workflow.",
       fromPrice: "From $1,350",
       fromAmount: 1350,
       unit: "one workflow · 2–3 weeks",
       includes: [
-        "One workflow on your tools",
+        "One workflow built for your process",
         "Agreed test runs",
         "Fixed delivery date",
         "Clear success criteria",
@@ -606,24 +656,8 @@ export const siteConfig = {
       cta: "Start a pilot",
       ctaAction: "intake",
       group: "automation",
+      lane: "build",
       featured: true,
-    },
-    {
-      id: "automation-retainer",
-      name: "Automation Retainer",
-      headline: "Keep that workflow healthy.",
-      fromPrice: "From $450",
-      fromAmount: 450,
-      unit: "per month",
-      includes: [
-        "Monitoring and error handling",
-        "Backups",
-        "Monthly reporting",
-        "Agreed improvements",
-      ],
-      cta: "Book a call",
-      ctaAction: "booking",
-      group: "automation",
     },
     {
       id: "automation-custom",
@@ -640,7 +674,26 @@ export const siteConfig = {
       cta: "Book a discovery call",
       ctaAction: "booking",
       group: "automation",
+      lane: "build",
       quoteOnly: true,
+    },
+    {
+      id: "automation-retainer",
+      name: "Automation Retainer",
+      headline: "Monitoring, fixes, and improvements.",
+      fromPrice: "From $450/mo",
+      fromAmount: 450,
+      unit: "per month",
+      includes: [
+        "Monitoring",
+        "Fixes when the workflow breaks",
+        "Agreed improvements",
+        "Monthly reporting",
+      ],
+      cta: "Book a call",
+      ctaAction: "booking",
+      group: "automation",
+      lane: "care",
     },
     {
       id: "managed-it",
@@ -660,12 +713,13 @@ export const siteConfig = {
       group: "it",
       quoteOnly: true,
     },
-  ] satisfies PricingTier[],
+  ] as PricingTier[],
 
   /**
    * Direct-pay path for deposits / invoices.
-   * Paystack is the primary checkout (PAYSTACK_SECRET_KEY). Prices stay in USD;
-   * checkout shows a KES equivalent and can charge KES (M-Pesa or card) or USD card.
+   * Paystack is the primary checkout (PAYSTACK_SECRET_KEY).
+   * USD tiers convert to KES at PAYSTACK_USD_KES_RATE. Tiers with kesAmount charge that shilling floor.
+   * Checkout can charge KES (M-Pesa or card) or a USD card.
    * Stripe stays hidden unless STRIPE_SECRET_KEY is set. Daraja STK stays hidden
    * unless the MPESA_* keys are set. Bank transfer / invoice is always available.
    *
@@ -678,7 +732,8 @@ export const siteConfig = {
   payments: {
     enabled: true,
     currency: "USD" as const,
-    currencyNote: "Prices in USD. Checkout shows the KES equivalent for M-Pesa and Kenyan cards.",
+    currencyNote:
+      "Custom tiers show USD with an approximate KES amount. Ready-made automations are priced in KES. Paystack takes M-Pesa or card in KES, or a USD card when the account allows it.",
     depositLabel: "Pay deposit",
     invoiceLabel: "Pay invoice",
     /** Enforce 30% of tier floor on deposit checkouts. */
@@ -692,7 +747,132 @@ export const siteConfig = {
   },
 
   pricingDisclaimer:
-    "Automation prices are starting points in USD. Custom software, more than one workflow, and outsourced IT are quoted after a short call or a free assessment. When you pay online for a priced job, the deposit is 30%.",
+    "Ready-made automations are monthly, from KES 2,500 to KES 6,500 each (about $19–$50), with a bundle discount at 3, 5, and 8 or more, and a further discount if you pay annually. Setup fees are optional and listed per automation. Pilot is a one-off custom workflow from $1,350. A retainer is from $450 a month. Multi-workflow is from $4,500, quoted after discovery. Custom software and outsourced IT are quoted after a short call or a free assessment. A custom-build deposit paid online is 30% via Paystack (M-Pesa or card) or an invoice. A ready-made bundle is one Paystack checkout or one invoice for the whole selection.",
+
+  /**
+   * Ready-made automation prices. The buffet, checkout, and Beacon AI read this list.
+   * Do not duplicate these amounts in template code.
+   */
+  automationCatalog: {
+    annualDiscountPercent: 15,
+    bundleDiscounts: [
+      { id: "pack-3", minItems: 3, percent: 10, label: "3+ automations" },
+      { id: "pack-5", minItems: 5, percent: 15, label: "5+ automations" },
+      { id: "pack-8", minItems: 8, percent: 22, label: "8+ automations" },
+    ] satisfies BundleDiscount[],
+    customFieldTypes: [
+      "text",
+      "number",
+      "date",
+      "recurrence rule",
+      "recipients list",
+      "channel",
+      "template message with {{variables}}",
+      "file/CSV",
+      "select",
+    ],
+    templates: [
+      { id: "lead-reply", name: "Lead auto-reply & qualifier", category: "Sales", outcome: "Reply to a new lead and tell you if they are a fit.", summary: "Web form or WhatsApp webhook. Groq qualifies the message, replies, saves the lead, and emails you.", priceKes: 4500, priceUsd: 35, setupFeeKes: 0, setupFeeUsd: 0 },
+      { id: "abandoned-quote", name: "Abandoned-quote follow-up", category: "Sales", outcome: "Nudge quotes that went quiet.", summary: "A short follow-up sequence for quotes that were not accepted.", priceKes: 3500, priceUsd: 27, setupFeeKes: 0, setupFeeUsd: 0 },
+      { id: "lead-nurture", name: "Lead nurture drip", category: "Sales", outcome: "A paced sequence until a lead is ready.", summary: "Scheduled notes to new leads, then it stops when you mark them won or lost.", priceKes: 4500, priceUsd: 35, setupFeeKes: 0, setupFeeUsd: 0 },
+      { id: "daily-sales", name: "Daily sales summary", category: "Sales", outcome: "Yesterday's sales in your inbox each morning.", summary: "A daily email of the leads, payments, and notes your automations recorded.", priceKes: 2500, priceUsd: 19, setupFeeKes: 0, setupFeeUsd: 0 },
+      { id: "social-drafts", name: "Social post drafts", category: "Sales", outcome: "Draft posts ready for you to publish.", summary: "Groq drafts the week's posts from your topics. Nothing is published for you.", priceKes: 3500, priceUsd: 27, setupFeeKes: 0, setupFeeUsd: 0 },
+      { id: "invoice-reminders", name: "Invoice & payment reminders", category: "Finance", outcome: "Chase invoices and stop when they are paid.", summary: "Customer list, due dates, Paystack payment links, email or WhatsApp reminders, and a stop when Paystack confirms payment.", priceKes: 6500, priceUsd: 50, setupFeeKes: 5000, setupFeeUsd: 38 },
+      { id: "subscription-renewal", name: "Subscription renewal reminders", category: "Finance", outcome: "Remind customers before a renewal date.", summary: "Renewal dates, a Paystack link, and reminders that stop once the renewal is paid.", priceKes: 4500, priceUsd: 35, setupFeeKes: 0, setupFeeUsd: 0 },
+      { id: "debt-collection", name: "Debt collection ladder", category: "Finance", outcome: "A polite reminder, then a firmer one, then a final notice.", summary: "Three escalating messages. Each step stops for that customer when Paystack marks the balance paid.", priceKes: 6500, priceUsd: 50, setupFeeKes: 5000, setupFeeUsd: 38 },
+      { id: "sacco-repayments", name: "Loan & SACCO repayments", category: "Finance", outcome: "Repayment reminders for members.", summary: "Member list, amounts, due dates, Paystack links, and paid tracking.", priceKes: 5500, priceUsd: 42, setupFeeKes: 0, setupFeeUsd: 0 },
+      { id: "appointments", name: "Appointment booking & reminders", category: "Customers", outcome: "A public booking page with confirmation and reminders.", summary: "Slots you choose. Confirmation on booking, then a reminder 24 hours and 1 hour before.", priceKes: 5500, priceUsd: 42, setupFeeKes: 0, setupFeeUsd: 0 },
+      { id: "faq-bot", name: "FAQ support bot", category: "Customers", outcome: "An embeddable chat that answers only from your FAQ.", summary: "Paste your FAQ or docs. Groq answers from that text only, and saves questions it cannot answer as leads.", priceKes: 4500, priceUsd: 35, setupFeeKes: 0, setupFeeUsd: 0 },
+      { id: "reviews", name: "Review & feedback requests", category: "Customers", outcome: "Ask for a rating after a sale.", summary: "A low score alerts you. A high score sends the customer your Google review link.", priceKes: 2500, priceUsd: 19, setupFeeKes: 0, setupFeeUsd: 0 },
+      { id: "onboarding", name: "New-customer onboarding", category: "Customers", outcome: "A welcome sequence for a new customer.", summary: "A few scheduled messages after you add someone, or after a form submission.", priceKes: 3500, priceUsd: 27, setupFeeKes: 0, setupFeeUsd: 0 },
+      { id: "greetings", name: "Birthday & anniversary greetings", category: "Customers", outcome: "A greeting on the date you store.", summary: "Birthdays and anniversaries, sent by email or a WhatsApp link.", priceKes: 2500, priceUsd: 19, setupFeeKes: 0, setupFeeUsd: 0 },
+      { id: "rsvp", name: "Event & RSVP reminders", category: "Customers", outcome: "Collect RSVPs and remind guests.", summary: "A public RSVP form, then reminders before the event.", priceKes: 3500, priceUsd: 27, setupFeeKes: 0, setupFeeUsd: 0 },
+      { id: "nps", name: "Survey & NPS", category: "Customers", outcome: "Ask one score and follow up when it is low.", summary: "A short survey link. Low scores email you. High scores can point at your review page.", priceKes: 2500, priceUsd: 19, setupFeeKes: 0, setupFeeUsd: 0 },
+      { id: "weekly-report", name: "Weekly business report", category: "Operations", outcome: "One email with the week's automation activity.", summary: "Leads, payments, messages, and runs across your automations.", priceKes: 2500, priceUsd: 19, setupFeeKes: 0, setupFeeUsd: 0 },
+      { id: "staff-shifts", name: "Staff task & shift reminders", category: "Operations", outcome: "Remind staff before a shift or task.", summary: "A roster with dates. Each person gets a reminder before they are due.", priceKes: 3500, priceUsd: 27, setupFeeKes: 0, setupFeeUsd: 0 },
+      { id: "low-stock", name: "Low-stock alerts", category: "Operations", outcome: "Email you when a quantity falls to the reorder level.", summary: "A stock list. The daily check alerts you only for items at or below the reorder level.", priceKes: 3500, priceUsd: 27, setupFeeKes: 0, setupFeeUsd: 0 },
+      { id: "doc-expiry", name: "Document & contract expiry", category: "Operations", outcome: "A reminder before a contract or document expires.", summary: "Expiry dates and who should be told.", priceKes: 3500, priceUsd: 27, setupFeeKes: 0, setupFeeUsd: 0 },
+      { id: "inbox-triage", name: "Inbox triage & draft replies", category: "Operations", outcome: "A draft reply for an email you forward in.", summary: "Groq drafts a reply from your instructions. The draft comes to you. It is not sent to the customer.", priceKes: 5500, priceUsd: 42, setupFeeKes: 0, setupFeeUsd: 0 },
+      { id: "meeting-notes", name: "Meeting notes summarizer", category: "Operations", outcome: "Paste notes and get a summary plus action items.", summary: "Groq summarizes what you paste or upload, then emails the summary and the actions.", priceKes: 3500, priceUsd: 27, setupFeeKes: 0, setupFeeUsd: 0 },
+      { id: "kpi-digest", name: "KPI dashboard digest", category: "Operations", outcome: "The KPIs you name, on a schedule.", summary: "Pick the figures you care about. A digest email goes out on the weekday you choose.", priceKes: 4500, priceUsd: 35, setupFeeKes: 0, setupFeeUsd: 0 },
+      { id: "school-fees", name: "School fees & parent notices", category: "Education", outcome: "Fee reminders and a notice to parents.", summary: "Student list, amounts, due dates, Paystack links, and a notice you can send with the reminder.", priceKes: 5500, priceUsd: 42, setupFeeKes: 5000, setupFeeUsd: 38 },
+      { id: "clinic-recall", name: "Clinic appointment recall", category: "Health", outcome: "Invite patients back after a set number of days.", summary: "Last-visit dates and a recall window. Reminders go out as that window arrives.", priceKes: 4500, priceUsd: 35, setupFeeKes: 0, setupFeeUsd: 0 },
+      { id: "rent-collection", name: "Rent & fee collection", category: "Property", outcome: "Rent reminders with a pay link, and a stop when rent is paid.", summary: "Tenants, amounts, and due dates. Paystack links. Reminders stop per tenant once payment is confirmed.", priceKes: 6500, priceUsd: 50, setupFeeKes: 5000, setupFeeUsd: 38 },
+      { id: "maintenance", name: "Property maintenance intake", category: "Property", outcome: "A form for repair requests, emailed to you.", summary: "Tenants or residents submit a request. You get the details and it is stored on the automation.", priceKes: 3500, priceUsd: 27, setupFeeKes: 0, setupFeeUsd: 0 },
+      { id: "custom-reminder", name: "Custom reminder", category: "Custom", outcome: "Your own reminder, with your fields and your message.", summary: "Define fields, a recurrence, recipients, a channel, and a message that uses {{variables}}. Groq can suggest the fields from a sentence.", priceKes: 2500, priceUsd: 19, setupFeeKes: 0, setupFeeUsd: 0 },
+      { id: "custom-report", name: "Custom report", category: "Custom", outcome: "A report you design, on the schedule you set.", summary: "Pick metrics and sources, write the notes to include, and choose how often it emails.", priceKes: 2500, priceUsd: 19, setupFeeKes: 0, setupFeeUsd: 0 },
+    ] satisfies CatalogTemplate[],
+  },
+
+  /**
+   * Explains automation pricing for the homepage and for Beacon AI.
+   * Amounts live in automationCatalog and pricingTiers.
+   */
+  automationPricing: {
+    buildTitle: "Ready-made — monthly",
+    buildBody:
+      "Tick the automations you need. Each one is KES 2,500–6,500 a month (about $19–$50). A bundle discount applies at 3 or more (10%), 5 or more (15%), and 8 or more (22%). Paying for the year takes a further 15% off the monthly total. Setup fees are optional and shown on the automations that have one.",
+    careTitle: "Custom build",
+    careBody:
+      "Pilot is a one-off build of one workflow from $1,350, usually in 2–3 weeks. Multi-workflow is from $4,500 and is quoted after discovery. A retainer from $450 a month covers monitoring, fixes, and improvements after a custom build is live.",
+    flexibilityTitle: "Flexible for small teams",
+    flexibilityIntro:
+      "The free 20-minute audit comes first. Ready-made automations are paid as one Paystack checkout (M-Pesa or card) or one invoice for the whole bundle. A custom Pilot paid online takes a 30% deposit. On the audit, a smaller organisation can ask to use one of these instead. We confirm it in writing before you pay.",
+    flexibility: [
+      {
+        id: "split",
+        title: "50/50 split",
+        detail: "Pay half as the deposit and the balance at go-live.",
+      },
+      {
+        id: "instalments",
+        title: "Three M-Pesa instalments",
+        detail: "Pay the Pilot in three monthly M-Pesa payments.",
+      },
+      {
+        id: "discount",
+        title: "NGO, school, and SACCO discount",
+        detail: "Ask on the audit. We confirm the rate before you pay.",
+      },
+      {
+        id: "results",
+        title: "Pay after results",
+        detail: "On a first workflow, pay once the agreed result is in.",
+      },
+      {
+        id: "audit",
+        title: "Free 20-minute audit",
+        detail: "See whether a template or a pilot fits before you spend anything.",
+      },
+    ] satisfies PricingFlexibilityPoint[],
+    howItWorks: [
+      {
+        id: "audit",
+        title: "Free audit",
+        detail: "About 20 minutes. We look at one repetitive job.",
+      },
+      {
+        id: "plan",
+        title: "Pick a plan",
+        detail: "Tick ready-made automations, or choose a custom Pilot.",
+      },
+      {
+        id: "deposit",
+        title: "Pay",
+        detail: "One Paystack checkout (M-Pesa or card) or an invoice for the bundle. Custom builds can start with a deposit.",
+      },
+      {
+        id: "live",
+        title: "Build & go live",
+        detail: "Ready-made automations start as soon as payment clears. A custom build goes live with you.",
+      },
+      {
+        id: "care",
+        title: "Care plan",
+        detail: "The monthly automation keeps running. A retainer adds fixes and improvements on custom work.",
+      },
+    ] satisfies PricingFlowStep[],
+  },
 
   productAccessNote:
     "ConfiRent and CadenceApp have their own sign-up. The prices on this page are for automation and custom software.",
@@ -766,7 +946,7 @@ export const siteConfig = {
       id: "faq-2",
       question: "How much does automation cost?",
       answer:
-        "A pilot is one workflow, from $1,350, and usually takes 2–3 weeks. A retainer starts at $450 a month. Several workflows start from $4,500 and are quoted after a discovery call. The 20-minute audit is free.",
+        "Ready-made automations are KES 2,500–6,500 a month each (about $19–$50). Three or more take 10% off, five or more 15%, and eight or more 22%. Paying annually takes another 15% off. Setup fees are optional. A custom Pilot is one workflow from $1,350, usually 2–3 weeks. Several custom workflows start from $4,500 after discovery. A retainer for monitoring, fixes, and improvements starts at $450 a month. The 20-minute audit is free. Smaller teams can ask for a 50/50 split, three monthly M-Pesa instalments on a Pilot, an NGO, school, or SACCO discount, or pay-after-results on a first custom workflow.",
     },
     {
       id: "faq-3",

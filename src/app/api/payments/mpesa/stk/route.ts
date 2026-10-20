@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { siteConfig } from "@/data/site";
 import { parseRequestJson } from "@/lib/storage";
 import { computeCheckoutAmount, createPayment, updatePaymentById } from "@/lib/payments";
-import { kesFromUsd, usdToKesRate } from "@/lib/fx";
+import { kesForCharge, usdToKesRate } from "@/lib/fx";
 import { getMpesaConfig, normalizeMpesaPhone, stkPush } from "@/lib/mpesa";
 
 export const runtime = "nodejs";
@@ -54,7 +54,12 @@ export async function POST(request: Request) {
     }
 
     const rate = usdToKesRate();
-    const amountKes = kesFromUsd(computed.amountMajor, rate);
+    const amountKes = kesForCharge({
+      usdFloor: computed.tier.fromAmount,
+      usdCharge: computed.amountMajor,
+      kesFloor: computed.tier.kesAmount,
+      rate,
+    });
 
     const payment = await createPayment({
       provider: "mpesa",

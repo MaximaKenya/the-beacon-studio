@@ -15,6 +15,7 @@ import { ProgressPie } from "@/components/portal/ProgressPie";
 import { ChatPanel } from "@/components/portal/ChatPanel";
 import { DocumentActions } from "@/components/documents/DocumentActions";
 import { PayButton } from "@/components/features/PayButton";
+import { PortalAutomations } from "@/components/automations/PortalAutomations";
 import { formatNairobi, formatNairobiDate } from "@/lib/time";
 import { parseResponseJson } from "@/lib/safe-json";
 import type { ProjectRecord } from "@/lib/projects";
@@ -135,6 +136,7 @@ export default function PortalDashboardPage() {
             </p>
           </div>
           <ChatPanel projectId={`client:${mailboxClient.id}`} viewer="client" />
+          <PortalAutomations />
           <button
             type="button"
             onClick={() => void logout()}
@@ -149,6 +151,9 @@ export default function PortalDashboardPage() {
     return (
       <div className="py-20 text-center">
         <p className="text-foreground">No project found for this account.</p>
+        <div className="mx-auto mt-8 max-w-3xl text-left">
+          <PortalAutomations />
+        </div>
         <Link href="/" className="mt-4 inline-block text-accent hover:underline">
           Start a project on the site
         </Link>
@@ -321,6 +326,8 @@ export default function PortalDashboardPage() {
           ))}
         </ol>
       </section>
+
+      <PortalAutomations />
 
       <section className="rounded-2xl border border-border bg-surface/60 p-6">
         <h2 className="font-display text-lg font-semibold text-foreground">

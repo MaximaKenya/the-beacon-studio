@@ -1,4 +1,5 @@
 import { siteConfig } from "@/data/site";
+import { describeTierMoney, formatKes } from "@/lib/fx";
 
 export type Intent =
   | "hire"
@@ -220,6 +221,12 @@ const INTENT_RULES: IntentRule[] = [
       "quote",
       "estimate",
       "sprint",
+      "starter",
+      "lite",
+      "kes",
+      "instalment",
+      "installment",
+      "sacco",
       "$",
     ],
     patterns: [/how much (do you|does it)/i, /what('s| is) (your |the )?pric/i],
@@ -378,7 +385,7 @@ function formatPricing(): string {
   return pricingTiers
     .map(
       (t) =>
-        `${t.name}: from ${t.fromPrice} ${t.unit} — ${t.headline}. Includes: ${t.includes.join("; ")}`
+        `${t.name}: ${describeTierMoney(t)} — ${t.unit}. ${t.headline}. Includes: ${t.includes.join("; ")}`
     )
     .join("\n• ");
 }
@@ -401,7 +408,12 @@ function buildReply(intent: Intent): string {
     case "automation": {
       const offer = siteConfig.automation;
       const tiers = pricingTiers.filter((tier) => tier.group === "automation");
-      return `${offer.headline} ${offer.supporting}\n\nDiscover → Pilot → Retainer:\n• ${offer.steps.map((step) => `${step.title}: ${step.description}`).join("\n• ")}\n\nTools: ${offer.toolsLine}\n\nPricing:\n• ${tiers.map((tier) => `${tier.name}: ${tier.fromPrice} ${tier.unit}`).join("\n• ")}\n\n[Book a free 20-min automation audit](/#book) or [start a project](/#services) and choose AI automation. Outreach page: [AI Automation](/automation).`;
+      const commercial = siteConfig.automationPricing;
+      const catalog = siteConfig.automationCatalog;
+      const prices = catalog.templates.map((item) => item.priceKes);
+      const low = Math.min(...prices);
+      const high = Math.max(...prices);
+      return `${offer.headline} ${offer.supporting}\n\nReady-made buffet: ${catalog.templates.length} automations, ${formatKes(low)}–${formatKes(high)} a month. Bundle discounts: ${catalog.bundleDiscounts.map((item) => `${item.label} ${item.percent}%`).join(", ")}. Paying annually takes another ${catalog.annualDiscountPercent}% off. Pick them at [Automations](/automations).\n\n${commercial.buildTitle}. ${commercial.buildBody}\n${commercial.careTitle}. ${commercial.careBody}\n\nHow it works: ${commercial.howItWorks.map((step) => step.title).join(" → ")}\n\nTools: ${offer.toolsLine}\n\nCustom pricing:\n• ${tiers.map((tier) => `${tier.name}: ${describeTierMoney(tier)} — ${tier.unit}`).join("\n• ")}\n\n${commercial.flexibilityTitle}: ${commercial.flexibility.map((point) => `${point.title} — ${point.detail}`).join("; ")}\n\n[Book a free 20-min automation audit](/#book) or [start a project](/#services) and choose AI automation. Outreach page: [AI Automation](/automation).`;
     }
 
     case "services":
@@ -411,10 +423,10 @@ function buildReply(intent: Intent): string {
       return `${brand.name} engagement models:\n• ${formatEngagement()}\nSee [Pricing](/#pricing) for USD ranges, or [Start a Project](/#services) / [Book a Call](/#book) to talk through fit.`;
 
     case "pricing":
-      return `${brand.name} pricing (USD estimates):\n• ${formatPricing()}\n${pricingDisclaimer}\nDeposits: ${depositPct}% via Paystack (KES M-Pesa or card, or USD card). Bank transfer is available if you need an invoice. Details at [Pricing](/#pricing). [Book a Call](/#book) for a scoped quote.`;
+      return `${brand.name} pricing:\n• ${formatPricing()}\n${pricingDisclaimer}\nDeposits: ready-made bundles are one Paystack checkout or one invoice on [Automations](/automations). A custom Pilot paid online starts at ${depositPct}% via Paystack (KES M-Pesa or card, or USD card). Bank transfer is available if you need an invoice. Details at [Pricing](/#pricing). [Book a Call](/#book) for a scoped quote.`;
 
     case "deposits":
-      return `Kick off with a **${depositPct}% deposit** of the tier floor. Prices stay in USD, and checkout shows the KES equivalent. Pay with **Paystack** (M-Pesa or card in KES, or a USD card when the account allows it) on [Pricing](/#pricing). You can also request a bank-transfer invoice. Client portal: [Portal login](/portal/login).`;
+      return `Ready-made automations are paid as one **Paystack** checkout (M-Pesa or card) or one invoice for the whole bundle on [Automations](/automations). A custom Pilot paid online starts with a **${depositPct}% deposit**. Smaller teams can ask for a 50/50 split, three M-Pesa instalments on a Pilot, or pay-after-results on a first custom workflow. Client portal: [Portal login](/portal/login).`;
 
     case "intake":
       return intake.enabled
@@ -422,7 +434,7 @@ function buildReply(intent: Intent): string {
         : `Email ${email} or [Book a Call](/#book) to start a project with ${brand.name}.`;
 
     case "portal":
-      return `Clients track progress, docs, and messages in the **client portal**. Sign in at [Portal login](/portal/login) with a one-time code (emailed when Resend is configured, otherwise shown on-screen). Submit a project intake first if you don't have an account yet — [Start a Project](/#services).`;
+      return `Clients track progress, docs, messages, and ready-made automations in the **client portal**. Sign in at [Portal login](/portal/login) with a one-time code (emailed when Resend is configured, otherwise shown on-screen). Submit a project intake first if you don't have an account yet — [Start a Project](/#services). Automations: [buffet](/automations).`;
 
     case "faq":
       return `Top answers from our FAQ:\n\n${formatFaq()}\n\nMore at [FAQ](/#faq).`;

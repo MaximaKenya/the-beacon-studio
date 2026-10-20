@@ -25,6 +25,7 @@ import { AdminInbox } from "@/components/admin/AdminInbox";
 import { AdminMailbox } from "@/components/admin/AdminMailbox";
 import { AdminOpsHub, type AdminOpsData } from "@/components/admin/AdminOpsHub";
 import { AdminProjectsPanel } from "@/components/admin/AdminProjectsPanel";
+import { AdminAutomations } from "@/components/automations/AdminAutomations";
 import { parseResponseJson } from "@/lib/safe-json";
 
 type StorageHealth = {
@@ -292,6 +293,7 @@ export default function AdminPage() {
 
         <nav aria-label="Admin sections" className="admin-tabs sticky top-14 z-40 mb-8">
           <a href="#mailbox">Mailbox</a>
+          <a href="#automations">Automations</a>
           <a href="#inbox">Inbox</a>
           <a href="#operations">Operations</a>
           <a href="#projects">Projects</a>
@@ -300,6 +302,7 @@ export default function AdminPage() {
 
         <div className="mb-10 space-y-8">
           <AdminMailbox />
+          <AdminAutomations />
           <AdminInbox />
         </div>
 
