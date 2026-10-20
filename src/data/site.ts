@@ -448,14 +448,14 @@ export const siteConfig = {
   },
 
   cta: {
-    primary: "See products",
-    secondary: "Contact us",
+    primary: "Book a free 20-min audit",
+    secondary: "See products",
     tertiary: "Book a call",
   },
 
-  heroHeadline: "Products you can use. Software we can build.",
+  heroHeadline: "Get the repetitive work off your team's plate.",
   heroSubhead:
-    "The Beacon Studio is in Nairobi. Four products — two you can open now, two still on the way — plus AI automation, custom software, and outsourced IT.",
+    "AI automation, custom software, and managed IT for Kenyan and African businesses.",
 
   /**
    * What clients gain — shown in Services and related CTAs.
@@ -606,6 +606,7 @@ export const siteConfig = {
       cta: "Start a pilot",
       ctaAction: "intake",
       group: "automation",
+      featured: true,
     },
     {
       id: "automation-retainer",
@@ -741,6 +742,18 @@ export const siteConfig = {
   },
 
   faq: [
+    {
+      id: "faq-risk",
+      question: "Do I pay before we agree what success looks like?",
+      answer:
+        "No. The 20-minute audit is free. For a priced automation job, we agree clear success criteria before you pay the 30% deposit.",
+    },
+    {
+      id: "faq-replace",
+      question: "Will automation replace my team?",
+      answer:
+        "No. It takes repetitive replies, reminders, and follow-ups off their plate, without replacing the personal service clients expect.",
+    },
     {
       id: "faq-1",
       question: "What do you offer?",

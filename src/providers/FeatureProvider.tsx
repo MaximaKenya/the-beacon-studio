@@ -17,11 +17,12 @@ type FeatureContextValue = {
   intakeOpen: boolean;
   intakeProjectType: string | null;
   bookingMeetingType: string | null;
+  bookingNote: string | null;
   productDrawerOpen: boolean;
   selectedProductId: string | null;
   openNewsletter: () => void;
   closeNewsletter: () => void;
-  openBooking: (meetingTypeId?: string) => void;
+  openBooking: (meetingTypeId?: string, note?: string) => void;
   closeBooking: () => void;
   openChat: (initialMessage?: string) => void;
   closeChat: () => void;
@@ -49,6 +50,7 @@ export function FeatureProvider({ children }: { children: ReactNode }) {
   const [intakeOpen, setIntakeOpen] = useState(false);
   const [intakeProjectType, setIntakeProjectType] = useState<string | null>(null);
   const [bookingMeetingType, setBookingMeetingType] = useState<string | null>(null);
+  const [bookingNote, setBookingNote] = useState<string | null>(null);
   const [productDrawerOpen, setProductDrawerOpen] = useState(false);
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
 
@@ -60,6 +62,7 @@ export function FeatureProvider({ children }: { children: ReactNode }) {
     setIntakeOpen(false);
     setIntakeProjectType(null);
     setBookingMeetingType(null);
+    setBookingNote(null);
     setProductDrawerOpen(false);
     setSelectedProductId(null);
   }, []);
@@ -71,9 +74,10 @@ export function FeatureProvider({ children }: { children: ReactNode }) {
   const closeNewsletter = useCallback(() => setNewsletterOpen(false), []);
 
   const openBooking = useCallback(
-    (meetingTypeId?: string) => {
+    (meetingTypeId?: string, note?: string) => {
       closeOverlays();
       setBookingMeetingType(meetingTypeId ?? null);
+      setBookingNote(note?.trim() ? note.trim() : null);
       setBookingOpen(true);
     },
     [closeOverlays]
@@ -127,6 +131,7 @@ export function FeatureProvider({ children }: { children: ReactNode }) {
         intakeOpen,
         intakeProjectType,
         bookingMeetingType,
+        bookingNote,
         productDrawerOpen,
         selectedProductId,
         openNewsletter,

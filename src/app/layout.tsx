@@ -90,7 +90,7 @@ export default function RootLayout({
         <Providers>
           <Header />
           {/* pb-24 (~6rem) clears fixed FABs without inventing a blank page after the footer */}
-          <main id="main" className="flex-1 pb-24">
+          <main id="main" className="flex-1 pb-28 md:pb-24">
             {children}
           </main>
           <Footer />

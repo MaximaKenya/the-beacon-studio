@@ -11,6 +11,7 @@ import { useFeatures } from "@/providers/FeatureProvider";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { AnimatedIcon } from "@/components/ui/AnimatedIcon";
 import { mailtoHref, phoneHref, trackCallClick, trackEmailClick } from "@/lib/contact-actions";
+import { trackEvent } from "@/lib/analytics";
 
 /** Primary nav stays single-line; overflow items live in More */
 const PRIMARY_NAV_IDS = new Set(["products", "services", "pricing", "contact"]);
@@ -66,7 +67,7 @@ export function Header() {
     <header
       className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${
         scrolled
-          ? "border-b border-border/50 bg-background/80 backdrop-blur-xl"
+          ? "bg-background/75 shadow-[0_12px_40px_rgba(8,4,20,0.28)] backdrop-blur-xl"
           : "bg-transparent"
       }`}
     >
@@ -131,7 +132,7 @@ export function Header() {
               {moreOpen && (
                 <div
                   role="menu"
-                  className="absolute left-1/2 top-full z-50 mt-2 min-w-[10rem] -translate-x-1/2 rounded-xl border border-border bg-surface/95 p-1.5 shadow-lg backdrop-blur-xl"
+                  className="sleek-card absolute left-1/2 top-full z-50 mt-2 min-w-[10rem] -translate-x-1/2 rounded-2xl bg-surface/95 p-1.5 backdrop-blur-xl"
                 >
                   {moreNav.map((link) => (
                     <a
@@ -154,7 +155,7 @@ export function Header() {
           <a
             href={phoneHref()}
             onClick={() => trackCallClick("header")}
-            className="hidden h-8 w-8 items-center justify-center rounded-lg border border-border text-muted transition-colors hover:border-accent/30 hover:text-accent xl:inline-flex"
+            className="hidden h-8 w-8 items-center justify-center rounded-full bg-surface/70 text-muted transition-colors hover:text-accent xl:inline-flex"
             aria-label={`Call ${siteConfig.phoneDisplay}`}
           >
             <Phone className="h-3.5 w-3.5" />
@@ -162,7 +163,7 @@ export function Header() {
           <a
             href={mailtoHref("Hello Beacon")}
             onClick={() => trackEmailClick("header")}
-            className="hidden h-8 w-8 items-center justify-center rounded-lg border border-border text-muted transition-colors hover:border-accent/30 hover:text-accent xl:inline-flex"
+            className="hidden h-8 w-8 items-center justify-center rounded-full bg-surface/70 text-muted transition-colors hover:text-accent xl:inline-flex"
             aria-label={`Email ${siteConfig.email}`}
           >
             <Mail className="h-3.5 w-3.5" />
@@ -171,7 +172,7 @@ export function Header() {
           <button
             type="button"
             onClick={() => setCommandOpen(true)}
-            className="hidden items-center gap-1.5 rounded-lg border border-border bg-surface/50 px-2 py-1.5 text-sm text-muted transition-colors hover:border-accent/30 hover:text-foreground sm:inline-flex"
+            className="hidden items-center gap-1.5 rounded-full bg-surface/70 px-2.5 py-1.5 text-sm text-muted transition-colors hover:text-foreground sm:inline-flex"
             aria-label="Open command palette"
           >
             <AnimatedIcon icon={Search} size="sm" animation="subtle" />
@@ -183,7 +184,7 @@ export function Header() {
           <div className="hidden items-center gap-1.5 md:flex">
             <a
               href="/portal/login"
-              className="inline-flex whitespace-nowrap rounded-lg border border-border/70 px-2.5 py-1.5 text-xs font-medium text-muted transition-colors hover:border-accent/30 hover:text-accent lg:text-[13px]"
+              className="inline-flex whitespace-nowrap rounded-full bg-surface/70 px-3 py-1.5 text-xs font-medium text-muted transition-colors hover:text-accent lg:text-[13px]"
             >
               Portal
             </a>
@@ -196,10 +197,13 @@ export function Header() {
             </button>
             <button
               type="button"
-              onClick={() => openBooking()}
-              className="inline-flex whitespace-nowrap rounded-lg bg-accent px-2.5 py-1.5 text-xs font-semibold text-background transition-colors hover:bg-accent-hover lg:text-[13px]"
+              onClick={() => {
+                trackEvent("cta_click", { type: "book", source: "header" });
+                openBooking("automation-audit");
+              }}
+              className="inline-flex h-9 items-center whitespace-nowrap rounded-full bg-accent px-3.5 text-xs font-semibold text-background shadow-[0_8px_22px_color-mix(in_srgb,var(--accent)_35%,transparent)] transition-colors hover:bg-accent-hover lg:text-[13px]"
             >
-              Book
+              Free audit
             </button>
           </div>
 
@@ -221,7 +225,7 @@ export function Header() {
 
       {mobileOpen && (
         <nav
-          className="border-t border-border/50 bg-background/95 px-6 py-6 backdrop-blur-xl lg:hidden"
+          className="bg-background/95 px-6 py-6 shadow-[0_18px_40px_rgba(8,4,20,0.28)] backdrop-blur-xl lg:hidden"
           aria-label="Mobile navigation"
         >
           <ul className="flex flex-col gap-1">
@@ -249,10 +253,10 @@ export function Header() {
                 )}
               </li>
             ))}
-            <li className="mt-2 flex flex-wrap gap-2 border-t border-border/50 pt-4">
+            <li className="mt-2 flex flex-wrap gap-2 pt-4">
               <a
                 href="/portal/login"
-                className="inline-flex whitespace-nowrap rounded-lg border border-border px-3 py-2 text-sm font-medium text-accent"
+                className="inline-flex whitespace-nowrap rounded-full bg-surface px-3 py-2 text-sm font-medium text-accent"
                 onClick={() => setMobileOpen(false)}
               >
                 Portal
@@ -269,13 +273,14 @@ export function Header() {
               </button>
               <button
                 type="button"
-                className="inline-flex whitespace-nowrap rounded-lg bg-accent px-3 py-2 text-sm font-semibold text-background"
+                className="inline-flex whitespace-nowrap rounded-full bg-accent px-3 py-2 text-sm font-semibold text-background"
                 onClick={() => {
                   setMobileOpen(false);
-                  openBooking();
+                  trackEvent("cta_click", { type: "book", source: "header_mobile" });
+                  openBooking("automation-audit");
                 }}
               >
-                Book
+                Free audit
               </button>
             </li>
             <li>

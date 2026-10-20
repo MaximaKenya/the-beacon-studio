@@ -6,7 +6,7 @@ import { siteConfig } from "@/data/site";
 export default function PortalLayout({ children }: { children: ReactNode }) {
   return (
     <div className="portal-shell min-h-screen">
-      <header className="sticky top-0 z-40 border-b border-border/60 bg-background/85 backdrop-blur-md">
+      <header className="sticky top-0 z-40 bg-background/85 shadow-[0_10px_30px_rgba(8,4,20,0.12)] backdrop-blur-md">
         <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-5 lg:px-8">
           <Link href="/" className="transition-opacity hover:opacity-90" aria-label="Home">
             <BeaconWordmark size="sm" variant="compact" />

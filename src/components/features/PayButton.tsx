@@ -48,8 +48,8 @@ export function PayButton({
     variant === "primary"
       ? "bg-accent text-background hover:bg-accent-hover"
       : variant === "ghost"
-        ? "border border-border/80 text-muted hover:border-accent/40 hover:text-accent"
-        : "border border-border bg-background text-foreground hover:border-accent/40";
+        ? "bg-surface-elevated/70 text-muted hover:text-accent"
+        : "bg-surface-elevated/80 text-foreground";
 
   function FallbackLinks() {
     return (
@@ -170,7 +170,7 @@ export function PayButton({
             type="button"
             onClick={() => setShowMpesa(true)}
             disabled={!!loading}
-            className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-border bg-background text-sm font-semibold text-foreground transition-colors hover:border-accent/40 disabled:opacity-60"
+            className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-surface-elevated/80 text-sm font-semibold text-foreground transition-colors disabled:opacity-60"
           >
             <Smartphone className="h-4 w-4" aria-hidden />
             Pay with M-Pesa

@@ -15,6 +15,35 @@ const KIND_LABEL: Record<InboxKind, string> = {
   message: "Portal message",
 };
 
+function sourceLabel(source: string) {
+  switch (source) {
+    case "quick-lead:automation":
+      return "Quick lead · Automation";
+    case "quick-lead:custom-software":
+      return "Quick lead · Custom software";
+    case "quick-lead:managed-it":
+      return "Quick lead · Managed IT";
+    case "quick-lead:product":
+      return "Quick lead · A product";
+    case "contact-form":
+      return "Contact form";
+    case "intake":
+      return "Project intake";
+    case "booking":
+      return "Booking";
+    case "review":
+      return "Review";
+    case "portal":
+      return "Portal";
+    default:
+      return source || "Website";
+  }
+}
+
+function isNewLead(status: string) {
+  return status === "new";
+}
+
 const FILTERS: { id: "all" | InboxKind; label: string }[] = [
   { id: "all", label: "All" },
   { id: "contact", label: "Contact" },
@@ -127,7 +156,14 @@ export function AdminInbox() {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="admin-kicker">Messages</p>
-          <h2 className="mt-1 font-display text-xl font-semibold text-heading">Inbox</h2>
+          <h2 className="mt-1 font-display text-xl font-semibold text-heading">
+            Inbox
+            {items.some((item) => isNewLead(item.status)) && (
+              <span className="ml-2 align-middle rounded-full bg-accent px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-background">
+                {items.filter((item) => isNewLead(item.status)).length} new
+              </span>
+            )}
+          </h2>
           <p className="mt-1 max-w-2xl text-sm text-muted">
             Contact, intake, bookings, reviews, and portal messages. Open one to reply. The client
             sees the reply in the portal. Email goes out only when Resend is configured.
@@ -148,10 +184,10 @@ export function AdminInbox() {
             key={item.id}
             type="button"
             onClick={() => setFilter(item.id)}
-            className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${
+            className={`rounded-full px-3 py-1.5 text-xs font-semibold ${
               filter === item.id
-                ? "border-accent bg-accent text-background"
-                : "border-border/80 bg-surface/60 text-muted hover:text-foreground"
+                ? "bg-accent text-background"
+                : "bg-surface/70 text-muted hover:text-foreground"
             }`}
           >
             {item.label}
@@ -160,16 +196,17 @@ export function AdminInbox() {
       </div>
 
       <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
-        <div className="overflow-x-auto rounded-xl border border-border/80 bg-background/35">
+        <div className="overflow-x-auto rounded-2xl bg-background/35">
           {loading ? (
             <p className="px-4 py-8 text-sm text-muted">Loading submissions…</p>
           ) : visible.length === 0 ? (
             <p className="px-4 py-8 text-sm text-muted">No submissions in this view.</p>
           ) : (
             <table className="w-full min-w-[640px] text-left text-sm">
-              <thead className="border-b border-border bg-surface-elevated/80 text-[11px] uppercase tracking-wide text-muted">
+              <thead className="bg-surface-elevated/80 text-[11px] uppercase tracking-wide text-muted">
                 <tr>
                   <th className="px-3 py-3 font-medium">Type</th>
+                  <th className="px-3 py-3 font-medium">Source</th>
                   <th className="px-3 py-3 font-medium">Name</th>
                   <th className="px-3 py-3 font-medium">Email</th>
                   <th className="px-3 py-3 font-medium">Phone</th>
@@ -183,13 +220,19 @@ export function AdminInbox() {
                   <tr
                     key={item.id}
                     onClick={() => void openItem(item.id)}
-                    className={`cursor-pointer border-b border-border/50 align-top ${
-                      selectedId === item.id
-                        ? "bg-accent/10 shadow-[inset_3px_0_0_var(--accent)]"
-                        : "hover:bg-surface/80"
+                    className={`cursor-pointer align-top ${
+                      selectedId === item.id ? "bg-accent/10" : "hover:bg-surface/80"
                     }`}
                   >
-                    <td className="px-3 py-2 text-foreground">{KIND_LABEL[item.kind]}</td>
+                    <td className="px-3 py-2 text-foreground">
+                      {KIND_LABEL[item.kind]}
+                      {isNewLead(item.status) && (
+                        <span className="ml-2 rounded-full bg-accent px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-background">
+                          New
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-3 py-2 text-foreground">{sourceLabel(item.leadSource)}</td>
                     <td className="px-3 py-2 text-foreground">{item.name}</td>
                     <td className="px-3 py-2 text-muted">{item.email}</td>
                     <td className="px-3 py-2 text-muted">{item.phone}</td>
@@ -200,7 +243,7 @@ export function AdminInbox() {
                       {formatNairobi(item.createdAt)}
                     </td>
                     <td className="px-3 py-2">
-                      <span className="rounded-md border border-border bg-surface px-2 py-0.5 text-[11px] capitalize text-foreground">
+                      <span className="rounded-full bg-surface px-2 py-0.5 text-[11px] capitalize text-foreground">
                         {item.status}
                       </span>
                     </td>
@@ -211,7 +254,7 @@ export function AdminInbox() {
           )}
         </div>
 
-        <div className="flex min-h-80 flex-col rounded-xl border border-border/80 bg-background/40 p-4">
+        <div className="flex min-h-80 flex-col rounded-2xl bg-background/40 p-4">
           {!selected ? (
             <p className="m-auto max-w-xs text-center text-sm leading-relaxed text-muted">
               Select a submission to read it and reply.
@@ -220,7 +263,12 @@ export function AdminInbox() {
             <div className="space-y-4">
               <div>
                 <p className="font-mono text-[10px] uppercase tracking-widest text-muted">
-                  {KIND_LABEL[selected.kind]} · {selected.status}
+                  {KIND_LABEL[selected.kind]} · {sourceLabel(selected.leadSource)} · {selected.status}
+                  {isNewLead(selected.status) && (
+                    <span className="ml-2 rounded-full bg-accent px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-background">
+                      New lead
+                    </span>
+                  )}
                 </p>
                 <h3 className="mt-1 font-display text-lg font-semibold text-foreground">
                   {selected.name}
@@ -246,7 +294,7 @@ export function AdminInbox() {
                     type="button"
                     disabled={busy || selected.status === "hidden"}
                     onClick={() => void moderate("hidden")}
-                    className="inline-flex h-9 items-center rounded-xl border border-border px-3 text-sm text-foreground hover:border-accent/40 disabled:opacity-50"
+                    className="inline-flex h-9 items-center rounded-xl bg-surface px-3 text-sm text-foreground disabled:opacity-50"
                   >
                     Hide
                   </button>
@@ -266,7 +314,7 @@ export function AdminInbox() {
                     className={`rounded-xl px-3 py-2 text-sm ${
                       message.sender === "admin"
                         ? "bg-accent text-background"
-                        : "border border-border bg-surface text-foreground"
+                        : "bg-surface text-foreground"
                     }`}
                   >
                     <p className="whitespace-pre-wrap">{message.body}</p>
@@ -291,7 +339,7 @@ export function AdminInbox() {
                   value={reply}
                   onChange={(e) => setReply(e.target.value)}
                   placeholder="Write a reply the client can read in the portal…"
-                  className="w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-foreground placeholder:text-muted focus:border-accent/50 focus:outline-none"
+                  className="field w-full px-3 py-2 text-sm placeholder:text-muted"
                 />
                 {error && (
                   <p className="text-sm text-accent-warm" role="alert">

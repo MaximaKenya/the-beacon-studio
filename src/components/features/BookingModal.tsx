@@ -48,7 +48,7 @@ const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const BOOK_TIMEOUT_MS = 15_000;
 
 export function BookingModal() {
-  const { bookingOpen, closeBooking, bookingMeetingType } = useFeatures();
+  const { bookingOpen, closeBooking, bookingMeetingType, bookingNote } = useFeatures();
   const reducedMotion = useReducedMotion();
   const trapRef = useFocusTrap(bookingOpen);
   const [step, setStep] = useState<Step>("calendar");
@@ -93,8 +93,9 @@ export function BookingModal() {
       setSelectedTime(null);
       setError("");
       setResult(null);
+      if (bookingNote) setMessage(bookingNote);
     }
-  }, [bookingOpen, fetchBooked]);
+  }, [bookingOpen, fetchBooked, bookingNote]);
 
   const monthDays = useMemo(
     () => getMonthDays(viewDate.getFullYear(), viewDate.getMonth()),

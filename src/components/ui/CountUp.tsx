@@ -11,18 +11,35 @@ type CountUpProps = {
   className?: string;
 };
 
+function numericValue(value: string): number {
+  return parseFloat(value.replace(/[^0-9.]/g, ""));
+}
+
+function isNumericStart(value: string): boolean {
+  const numeric = numericValue(value);
+  return !Number.isNaN(numeric) && value !== "∞";
+}
+
+function formatNumber(value: string): string {
+  const numeric = numericValue(value);
+  if (Number.isNaN(numeric)) return value;
+  return Math.round(numeric).toLocaleString("en-US");
+}
+
 export function CountUp({ value, suffix = "", duration = 1.8, className = "" }: CountUpProps) {
   const ref = useRef<HTMLSpanElement>(null);
   const inView = useInView(ref, { once: true, margin: "-40px" });
   const reducedMotion = useReducedMotion();
-  const [display, setDisplay] = useState(value);
+  const [display, setDisplay] = useState(() =>
+    isNumericStart(value) ? formatNumber(value) : value
+  );
 
   const numeric = parseFloat(value.replace(/[^0-9.]/g, ""));
   const isNumeric = !Number.isNaN(numeric) && value !== "∞";
 
   useEffect(() => {
     if (!inView || !isNumeric || reducedMotion) {
-      setDisplay(value);
+      setDisplay(isNumeric ? formatNumber(value) : value);
       return;
     }
 
@@ -33,7 +50,7 @@ export function CountUp({ value, suffix = "", duration = 1.8, className = "" }: 
       if (start === null) start = timestamp;
       const progress = Math.min((timestamp - start) / (duration * 1000), 1);
       const eased = 1 - Math.pow(1 - progress, 3);
-      setDisplay(String(Math.round(eased * numeric)));
+      setDisplay(Math.round(eased * numeric).toLocaleString("en-US"));
       if (progress < 1) frame = requestAnimationFrame(step);
     };
 
