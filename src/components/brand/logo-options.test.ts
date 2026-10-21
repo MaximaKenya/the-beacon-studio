@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 import { ARTISTIC_PATHS } from "./artisticPaths";
 import { CONCEPT_A } from "./conceptA";
+import { CONCEPT_B, CONCEPT_B_BASE } from "./conceptB";
 import { badge, geometric, monoline, striped } from "./logoOptionPaths";
 
 const files = {
@@ -76,6 +77,66 @@ describe("concept A logo family", () => {
       assert.match(favicon, /viewBox="0 0 320 320"/);
       assert.match(favicon, /#16082e/);
     }
+  });
+});
+
+function pathXs(d: string): number[] {
+  const nums = d.match(/-?\d*\.?\d+/g)?.map(Number) ?? [];
+  const xs: number[] = [];
+  for (let i = 0; i < nums.length; i += 2) xs.push(nums[i]);
+  return xs;
+}
+
+describe("concept B logo family", () => {
+  it("keeps one traced tower and a short lantern light inside the base", () => {
+    assert.equal(CONCEPT_B.length, 4);
+    const kinds = ["icon", "horizontal", "stacked", "flat", "favicon", "animated"] as const;
+    const tower = CONCEPT_B[0].tower;
+    const wave = CONCEPT_B[0].wave;
+    for (const mark of CONCEPT_B) {
+      assert.match(mark.id, /^b[1-4]$/);
+      assert.equal(mark.tower, tower);
+      assert.equal(mark.wave, wave);
+      assert.ok(mark.extent.minX >= CONCEPT_B_BASE.minX, mark.id);
+      assert.ok(mark.extent.maxX <= CONCEPT_B_BASE.maxX, mark.id);
+      assert.ok(mark.extent.maxX <= 260, mark.id);
+      const glowLeft = mark.glow.cx - mark.glow.r;
+      const glowRight = mark.glow.cx + mark.glow.r;
+      assert.ok(glowLeft >= CONCEPT_B_BASE.minX && glowRight <= CONCEPT_B_BASE.maxX, mark.id);
+      if (mark.light) {
+        for (const x of pathXs(mark.light)) {
+          assert.ok(x >= CONCEPT_B_BASE.minX && x <= CONCEPT_B_BASE.maxX, `${mark.id} ${x}`);
+        }
+      }
+      for (const kind of kinds) {
+        const svg = readFileSync(`public/logo-options/${mark.id}-${kind}.svg`, "utf8");
+        assert.match(svg, /<svg\b/);
+        assert.doesNotMatch(svg, /<image\b/);
+        assert.ok(svg.includes(kind === "favicon" ? mark.solid : mark.tower), `${mark.id}-${kind}`);
+        assert.ok(svg.includes(mark.wave), `${mark.id}-${kind}`);
+      }
+      const icon = readFileSync(`public/logo-options/${mark.id}-icon.svg`, "utf8");
+      assert.match(icon, /#f6f1ff/);
+      assert.match(icon, /#2ad8c6/);
+      const flat = readFileSync(`public/logo-options/${mark.id}-flat.svg`, "utf8");
+      assert.match(flat, /currentColor/);
+      assert.doesNotMatch(flat, /linearGradient/);
+      const horizontal = readFileSync(`public/logo-options/${mark.id}-horizontal.svg`, "utf8");
+      const stacked = readFileSync(`public/logo-options/${mark.id}-stacked.svg`, "utf8");
+      assert.match(horizontal, /currentColor/);
+      assert.match(stacked, /currentColor/);
+      const animated = readFileSync(`public/logo-options/${mark.id}-animated.svg`, "utf8");
+      assert.match(animated, /prefers-reduced-motion/);
+      assert.match(animated, /concept-b-glow/);
+      assert.match(animated, /concept-b-pulse/);
+      assert.doesNotMatch(animated, /concept-a-beam/);
+      const favicon = readFileSync(`public/logo-options/${mark.id}-favicon.svg`, "utf8");
+      assert.match(favicon, /#16082e/);
+      assert.match(favicon, /#3ed6c6/);
+    }
+    assert.ok(CONCEPT_B[1].light.length > 0);
+    assert.equal(CONCEPT_B[3].light, "");
+    assert.ok(CONCEPT_B[2].extent.maxX > CONCEPT_B[0].extent.maxX);
   });
 });
 

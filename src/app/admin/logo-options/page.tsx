@@ -4,6 +4,8 @@ import { Fraunces } from "next/font/google";
 import Link from "next/link";
 import { CONCEPT_A, type ConceptVariant } from "@/components/brand/conceptA";
 import { CONCEPT_A_MOTION, ConceptALockup, ConceptAMark } from "@/components/brand/ConceptAMark";
+import { CONCEPT_B, type ConceptBVariant } from "@/components/brand/conceptB";
+import { CONCEPT_B_MOTION, ConceptBLockup, ConceptBMark } from "@/components/brand/ConceptBMark";
 import { ARTISTIC_PATHS } from "@/components/brand/artisticPaths";
 import { ArtisticMark } from "@/components/brand/artisticMarks";
 import { LOGO_OPTIONS } from "@/components/brand/logoOptions";
@@ -16,7 +18,7 @@ const wordmark = Fraunces({
 
 export const metadata: Metadata = {
   title: "Logo options",
-  description: "Concept A lighthouse studies for The Beacon Studio. The live mark is unchanged.",
+  description: "Concept B lighthouse studies for The Beacon Studio. The live mark is unchanged.",
   robots: { index: false, follow: false },
 };
 
@@ -60,13 +62,87 @@ export default function LogoOptionsPage() {
           Logo options
         </h1>
         <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted">
-          Concept A is the flowing lighthouse with one open beam. The five variations below keep
-          that drawing and change the weight, the lantern, the beam, and the wave. The live mark
-          stays as it is until one of these is chosen.
+          Concept B traces the chosen lighthouse and removes the long ray. The light at the lantern
+          stays inside the width of the base. The live mark stays as it is until one of these is chosen.
         </p>
 
+        <style>{CONCEPT_B_MOTION}</style>
         <style>{CONCEPT_A_MOTION}</style>
-        <section id="concept-a" className="mt-10">
+        <section id="concept-b" className="mt-10">
+          <h2 className="font-display text-xl font-semibold text-heading">Concept B</h2>
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">
+            The same flowing tower, the same violet-to-teal gradient, and the same base wave.
+            B1 through B4 change only the short light at the lantern. On the large marks that light
+            pulses.
+          </p>
+          <div className="mt-5 flex flex-col gap-8">
+            {CONCEPT_B.map((variant) => (
+              <article
+                key={variant.id}
+                className="rounded-[var(--radius-lg)] border border-border bg-surface p-4 sm:p-5"
+              >
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-accent">
+                  {variant.id.toUpperCase()}
+                </p>
+                <h3 className="mt-1 font-display text-2xl font-semibold tracking-tight text-heading">
+                  {variant.name}
+                </h3>
+                <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted">{variant.story}</p>
+                <p className="mt-3 text-xs text-muted">
+                  {CONCEPT_FILES.map((file, index) => (
+                    <span key={file}>
+                      {index > 0 ? " · " : null}
+                      <Link
+                        href={`/logo-options/${variant.id}-${file}.svg`}
+                        className="text-accent underline-offset-2 hover:underline"
+                      >
+                        {file}
+                      </Link>
+                    </span>
+                  ))}
+                </p>
+                <div className="mt-4 grid gap-3 lg:grid-cols-2">
+                  <ConceptBHero label="Dark purple" style={PURPLE} variant={variant} />
+                  <ConceptBHero label="Light teal" style={TEAL} variant={variant} />
+                </div>
+                <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                  <ConceptBFlat label="Flat on purple" style={PURPLE} variant={variant} />
+                  <ConceptBFlat label="Flat on teal" style={TEAL} variant={variant} />
+                </div>
+                <div className="mt-3 grid gap-3 lg:grid-cols-2">
+                  <div className="rounded-[var(--radius-md)] px-4 py-4" style={PURPLE}>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.16em] opacity-70">
+                      Horizontal
+                    </p>
+                    <div className="mt-3">
+                      <ConceptBLockup
+                        variant={variant}
+                        layout="horizontal"
+                        markSize={96}
+                        wordmarkClassName={wordmark.className}
+                      />
+                    </div>
+                  </div>
+                  <div className="rounded-[var(--radius-md)] px-4 py-4" style={TEAL}>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.16em] opacity-70">
+                      Stacked
+                    </p>
+                    <div className="mt-3 flex justify-center">
+                      <ConceptBLockup
+                        variant={variant}
+                        layout="stacked"
+                        markSize={120}
+                        wordmarkClassName={wordmark.className}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section id="concept-a" className="mt-14">
           <h2 className="font-display text-xl font-semibold text-heading">Concept A</h2>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">
             Violet to teal, on deep purple. The horizontal ray is shorter than the original study.
@@ -222,6 +298,49 @@ export default function LogoOptionsPage() {
             ))}
           </div>
         </section>
+      </div>
+    </div>
+  );
+}
+
+function ConceptBHero({
+  label,
+  style,
+  variant,
+}: {
+  label: string;
+  style: CSSProperties;
+  variant: ConceptBVariant;
+}) {
+  return (
+    <div className="flex flex-col items-center rounded-[var(--radius-md)] px-4 py-5" style={style}>
+      <p className="self-start text-[10px] font-semibold uppercase tracking-[0.16em] opacity-70">
+        {label}
+      </p>
+      <ConceptBMark variant={variant} size={280} animated className="mt-2" />
+    </div>
+  );
+}
+
+function ConceptBFlat({
+  label,
+  style,
+  variant,
+}: {
+  label: string;
+  style: CSSProperties;
+  variant: ConceptBVariant;
+}) {
+  return (
+    <div className="rounded-[var(--radius-md)] px-3 py-3" style={style}>
+      <p className="text-[10px] font-semibold uppercase tracking-[0.16em] opacity-70">{label}</p>
+      <div className="mt-3 flex items-end justify-between gap-2">
+        {SMALL.map((size) => (
+          <div key={size} className="flex flex-col items-center gap-1">
+            <ConceptBMark variant={variant} size={size} tone="flat" />
+            <span className="text-[10px] tabular-nums opacity-70">{size}</span>
+          </div>
+        ))}
       </div>
     </div>
   );
