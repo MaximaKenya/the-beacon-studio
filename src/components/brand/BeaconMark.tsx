@@ -1,67 +1,24 @@
-import {
-  BEACON_BAND,
-  BEACON_BASE,
-  BEACON_BEAM,
-  BEACON_BEAM_CORE,
-  BEACON_GALLERY,
-  BEACON_LANTERN,
-  BEACON_LIGHT,
-  BEACON_MONO,
-  BEACON_ROOF,
-  BEACON_TOWER,
-} from "@/components/brand/beaconPaths";
+import { BEACON_MONO_D, BEACON_MONO_VIEW } from "@/components/brand/beaconMono";
 
 type BeaconMarkProps = {
-  /** Pixel size of the SVG (square). */
+  /** Pixel width of the mark. Height follows the lighthouse proportion. */
   size?: number;
   className?: string;
-  /** @deprecated Glow is not part of the mark. Kept so older call sites still compile. */
+  /** @deprecated Glow is painted into the color mark. Kept so older call sites still compile. */
   staticGlow?: boolean;
   /**
-   * color — ink follows currentColor, lamp and beam use the accent.
-   * mono — one ink, lamp and daymark punched out. For print and one-color lockups.
+   * color — the painted lighthouse, as a cached SVG.
+   * mono — one currentColor silhouette, for buttons and one-ink UI.
    */
   variant?: "color" | "mono";
 };
 
-type LighthouseMarkProps = {
-  /** Tower ink. Defaults to currentColor so the mark follows light and dark UI. */
-  ink?: string;
-  /** Lamp, daymark, and beam. */
-  accent?: string;
-  variant?: "color" | "mono";
-};
+const view = `${BEACON_MONO_VIEW.x} ${BEACON_MONO_VIEW.y} ${BEACON_MONO_VIEW.w} ${BEACON_MONO_VIEW.h}`;
 
 /**
- * Shapes only, so favicon, OG, and email callers can pass explicit colors.
- */
-export function LighthouseMark({
-  ink = "currentColor",
-  accent = "var(--accent)",
-  variant = "color",
-}: LighthouseMarkProps) {
-  if (variant === "mono") {
-    return <path fillRule="evenodd" clipRule="evenodd" d={BEACON_MONO} fill={ink} />;
-  }
-
-  return (
-    <g>
-      <path d={BEACON_BEAM} fill={accent} opacity={0.45} />
-      <path d={BEACON_BEAM_CORE} fill={accent} />
-      <path d={BEACON_ROOF} fill={ink} />
-      <path d={BEACON_TOWER} fill={ink} />
-      <path d={BEACON_BASE} fill={ink} />
-      <path d={BEACON_GALLERY} fill={ink} />
-      <path d={BEACON_LANTERN} fill={ink} />
-      <path d={BEACON_BAND} fill={accent} />
-      <circle cx={BEACON_LIGHT.cx} cy={BEACON_LIGHT.cy} r={BEACON_LIGHT.r} fill={accent} />
-    </g>
-  );
-}
-
-/**
- * Lighthouse mark for The Beacon Studio.
- * A tower, a lamp, and one beam. Solid shapes so it stays clear at 16px.
+ * Live lighthouse. The color file is the smoothed mark (transparent spiral channels,
+ * so it sits on purple and teal). The header uses that file rather than the animated
+ * component, which would ship hundreds of paths and a blur on every page.
  */
 export function BeaconMark({
   size = 28,
@@ -70,18 +27,34 @@ export function BeaconMark({
   variant = "color",
 }: BeaconMarkProps) {
   void _staticGlow;
+  const height = Math.round((size * BEACON_MONO_VIEW.h) / BEACON_MONO_VIEW.w);
+
+  if (variant === "mono") {
+    return (
+      <svg
+        width={size}
+        height={height}
+        viewBox={view}
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className={`beacon-mark ${className}`}
+        aria-hidden
+      >
+        <path d={BEACON_MONO_D} fill="currentColor" />
+      </svg>
+    );
+  }
 
   return (
-    <svg
+    // The mark has to stay a vector. next/image would rasterize it.
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src="/brand/beacon-mark.svg"
       width={size}
-      height={size}
-      viewBox="0 0 32 32"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
+      height={height}
+      alt=""
+      draggable={false}
       className={`beacon-mark ${className}`}
-      aria-hidden
-    >
-      <LighthouseMark variant={variant} />
-    </svg>
+    />
   );
 }

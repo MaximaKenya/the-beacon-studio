@@ -1,7 +1,10 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { ImageResponse } from "next/og";
-import { LighthouseMark } from "@/components/brand/BeaconMark";
 
 export const ogSize = { width: 1200, height: 630 };
+
+const logoSrc = `data:image/png;base64,${readFileSync(join(process.cwd(), "public/email/beacon-mark.png")).toString("base64")}`;
 
 export function renderOgCard(title: string, subtitle: string) {
   const heading = title.length > 42 ? 52 : title.length > 24 ? 64 : 72;
@@ -17,22 +20,20 @@ export function renderOgCard(title: string, subtitle: string) {
           padding: "72px 80px",
         }}
       >
-        <div
+        {/* Satori paints <img>. next/image is not available inside ImageResponse. */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={logoSrc}
+          width={200}
+          height={200}
+          alt=""
           style={{
-            display: "flex",
             width: 200,
             height: 200,
-            alignItems: "center",
-            justifyContent: "center",
             borderRadius: 48,
-            background: "#2a1848",
             marginRight: 56,
           }}
-        >
-          <svg width="140" height="140" viewBox="0 0 32 32" fill="none">
-            <LighthouseMark ink="#f6f3ff" accent="#45baab" />
-          </svg>
-        </div>
+        />
         <div style={{ display: "flex", flexDirection: "column", maxWidth: 760 }}>
           <div style={{ fontSize: 24, letterSpacing: 6, color: "#45baab", fontWeight: 600 }}>
             THE BEACON STUDIO

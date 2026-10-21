@@ -20,10 +20,9 @@ export default function BrandPage() {
         The Beacon Studio mark
       </h1>
       <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted sm:text-base">
-        The mark is a standalone lighthouse: a tapered tower, a lamp, a daymark band, and one
-        light beam. It uses the text color for the tower and the accent for the light, so the
-        same SVG works on light and dark backgrounds. Solid shapes only, so it stays clear at
-        favicon size.
+        The live mark is the spiral lighthouse: a traced tower, a short teal starburst, and a
+        two-curl wave. Spiral channels stay transparent, so the same file sits on the purple
+        dark theme and the teal light theme. The mono file is one silhouette for one-ink use.
       </p>
 
       <section className="mt-12">
