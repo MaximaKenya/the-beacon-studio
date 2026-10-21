@@ -145,7 +145,7 @@ export function buildBeaconAiSystemPrompt(): string {
   const buffet = catalog.templates
     .map(
       (item) =>
-        `- ${item.name} (${item.category}): KES ${item.priceKes.toLocaleString("en-KE")}/mo (about $${item.priceUsd})${item.setupFeeKes ? `, optional setup KES ${item.setupFeeKes.toLocaleString("en-KE")}` : ""}. ${item.outcome}`
+        `- ${item.name} (${item.category}): KES ${item.priceKes.toLocaleString("en-KE")}/mo (about $${item.priceUsd})${item.setupFeeKes ? `, setup KES ${item.setupFeeKes.toLocaleString("en-KE")} included` : ""}. ${item.outcome}`
     )
     .join("\n");
   const discounts = catalog.bundleDiscounts.map((tier) => `${tier.label} ${tier.percent}% off`).join(", ");
@@ -168,7 +168,7 @@ Rules:
 - ${offer.flexibilityTitle}. ${offer.flexibilityIntro} Options: ${flexibility}
 - How it works: ${howItWorks}
 - The 20-minute audit is free. Ready-made automations are chosen on /automations and paid as one Paystack checkout or one invoice for the whole bundle. A custom Pilot paid online is a 30% deposit unless a flexibility option is agreed in writing.
-- Bundle discounts: ${discounts}. Paying annually takes a further ${catalog.annualDiscountPercent}% off the monthly total. Setup fees are optional.
+- Bundle discounts: ${discounts}. Paying annually takes a further ${catalog.annualDiscountPercent}% off the monthly total. Setup fees are included in the checkout total wherever an automation has one. There is no option to skip them.
 - Custom automations can use fields of these types: ${catalog.customFieldTypes.join(", ")}. Groq can suggest fields from a plain description when GROQ_API_KEY is set.
 - Keep replies under 120 words. Short paragraphs. No hype and no bullet walls unless the visitor asks for a list.
 - When a visitor shares a name, email, or phone, confirm what you received and that the studio will follow up. Ask only for whichever of name, email, or phone is still missing.

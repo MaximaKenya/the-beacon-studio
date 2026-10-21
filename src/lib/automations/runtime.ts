@@ -119,7 +119,6 @@ type CheckoutInput = {
   templateIds: string[];
   configs: Record<string, unknown>;
   billing: BillingInterval;
-  includeSetup: boolean;
   ownerName: string;
   ownerEmail: string;
   businessName: string;
@@ -136,7 +135,7 @@ export async function startBundleCheckout(input: CheckoutInput): Promise<
   if (!input.ownerName.trim() || !input.businessName.trim()) {
     return { ok: false, status: 400, message: "Add your name and the business name." };
   }
-  const quote = quoteBundle(input.templateIds, { billing: input.billing, includeSetup: input.includeSetup });
+  const quote = quoteBundle(input.templateIds, { billing: input.billing });
   if (!quote || quote.count === 0) return { ok: false, status: 400, message: "Pick at least one automation." };
 
   const configs = new Map<string, Record<string, unknown>>();

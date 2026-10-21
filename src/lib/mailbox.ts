@@ -13,6 +13,7 @@ import type {
 } from "@/lib/mailbox-types";
 import { fromAddress, isMailboxConfigured, sendResendEmail } from "@/lib/resend";
 import { readJsonFile, writeJsonFile } from "@/lib/storage";
+import { normalizeServiceIds, serviceLabels } from "@/lib/intake-services";
 import { isValidEmail, normalizeEmail } from "@/lib/validation";
 
 const FILE = "mailbox.json";
@@ -92,6 +93,7 @@ type IntakeRow = {
   email?: string;
   brief?: string;
   projectType?: string;
+  projectTypes?: string[];
 };
 type BookingRow = {
   id?: string;
@@ -338,7 +340,7 @@ async function linksFor(thread: StoredThread): Promise<{ client: MailClientLink 
       kind: "intake",
       name: row.name || email,
       email,
-      summary: (row.brief || row.projectType || "Intake").slice(0, 180),
+      summary: (row.brief || serviceLabels(normalizeServiceIds(row)) || "Intake").slice(0, 180),
     });
   }
   for (const row of bookings) {

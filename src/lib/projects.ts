@@ -3,6 +3,7 @@ import { readJsonFile, writeJsonFile } from "@/lib/storage";
 import { addDaysIso } from "@/lib/time";
 import { getDepositPercent } from "@/lib/payments";
 import { siteConfig } from "@/data/site";
+import { normalizeServiceIds, serviceLabels } from "@/lib/intake-services";
 
 const FILE = "projects.json";
 
@@ -12,6 +13,7 @@ export type Milestone = {
   percent: number;
   done: boolean;
   note?: string;
+  dueDate?: string;
 };
 
 export type ProjectUpdate = {
@@ -48,10 +50,14 @@ export type ProjectRecord = {
   title: string;
   status: ProjectStatus;
   projectType: string;
+  /** Every service chosen on Start a Project. The first id is projectType. */
+  projectTypes?: string[];
   budget: string;
   timeline: string;
   brief: string;
   milestones: Milestone[];
+  startDate?: string;
+  targetDate?: string;
   /** Overall progress 0–100 (derived or admin override) */
   progressPercent: number;
   nextPaymentDate?: string;
@@ -113,6 +119,57 @@ export function computeProgress(milestones: Milestone[]): number {
   return Math.min(100, Math.round(doneWeight));
 }
 
+const PROJECT_STATUSES: ProjectStatus[] = [
+  "intake",
+  "quoted",
+  "active",
+  "paused",
+  "completed",
+  "cancelled",
+];
+
+export function isProjectStatus(value: string): value is ProjectStatus {
+  return (PROJECT_STATUSES as string[]).includes(value);
+}
+
+export function isOpenProject(project: Pick<ProjectRecord, "status">): boolean {
+  return project.status !== "completed" && project.status !== "cancelled";
+}
+
+function clampPercent(value: number): number {
+  if (!Number.isFinite(value)) return 0;
+  return Math.max(0, Math.min(100, Math.round(value)));
+}
+
+export function sanitizeMilestones(value: unknown): Milestone[] {
+  if (!Array.isArray(value)) return [];
+  const items: Milestone[] = [];
+  for (const raw of value) {
+    if (!raw || typeof raw !== "object") continue;
+    const row = raw as Record<string, unknown>;
+    const title = typeof row.title === "string" ? row.title.trim() : "";
+    if (!title) continue;
+    const percent = typeof row.percent === "number" ? row.percent : Number(row.percent);
+    const dueDate = typeof row.dueDate === "string" ? row.dueDate.trim() : "";
+    const note = typeof row.note === "string" ? row.note.trim() : "";
+    items.push({
+      id: typeof row.id === "string" && row.id.trim() ? row.id.trim() : randomUUID(),
+      title,
+      percent: clampPercent(percent),
+      done: row.done === true,
+      ...(note ? { note } : {}),
+      ...(dueDate ? { dueDate } : {}),
+    });
+  }
+  return items;
+}
+
+function dateOrUndefined(value: unknown): string | undefined {
+  if (typeof value !== "string") return undefined;
+  const trimmed = value.trim();
+  return trimmed ? trimmed : undefined;
+}
+
 export async function listProjects(): Promise<ProjectRecord[]> {
   return readJsonFile<ProjectRecord[]>(FILE, []);
 }
@@ -132,18 +189,21 @@ export async function createProjectFromIntake(input: {
   intakeId: string;
   name: string;
   projectType: string;
+  projectTypes?: string[];
   budget: string;
   timeline: string;
   brief: string;
 }): Promise<ProjectRecord> {
-  const typeMeta = siteConfig.intake.projectTypes.find((t) => t.id === input.projectType);
-  const quoteOnly = Boolean(typeMeta?.quoteOnly);
-  const estimate = estimateFromIntake(input.projectType, input.budget);
+  const services = normalizeServiceIds(input);
+  const primary = services[0] ?? input.projectType;
+  const metas = services.map((id) => siteConfig.intake.projectTypes.find((item) => item.id === id));
+  const quoteOnly = metas.length > 0 && metas.every((item) => Boolean(item?.quoteOnly));
+  const estimate = estimateFromIntake(primary, input.budget);
   const depositPercent = quoteOnly ? 0 : getDepositPercent();
   const depositAmount = quoteOnly
     ? 0
     : Math.round(estimate.costFrom * (depositPercent / 100) * 100) / 100;
-  const typeLabel = typeMeta?.label ?? input.projectType;
+  const typeLabel = serviceLabels(services) || primary;
   const milestones = quoteOnly
     ? [
         { id: "m1", title: "Free assessment", percent: 20, done: false },
@@ -159,7 +219,8 @@ export async function createProjectFromIntake(input: {
     intakeId: input.intakeId,
     title: `${typeLabel} — ${input.name}`,
     status: "intake",
-    projectType: input.projectType,
+    projectType: primary,
+    projectTypes: services,
     budget: input.budget,
     timeline: input.timeline,
     brief: input.brief,
@@ -201,12 +262,68 @@ export async function updateProject(
   const idx = all.findIndex((p) => p.id === id);
   if (idx < 0) return null;
   const merged = { ...all[idx], ...patch, updatedAt: new Date().toISOString() };
-  if (patch.milestones) {
+  if (patch.milestones && typeof patch.progressPercent !== "number") {
     merged.progressPercent = computeProgress(patch.milestones);
+  }
+  if (typeof merged.progressPercent === "number") {
+    merged.progressPercent = clampPercent(merged.progressPercent);
   }
   all[idx] = merged;
   await writeJsonFile(FILE, all);
   return merged;
+}
+
+export async function createClientProject(input: {
+  clientId: string;
+  title: string;
+  status?: ProjectStatus;
+  projectType?: string;
+  projectTypes?: string[];
+  budget?: string;
+  timeline?: string;
+  brief?: string;
+  milestones?: Milestone[];
+  progressPercent?: number;
+  adminNotes?: string;
+  startDate?: string;
+  targetDate?: string;
+  updateMessage?: string;
+}): Promise<ProjectRecord> {
+  const services = normalizeServiceIds({
+    projectType: input.projectType,
+    projectTypes: input.projectTypes,
+  });
+  const milestones = input.milestones?.length ? input.milestones : defaultMilestones();
+  const now = new Date().toISOString();
+  const message = input.updateMessage?.trim() || "Project opened.";
+  const project: ProjectRecord = {
+    id: randomUUID(),
+    clientId: input.clientId,
+    title: input.title.trim() || "Client project",
+    status: input.status && isProjectStatus(input.status) ? input.status : "active",
+    projectType: services[0] ?? "other",
+    ...(services.length ? { projectTypes: services } : {}),
+    budget: input.budget ?? "explore",
+    timeline: input.timeline ?? "exploring",
+    brief: input.brief?.trim() || "Created from the admin portal.",
+    milestones,
+    progressPercent:
+      typeof input.progressPercent === "number"
+        ? clampPercent(input.progressPercent)
+        : computeProgress(milestones),
+    ...(dateOrUndefined(input.startDate) ? { startDate: dateOrUndefined(input.startDate) } : {}),
+    ...(dateOrUndefined(input.targetDate) ? { targetDate: dateOrUndefined(input.targetDate) } : {}),
+    updates: [{ id: randomUUID(), at: now, message, by: "admin" }],
+    reviews: [],
+    ...(input.adminNotes?.trim() ? { adminNotes: input.adminNotes.trim() } : {}),
+    createdAt: now,
+    updatedAt: now,
+  };
+
+  const all = await listProjects();
+  all.unshift(project);
+  await writeJsonFile(FILE, all);
+  return project;
 }
 
 export async function addProjectUpdate(

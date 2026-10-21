@@ -4,6 +4,7 @@ import { getAnalyticsStore, summarizeAnalytics } from "@/lib/analytics-store";
 import { getStorageHealth, readJsonFile, writeJsonFile } from "@/lib/storage";
 import { listPayments } from "@/lib/payments";
 import { buildStudioKpis, collectLeads, leadsToCsv } from "@/lib/lead-kpis";
+import { normalizeServiceIds, serviceLabels } from "@/lib/intake-services";
 
 export const runtime = "nodejs";
 
@@ -27,6 +28,7 @@ type Intake = {
   name?: string;
   email?: string;
   projectType?: string;
+  projectTypes?: string[];
   budget?: string;
   read?: boolean;
 };
@@ -110,7 +112,7 @@ export async function GET(request: Request) {
       id: `intake-${i.id ?? i.createdAt}`,
       kind: "intake",
       title: "Project intake",
-      detail: `${i.name ?? "Guest"} · ${i.projectType ?? ""} · ${i.budget ?? ""}`,
+      detail: `${i.name ?? "Guest"} · ${serviceLabels(normalizeServiceIds(i)) || i.projectType || ""} · ${i.budget ?? ""}`,
       at: i.createdAt ?? "",
       refId: i.id,
     });

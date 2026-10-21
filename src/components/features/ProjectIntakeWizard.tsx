@@ -14,6 +14,7 @@ import type { QuotationRecord } from "@/lib/documents";
 import Link from "next/link";
 import { Copy, ExternalLink } from "lucide-react";
 import { rememberQuote } from "@/components/features/SavedQuoteReminder";
+import { serviceLabels } from "@/lib/intake-services";
 
 type Step = 0 | 1 | 2 | 3 | 4;
 
@@ -31,7 +32,7 @@ export function ProjectIntakeWizard() {
   const trapRef = useFocusTrap(intakeOpen);
 
   const [step, setStep] = useState<Step>(0);
-  const [projectType, setProjectType] = useState("");
+  const [projectTypes, setProjectTypes] = useState<string[]>([]);
   const [budget, setBudget] = useState("");
   const [timeline, setTimeline] = useState("");
   const [brief, setBrief] = useState("");
@@ -46,6 +47,35 @@ export function ProjectIntakeWizard() {
   const [improveMode, setImproveMode] = useState<string | null>(null);
   const [portal, setPortal] = useState<PortalBootstrap | null>(null);
   const [copied, setCopied] = useState(false);
+  const [trackedOpen, setTrackedOpen] = useState(intakeOpen);
+  const [trackedType, setTrackedType] = useState<string | null>(intakeProjectType);
+
+  if (intakeOpen !== trackedOpen) {
+    setTrackedOpen(intakeOpen);
+    if (intakeOpen) {
+      setStep(0);
+      setProjectTypes(intakeProjectType ? [intakeProjectType] : []);
+      setTrackedType(intakeProjectType);
+      setBudget("");
+      setTimeline("");
+      setBrief("");
+      setName("");
+      setEmail("");
+      setCompany("");
+      setPhone("");
+      setError(null);
+      setDone(false);
+      setSubmitting(false);
+      setImproveMode(null);
+      setPortal(null);
+      setCopied(false);
+    }
+  } else if (intakeOpen && intakeProjectType && intakeProjectType !== trackedType) {
+    setTrackedType(intakeProjectType);
+    setProjectTypes((current) =>
+      current.includes(intakeProjectType) ? current : [...current, intakeProjectType]
+    );
+  }
 
   useEffect(() => {
     if (!intakeOpen) return;
@@ -61,37 +91,13 @@ export function ProjectIntakeWizard() {
     };
   }, [intakeOpen, closeIntake]);
 
-  useEffect(() => {
-    if (intakeOpen && intakeProjectType) setProjectType(intakeProjectType);
-  }, [intakeOpen, intakeProjectType]);
-
-  useEffect(() => {
-    if (!intakeOpen) {
-      setStep(0);
-      setProjectType("");
-      setBudget("");
-      setTimeline("");
-      setBrief("");
-      setName("");
-      setEmail("");
-      setCompany("");
-      setPhone("");
-      setError(null);
-      setDone(false);
-      setSubmitting(false);
-      setImproveMode(null);
-      setPortal(null);
-      setCopied(false);
-    }
-  }, [intakeOpen]);
-
   if (!intakeOpen || !siteConfig.intake.enabled) return null;
 
   const help = siteConfig.intake.stepHelp;
   const examples = siteConfig.intake.briefExamples ?? [];
 
   const canNext =
-    (step === 0 && projectType) ||
+    (step === 0 && projectTypes.length > 0) ||
     (step === 1 && budget) ||
     (step === 2 && timeline) ||
     (step === 3 && brief.trim().length >= 20) ||
@@ -105,7 +111,7 @@ export function ProjectIntakeWizard() {
       const res = await fetch("/api/brief/improve", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ brief, projectType }),
+        body: JSON.stringify({ brief, projectType: projectTypes.join(", ") }),
       });
       const data = (await res.json()) as { improved?: string; error?: string; mode?: string };
       if (!res.ok || !data.improved) {
@@ -127,7 +133,8 @@ export function ProjectIntakeWizard() {
     setError(null);
 
     const payload = {
-      projectType,
+      projectType: projectTypes[0] ?? "",
+      projectTypes,
       budget,
       timeline,
       brief: brief.trim(),
@@ -154,7 +161,7 @@ export function ProjectIntakeWizard() {
         throw new Error(data.error || "Failed to submit. Please try again.");
       }
 
-      trackEvent("intake_submit", { projectType, budget, timeline });
+      trackEvent("intake_submit", { projectType: projectTypes.join(","), budget, timeline });
       if (data.portal) {
         setPortal(data.portal);
         rememberQuote({
@@ -166,9 +173,7 @@ export function ProjectIntakeWizard() {
       }
       setDone(true);
 
-      const typeLabel =
-        siteConfig.intake.projectTypes.find((t) => t.id === projectType)?.label ??
-        projectType;
+      const typeLabel = serviceLabels(projectTypes) || projectTypes.join(", ");
       const budgetLabel =
         siteConfig.intake.budgets.find((b) => b.id === budget)?.label ?? budget;
       const timelineLabel =
@@ -321,26 +326,39 @@ export function ProjectIntakeWizard() {
                   </legend>
                   <p className="mb-4 text-xs leading-relaxed text-muted">{help.type}</p>
                   <ul className="space-y-2">
-                    {siteConfig.intake.projectTypes.map((t) => (
-                      <li key={t.id}>
-                        <button
-                          type="button"
-                          onClick={() => setProjectType(t.id)}
-                          className={`w-full rounded-xl border px-4 py-3 text-left transition-colors ${
-                            projectType === t.id
-                              ? "border-accent/50 bg-accent/10"
-                              : "border-border/70 bg-surface/40 hover:border-accent/30"
-                          }`}
-                        >
-                          <span className="block text-sm font-medium text-foreground">
-                            {t.label}
-                          </span>
-                          <span className="mt-0.5 block text-xs text-muted">
-                            {t.description}
-                          </span>
-                        </button>
-                      </li>
-                    ))}
+                    {siteConfig.intake.projectTypes.map((t) => {
+                      const on = projectTypes.includes(t.id);
+                      return (
+                        <li key={t.id}>
+                          <button
+                            type="button"
+                            aria-pressed={on}
+                            onClick={() =>
+                              setProjectTypes((current) =>
+                                current.includes(t.id)
+                                  ? current.filter((id) => id !== t.id)
+                                  : [...current, t.id]
+                              )
+                            }
+                            className={`sleek-card relative w-full rounded-2xl px-4 py-3 text-left ${
+                              on ? "choice-selected" : ""
+                            }`}
+                          >
+                            {on && (
+                              <span className="absolute top-3 right-3 flex h-6 w-6 items-center justify-center rounded-full bg-accent text-background">
+                                <Check className="h-3.5 w-3.5" aria-hidden />
+                              </span>
+                            )}
+                            <span className="block pr-8 text-sm font-medium text-foreground">
+                              {t.label}
+                            </span>
+                            <span className="mt-0.5 block text-xs text-muted">
+                              {t.description}
+                            </span>
+                          </button>
+                        </li>
+                      );
+                    })}
                   </ul>
                 </fieldset>
               )}

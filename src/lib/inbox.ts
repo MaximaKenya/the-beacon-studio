@@ -9,6 +9,7 @@ import {
 } from "@/lib/projects";
 import { isResendConfigured, sendResendEmail } from "@/lib/resend";
 import { readJsonFile, writeJsonFile } from "@/lib/storage";
+import { normalizeServiceIds, serviceLabels } from "@/lib/intake-services";
 
 export type InboxKind = "contact" | "intake" | "booking" | "review" | "message";
 
@@ -54,6 +55,7 @@ type IntakeRow = {
   company?: string;
   brief?: string;
   projectType?: string;
+  projectTypes?: string[];
   status?: string;
   projectId?: string;
   clientId?: string;
@@ -82,10 +84,6 @@ function text(value: unknown): string {
 function shown(value: unknown): string {
   const s = text(value);
   return s || "—";
-}
-
-function typeLabel(id: string): string {
-  return siteConfig.intake.projectTypes.find((t) => t.id === id)?.label ?? id;
 }
 
 function topicLabel(id: string): string {
@@ -136,7 +134,7 @@ export async function listInbox(): Promise<InboxItem[]> {
 
   for (const row of intakes) {
     if (!row.id) continue;
-    const label = row.projectType ? typeLabel(row.projectType) : "Project";
+    const label = serviceLabels(normalizeServiceIds(row)) || "Project";
     items.push({
       id: `intake:${row.id}`,
       kind: "intake",

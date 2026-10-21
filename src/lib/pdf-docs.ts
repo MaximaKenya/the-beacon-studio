@@ -1,6 +1,6 @@
 /**
  * Client-side branded PDF helpers for quotations & receipts.
- * Uses jspdf; Beacon Dot mark drawn as vector shapes in the header.
+ * Uses jspdf; the lighthouse mark is drawn as vector shapes in the header.
  * Pages always start on a light branded background (no black flash).
  */
 
@@ -23,29 +23,39 @@ function paintPage(pdf: JsPdf) {
   pdf.rect(0, 0, pageW, pageH, "F");
 }
 
-/** Draw Beacon Dot mark (rounded tile + geometric B + signal disc) at x,y */
+function fillPoly(pdf: JsPdf, points: [number, number][]) {
+  const [origin, ...rest] = points;
+  if (!origin || rest.length < 2) return;
+  let prev = origin;
+  const lines = rest.map((point) => {
+    const seg: [number, number] = [point[0] - prev[0], point[1] - prev[1]];
+    prev = point;
+    return seg;
+  });
+  pdf.lines(lines, origin[0], origin[1], [1, 1], "F", true);
+}
+
+/** Draw the lighthouse mark at x,y. Same geometry as the SVG, scaled from 32. */
 export function drawBeaconMark(pdf: JsPdf, x: number, y: number, size = 22) {
   const s = size / 32;
   const px = (vx: number) => x + vx * s;
   const py = (vy: number) => y + vy * s;
+  const pt = (vx: number, vy: number): [number, number] => [px(vx), py(vy)];
 
-  // Rounded studio tile
-  pdf.setFillColor(INK.r, INK.g, INK.b);
-  pdf.roundedRect(px(4), py(4), 24 * s, 24 * s, 7 * s, 7 * s, "F");
-
-  // Accent stem
   pdf.setFillColor(ACCENT.r, ACCENT.g, ACCENT.b);
-  pdf.rect(px(10.1), py(8.1), 3.7 * s, 15.8 * s, "F");
+  fillPoly(pdf, [pt(16.8, 9.2), pt(30.2, 1.2), pt(31.6, 6.6), pt(18.2, 11.4)]);
+  fillPoly(pdf, [pt(17.2, 9.6), pt(28.4, 3.6), pt(29.4, 6.2), pt(18, 10.8)]);
 
-  // Accent lower bowl
-  pdf.roundedRect(px(13.8), py(15.45), 9.1 * s, 9.8 * s, 3.2 * s, 3.2 * s, "F");
-
-  // Signal disc
-  pdf.circle(px(17.35), py(11.95), 4.45 * s, "F");
-
-  // Lower counter punch (tile color)
   pdf.setFillColor(INK.r, INK.g, INK.b);
-  pdf.roundedRect(px(13.8), py(18.2), 5.5 * s, 4.5 * s, 1.4 * s, 1.4 * s, "F");
+  fillPoly(pdf, [pt(16, 1.8), pt(21.4, 7.4), pt(10.6, 7.4)]);
+  pdf.rect(px(11.4), py(7.2), 9.2 * s, 5.4 * s, "F");
+  pdf.rect(px(9.8), py(12.6), 12.4 * s, 1.6 * s, "F");
+  fillPoly(pdf, [pt(12.2, 14.2), pt(19.8, 14.2), pt(21.2, 26.2), pt(10.8, 26.2)]);
+  pdf.rect(px(8.6), py(26.2), 14.8 * s, 2.4 * s, "F");
+
+  pdf.setFillColor(ACCENT.r, ACCENT.g, ACCENT.b);
+  fillPoly(pdf, [pt(11.9, 18.9), pt(20.1, 18.9), pt(20.3, 20.4), pt(11.7, 20.4)]);
+  pdf.circle(px(16), py(9.9), 1.65 * s, "F");
 }
 
 function header(pdf: JsPdf, subtitle: string) {

@@ -11,6 +11,7 @@ import { trackEvent } from "@/lib/analytics";
 import { DEFAULT_USD_KES_RATE, formatKes, formatUsd } from "@/lib/fx";
 import { parseResponseJson } from "@/lib/safe-json";
 import { ArrowRight } from "lucide-react";
+import Link from "next/link";
 
 function kesFloor(tier: PricingTier, rate: number): number {
   if (tier.kesAmount && tier.kesAmount > 0) return tier.kesAmount;
@@ -45,8 +46,6 @@ export function Pricing() {
   };
 
   const automationTiers = siteConfig.pricingTiers.filter((tier) => tier.group === "automation");
-  const buildTiers = automationTiers.filter((tier) => tier.lane !== "care");
-  const careTiers = automationTiers.filter((tier) => tier.lane === "care");
   const customTiers = siteConfig.pricingTiers.filter((tier) => tier.group === "studio" || !tier.group);
   const itTiers = siteConfig.pricingTiers.filter((tier) => tier.group === "it");
 
@@ -120,21 +119,14 @@ export function Pricing() {
               Discounts at 3, 5, and 8 or more. Annual pay takes a further {siteConfig.automationCatalog.annualDiscountPercent}% off.
             </p>
           </div>
-          <a href="/automations" className="inline-flex h-11 shrink-0 items-center justify-center rounded-2xl bg-accent px-4 text-sm font-semibold text-background">
+          <Link href="/automations" className="inline-flex h-11 shrink-0 items-center justify-center rounded-2xl bg-accent px-4 text-sm font-semibold text-background">
             Build a bundle
-          </a>
+          </Link>
         </div>
 
         <h3 className="mt-10 font-display text-lg font-semibold text-foreground">Custom build</h3>
-        <div className="mt-4 grid items-stretch gap-6 md:grid-cols-2 xl:grid-cols-3">
-          {buildTiers.map((tier) => (
-            <TierCard key={tier.id} tier={tier} rate={rate} onCta={handleCta} />
-          ))}
-        </div>
-
-        <h3 className="mt-10 font-display text-lg font-semibold text-foreground">Custom care</h3>
-        <div className="mt-4 grid items-stretch gap-6 md:grid-cols-2">
-          {careTiers.map((tier) => (
+        <div className="mt-4 grid grid-cols-1 items-stretch gap-6 lg:grid-cols-3">
+          {automationTiers.map((tier) => (
             <TierCard key={tier.id} tier={tier} rate={rate} onCta={handleCta} />
           ))}
         </div>
@@ -211,7 +203,7 @@ function TierCard({
   const kes = priced ? kesFloor(tier, rate) : 0;
 
   return (
-    <LiftCard className={`h-full ${popular ? "xl:-mt-3" : ""}`}>
+    <LiftCard className="h-full">
       <article className={`sleek-card flex h-full flex-col rounded-3xl p-6 ${popular ? "sleek-card-popular" : ""}`}>
         <div className="flex items-center justify-between gap-3">
           <h3 className="font-display text-xl font-semibold text-foreground">{tier.name}</h3>

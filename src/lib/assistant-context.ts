@@ -125,7 +125,7 @@ Pricing section: /#pricing
 
 ## Project intake
 ${siteConfig.intake.enabled
-  ? `Visitors can Start a Project via a multi-step wizard (type, budget, timeline, brief, contact). Types: ${siteConfig.intake.projectTypes.map((t) => t.label).join(", ")}. Link: /#services`
+  ? `Visitors can Start a Project via a multi-step wizard (services, budget, timeline, brief, contact). They can select more than one service. Types: ${siteConfig.intake.projectTypes.map((t) => t.label).join(", ")}. Link: /#services`
   : "Intake wizard disabled — direct email or booking."}
 
 ## Contact

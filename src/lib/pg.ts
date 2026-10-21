@@ -18,7 +18,9 @@ const SCHEMA_SQL = `
     filename text PRIMARY KEY,
     data json NOT NULL,
     updated_at timestamptz NOT NULL DEFAULT now()
-  )
+  );
+  -- Client project progress lives in the projects.json document:
+  -- status, milestones, percent complete, updates, notes, and dates.
 `;
 
 type GlobalWithPool = typeof globalThis & {

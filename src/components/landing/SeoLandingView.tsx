@@ -126,7 +126,7 @@ export function SeoLandingView({ page }: { page: SeoLanding }) {
           Automations that fit
         </h2>
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">
-          Monthly prices from the studio list. A bundle discount starts at three. Setup fees show only where one exists.
+          Monthly prices from the studio list. A bundle discount starts at three. Setup fees are included wherever one exists.
         </p>
         <ul className="mt-6 grid gap-4 md:grid-cols-2">
           {templates.map((item) => (
@@ -140,7 +140,7 @@ export function SeoLandingView({ page }: { page: SeoLanding }) {
                 {item.setupFeeKes > 0 && (
                   <span className="text-muted">
                     {" "}
-                    · optional setup KES {item.setupFeeKes.toLocaleString("en-KE")}
+                    · setup KES {item.setupFeeKes.toLocaleString("en-KE")} included
                   </span>
                 )}
               </p>

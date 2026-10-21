@@ -27,6 +27,15 @@ import { AdminOpsHub, type AdminOpsData } from "@/components/admin/AdminOpsHub";
 import { AdminProjectsPanel } from "@/components/admin/AdminProjectsPanel";
 import { AdminAutomations } from "@/components/automations/AdminAutomations";
 import { parseResponseJson } from "@/lib/safe-json";
+
+const ADMIN_NAV = [
+  { id: "mailbox", label: "Mailbox" },
+  { id: "automations", label: "Automations" },
+  { id: "inbox", label: "Inbox" },
+  { id: "operations", label: "Operations" },
+  { id: "projects", label: "Projects" },
+  { id: "analytics", label: "Analytics" },
+] as const;
 import { formatKes, formatUsd } from "@/lib/fx";
 import type { StudioKpis } from "@/lib/lead-kpis";
 
@@ -89,6 +98,7 @@ export default function AdminPage() {
   const [loadingStats, setLoadingStats] = useState(false);
   const [storageHealth, setStorageHealth] = useState<StorageHealth | null>(null);
   const [kpis, setKpis] = useState<StudioKpis | null>(null);
+  const [activeSection, setActiveSection] = useState<string>(ADMIN_NAV[0].id);
 
   const wingLabels = useMemo(() => {
     const map = new Map(siteConfig.products.map((p) => [p.id, p.name]));
@@ -155,6 +165,37 @@ export default function AdminPage() {
     }, 0);
     return () => window.clearTimeout(handle);
   }, [auth]);
+
+  useEffect(() => {
+    if (auth !== "in") return;
+    const known = new Set<string>(ADMIN_NAV.map((item) => item.id));
+    const applyHash = () => {
+      const next = window.location.hash.replace("#", "");
+      if (known.has(next)) setActiveSection(next);
+    };
+    const frame = window.requestAnimationFrame(applyHash);
+
+    const nodes = ADMIN_NAV.map((item) => document.getElementById(item.id)).filter(
+      (node): node is HTMLElement => Boolean(node)
+    );
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const hit = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+        if (hit?.target.id && known.has(hit.target.id)) setActiveSection(hit.target.id);
+      },
+      { rootMargin: "-28% 0px -52% 0px", threshold: [0.15, 0.35, 0.6] }
+    );
+    nodes.forEach((node) => observer.observe(node));
+
+    window.addEventListener("hashchange", applyHash);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      observer.disconnect();
+      window.removeEventListener("hashchange", applyHash);
+    };
+  }, [auth, ops, summary]);
 
   async function login(e: FormEvent) {
     e.preventDefault();
@@ -307,12 +348,16 @@ export default function AdminPage() {
         </div>
 
         <nav aria-label="Admin sections" className="admin-tabs sticky top-14 z-40 mb-8">
-          <a href="#mailbox">Mailbox</a>
-          <a href="#automations">Automations</a>
-          <a href="#inbox">Inbox</a>
-          <a href="#operations">Operations</a>
-          <a href="#projects">Projects</a>
-          <a href="#analytics">Analytics</a>
+          {ADMIN_NAV.map((item) => (
+            <a
+              key={item.id}
+              href={`#${item.id}`}
+              aria-current={activeSection === item.id ? "page" : undefined}
+              onClick={() => setActiveSection(item.id)}
+            >
+              {item.label}
+            </a>
+          ))}
         </nav>
 
         {kpis && (

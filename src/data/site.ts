@@ -747,7 +747,7 @@ export const siteConfig = {
   },
 
   pricingDisclaimer:
-    "Ready-made automations are monthly, from KES 2,500 to KES 6,500 each (about $19–$50), with a bundle discount at 3, 5, and 8 or more, and a further discount if you pay annually. Setup fees are optional and listed per automation. Pilot is a one-off custom workflow from $1,350. A retainer is from $450 a month. Multi-workflow is from $4,500, quoted after discovery. Custom software and outsourced IT are quoted after a short call or a free assessment. A custom-build deposit paid online is 30% via Paystack (M-Pesa or card) or an invoice. A ready-made bundle is one Paystack checkout or one invoice for the whole selection.",
+    "Ready-made automations are monthly, from KES 2,500 to KES 6,500 each (about $19–$50), with a bundle discount at 3, 5, and 8 or more, and a further discount if you pay annually. Setup fees are included in the total wherever an automation has one. Pilot is a one-off custom workflow from $1,350. A retainer is from $450 a month. Multi-workflow is from $4,500, quoted after discovery. Custom software and outsourced IT are quoted after a short call or a free assessment. A custom-build deposit paid online is 30% via Paystack (M-Pesa or card) or an invoice. A ready-made bundle is one Paystack checkout or one invoice for the whole selection.",
 
   /**
    * Ready-made automation prices. The buffet, checkout, and Beacon AI read this list.
@@ -811,7 +811,7 @@ export const siteConfig = {
   automationPricing: {
     buildTitle: "Ready-made — monthly",
     buildBody:
-      "Tick the automations you need. Each one is KES 2,500–6,500 a month (about $19–$50). A bundle discount applies at 3 or more (10%), 5 or more (15%), and 8 or more (22%). Paying for the year takes a further 15% off the monthly total. Setup fees are optional and shown on the automations that have one.",
+      "Tick the automations you need. Each one is KES 2,500–6,500 a month (about $19–$50). A bundle discount applies at 3 or more (10%), 5 or more (15%), and 8 or more (22%). Paying for the year takes a further 15% off the monthly total. Setup fees are included in the total on every automation that has one.",
     careTitle: "Custom build",
     careBody:
       "Pilot is a one-off build of one workflow from $1,350, usually in 2–3 weeks. Multi-workflow is from $4,500 and is quoted after discovery. A retainer from $450 a month covers monitoring, fixes, and improvements after a custom build is live.",
@@ -946,7 +946,7 @@ export const siteConfig = {
       id: "faq-2",
       question: "How much does automation cost?",
       answer:
-        "Ready-made automations are KES 2,500–6,500 a month each (about $19–$50). Three or more take 10% off, five or more 15%, and eight or more 22%. Paying annually takes another 15% off. Setup fees are optional. A custom Pilot is one workflow from $1,350, usually 2–3 weeks. Several custom workflows start from $4,500 after discovery. A retainer for monitoring, fixes, and improvements starts at $450 a month. The 20-minute audit is free. Smaller teams can ask for a 50/50 split, three monthly M-Pesa instalments on a Pilot, an NGO, school, or SACCO discount, or pay-after-results on a first custom workflow.",
+        "Ready-made automations are KES 2,500–6,500 a month each (about $19–$50). Three or more take 10% off, five or more 15%, and eight or more 22%. Paying annually takes another 15% off. Setup fees are included in the total. A custom Pilot is one workflow from $1,350, usually 2–3 weeks. Several custom workflows start from $4,500 after discovery. A retainer for monitoring, fixes, and improvements starts at $450 a month. The 20-minute audit is free. Smaller teams can ask for a 50/50 split, three monthly M-Pesa instalments on a Pilot, an NGO, school, or SACCO discount, or pay-after-results on a first custom workflow.",
     },
     {
       id: "faq-3",
@@ -1128,7 +1128,7 @@ export const siteConfig = {
       { id: "exploring", label: "Just exploring" },
     ] satisfies IntakeTimeline[],
     stepHelp: {
-      type: "Pick the closest match — no jargon required. Schools, churches, shops, and NGOs welcome.",
+      type: "Select every service you need. You can choose more than one. Schools, churches, shops, and NGOs welcome.",
       budget: "A rough range helps us scope honestly. “Not sure yet” is a perfectly fine answer.",
       timeline: "When do you hope to see something live? Exploring is okay — we’ll still reply.",
       brief: "In plain English: who is it for, what should it do, and what does success look like?",

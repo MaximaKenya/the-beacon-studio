@@ -1,12 +1,5 @@
 import { ImageResponse } from "next/og";
-import {
-  BEACON_BASE,
-  BEACON_BEAM_LEFT,
-  BEACON_BEAM_RIGHT,
-  BEACON_LANTERN,
-  BEACON_LIGHT,
-  BEACON_TOWER,
-} from "@/components/brand/beaconPaths";
+import { LighthouseMark } from "@/components/brand/BeaconMark";
 
 export const size = { width: 32, height: 32 };
 export const contentType = "image/png";
@@ -27,12 +20,7 @@ export default function Icon() {
         }}
       >
         <svg width="26" height="26" viewBox="0 0 32 32" fill="none">
-          <path d={BEACON_BEAM_LEFT} fill="#45baab" />
-          <path d={BEACON_BEAM_RIGHT} fill="#45baab" />
-          <path d={BEACON_TOWER} fill="#f6f3ff" />
-          <path d={BEACON_BASE} fill="#f6f3ff" />
-          <path d={BEACON_LANTERN} fill="#f6f3ff" />
-          <circle cx={BEACON_LIGHT.cx} cy={BEACON_LIGHT.cy} r={BEACON_LIGHT.r} fill="#45baab" />
+          <LighthouseMark ink="#f6f3ff" accent="#45baab" />
         </svg>
       </div>
     ),

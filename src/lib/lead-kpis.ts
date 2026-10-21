@@ -1,6 +1,7 @@
 import type { AnalyticsSummary } from "@/lib/analytics-store";
 import { attributionNote, type LeadAttribution } from "@/lib/attribution";
 import { loadAutomations } from "@/lib/automations/store";
+import { normalizeServiceIds, serviceLabels } from "@/lib/intake-services";
 
 export type LeadKind = "contact" | "intake" | "booking" | "subscriber";
 
@@ -29,6 +30,7 @@ type Loose = LeadAttribution & {
   brief?: string;
   meetingType?: string;
   projectType?: string;
+  projectTypes?: string[];
   date?: string;
   time?: string;
   topic?: string;
@@ -95,7 +97,7 @@ export function collectLeads(input: {
       email: text(row.email),
       phone: text(row.phone),
       source: text(row.source) || "intake",
-      detail: text(row.brief) || text(row.projectType),
+      detail: text(row.brief) || serviceLabels(normalizeServiceIds(row)) || text(row.projectType),
       utmSource: row.utmSource,
       utmMedium: row.utmMedium,
       utmCampaign: row.utmCampaign,

@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { Check } from "lucide-react";
 import { formatKes, formatUsd } from "@/lib/fx";
 import { quoteBundle, type BillingInterval } from "@/automations/pricing";
 import { AUTOMATION_CATEGORIES, type PricedTemplate, type SetupField } from "@/automations/templates/public";
@@ -14,7 +15,6 @@ export function BuffetBuilder({ templates }: { templates: PricedTemplate[] }) {
   const [category, setCategory] = useState<string>("All");
   const [selected, setSelected] = useState<string[]>([]);
   const [billing, setBilling] = useState<BillingInterval>("monthly");
-  const [includeSetup, setIncludeSetup] = useState(false);
   const [step, setStep] = useState<"pick" | "setup">("pick");
   const [ownerName, setOwnerName] = useState("");
   const [ownerEmail, setOwnerEmail] = useState("");
@@ -28,7 +28,7 @@ export function BuffetBuilder({ templates }: { templates: PricedTemplate[] }) {
     if (category !== "All" && template.category !== category) return false;
     return haystack.includes(query.trim().toLowerCase());
   });
-  const quote = useMemo(() => quoteBundle(selected, { billing, includeSetup }), [selected, billing, includeSetup]);
+  const quote = useMemo(() => quoteBundle(selected, { billing }), [selected, billing]);
 
   function toggle(id: string) {
     setSelected((current) => (current.includes(id) ? current.filter((item) => item !== id) : [...current, id]));
@@ -50,7 +50,6 @@ export function BuffetBuilder({ templates }: { templates: PricedTemplate[] }) {
           templateIds: selected,
           configs,
           billing,
-          includeSetup,
           ownerName,
           ownerEmail,
           businessName,
@@ -109,13 +108,18 @@ export function BuffetBuilder({ templates }: { templates: PricedTemplate[] }) {
                     type="button"
                     onClick={() => toggle(template.id)}
                     aria-pressed={on}
-                    className={`sleek-card rounded-3xl p-5 text-left ${on ? "sleek-card-popular" : ""}`}
+                    className={`sleek-card relative rounded-3xl p-5 text-left ${on ? "choice-selected" : ""}`}
                   >
+                    {on && (
+                      <span className="absolute top-4 right-4 flex h-7 w-7 items-center justify-center rounded-full bg-accent text-background shadow-[0_8px_18px_color-mix(in_srgb,var(--accent)_45%,transparent)]">
+                        <Check className="h-4 w-4" aria-hidden />
+                      </span>
+                    )}
                     <p className="text-xs font-medium uppercase tracking-wide text-muted">{template.category}</p>
-                    <h2 className="mt-2 font-display text-lg font-semibold text-foreground">{template.name}</h2>
+                    <h2 className="mt-2 pr-8 font-display text-lg font-semibold text-foreground">{template.name}</h2>
                     <p className="mt-2 text-sm leading-relaxed text-muted">{template.outcome}</p>
                     <p className="mt-4 font-display text-xl font-semibold text-foreground">{formatKes(template.priceKes)}<span className="text-sm font-normal text-muted">/mo</span></p>
-                    <p className="text-xs text-muted">about {formatUsd(template.priceUsd)}/mo{template.setupFeeKes > 0 ? ` · setup ${formatKes(template.setupFeeKes)}` : ""}</p>
+                    <p className="text-xs text-muted">about {formatUsd(template.priceUsd)}/mo{template.setupFeeKes > 0 ? ` · setup ${formatKes(template.setupFeeKes)} included` : ""}</p>
                   </button>
                 );
               })}
@@ -146,8 +150,8 @@ export function BuffetBuilder({ templates }: { templates: PricedTemplate[] }) {
           </div>
         )}
       </div>
-      <aside className="sticky bottom-3 z-30 lg:top-24">
-        <div className="sleek-card rounded-3xl p-5">
+      <aside className="sticky bottom-3 z-30 self-start lg:top-24 lg:bottom-auto">
+        <div className="sleek-card max-h-[min(58vh,28rem)] overflow-y-auto overscroll-contain rounded-3xl p-5 lg:max-h-[min(calc(100vh-7.5rem),40rem)]">
           <h2 className="font-display text-lg font-semibold text-foreground">Your bundle</h2>
           {!quote || quote.count === 0 ? (
             <p className="mt-2 text-sm text-muted">Tick the automations you need. The total updates as you go.</p>
@@ -173,10 +177,7 @@ export function BuffetBuilder({ templates }: { templates: PricedTemplate[] }) {
                   </button>
                 ))}
               </div>
-              <label className="mt-3 flex items-center gap-2 text-sm text-foreground">
-                <input type="checkbox" checked={includeSetup} onChange={(event) => setIncludeSetup(event.target.checked)} />
-                Include optional setup fees
-              </label>
+              <p className="mt-3 text-xs leading-relaxed text-muted">Setup fees are included in the total.</p>
               <dl className="mt-4 space-y-1 text-sm">
                 <Row label="Monthly list" value={formatKes(quote.listMonthlyKes)} hint={formatUsd(quote.listMonthlyUsd)} />
                 {quote.bundleLabel && <Row label={quote.bundleLabel} value={`−${quote.bundlePercent}%`} />}
