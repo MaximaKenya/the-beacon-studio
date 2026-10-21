@@ -1,6 +1,6 @@
 /**
  * Path data for the four lighthouse candidates.
- * One beam each. The live mark stays in beaconPaths.ts until one of these is chosen.
+ * One beam each. Earlier candidates; the live mark is the smoothed lighthouse.
  */
 
 export const LOGO_VIEWBOX = "0 0 32 32";

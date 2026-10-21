@@ -140,6 +140,64 @@ describe("concept B logo family", () => {
   });
 });
 
+describe("final starburst logo", () => {
+  it("keeps the traced tower, smooths the wave and rays, and ships motion, mono, and favicon", () => {
+    const trace = readFileSync("public/logo-options/edit2-trace.svg", "utf8");
+    const icon = readFileSync("public/logo-options/final-icon.svg", "utf8");
+    const animated = readFileSync("public/logo-options/final-animated.svg", "utf8");
+    assert.match(icon, /viewBox="292 264 604 770"/);
+    assert.doesNotMatch(icon, /<image\b/);
+    assert.doesNotMatch(icon, /M0 0 C417\.12 0 834\.24 0 1264 0/);
+    assert.match(icon, /stdDeviation="28"/);
+    assert.match(icon, /#7EE8DC/);
+    assert.match(icon, /#64BDC5/);
+    assert.match(icon, /#E9F7F5/);
+    const traced = [...icon.matchAll(/<path d="([^"]+)"[^>]*transform="translate/g)].map((match) => match[1]);
+    assert.ok(traced.length > 300);
+    for (const d of traced) {
+      assert.ok(trace.includes(`d="${d}"`), "tower path is not from the approved trace");
+    }
+    const smoothed = [...icon.matchAll(/fill-rule="evenodd"/g)];
+    assert.ok(smoothed.length > 10 && smoothed.length < 80);
+    assert.match(animated, /prefers-reduced-motion/);
+    assert.match(animated, /final-rise/);
+    assert.match(animated, /final-bloom/);
+    assert.match(animated, /final-ray-in/);
+    assert.match(animated, /final-wave-in/);
+    assert.match(animated, /final-glow/);
+    assert.match(animated, /final-burst/);
+    assert.match(animated, /final-wave/);
+    assert.match(animated, /final-pulse/);
+    assert.match(animated, /final-twinkle/);
+    assert.match(animated, /final-shimmer/);
+    assert.doesNotMatch(animated, /\.final-rise\s*\{[^}]*opacity:\s*0/);
+    const darkHorizontal = readFileSync("public/logo-options/final-horizontal-dark.svg", "utf8");
+    const lightHorizontal = readFileSync("public/logo-options/final-horizontal-light.svg", "utf8");
+    const darkStacked = readFileSync("public/logo-options/final-stacked-dark.svg", "utf8");
+    const lightStacked = readFileSync("public/logo-options/final-stacked-light.svg", "utf8");
+    for (const svg of [darkHorizontal, lightHorizontal, darkStacked, lightStacked, animated]) {
+      assert.doesNotMatch(svg, /<image\b/);
+      assert.match(svg, /<title>The Beacon Studio<\/title>/);
+      assert.ok(svg.includes("#64BDC5"));
+    }
+    assert.match(darkHorizontal, /#1E0A32/);
+    assert.match(darkHorizontal, /#F6F3FF/);
+    assert.match(lightHorizontal, /#E5F7F4/);
+    assert.match(lightHorizontal, /#14312E/);
+    assert.match(darkStacked, /#1E0A32/);
+    assert.match(lightStacked, /#E5F7F4/);
+    const flat = readFileSync("public/logo-options/final-flat.svg", "utf8");
+    assert.match(flat, /currentColor/);
+    assert.match(flat, /viewBox="292 264 604 770"/);
+    const favicon = readFileSync("public/logo-options/final-favicon.svg", "utf8");
+    assert.match(favicon, /#1E0A32/);
+    assert.match(favicon, /#7EE8DC/);
+    const live = readFileSync("public/brand/beacon-mark.svg", "utf8");
+    assert.match(live, /viewBox="292 264 604 770"/);
+    assert.match(live, /#7EE8DC/);
+  });
+});
+
 describe("artistic logo studies", () => {
   it("exports a gradient file and a flat currentColor file for each study", () => {
     assert.equal(ARTISTIC_PATHS.length, 6);

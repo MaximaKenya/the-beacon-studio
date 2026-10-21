@@ -3,17 +3,6 @@
 import { useRef, useState } from "react";
 import { Download, Loader2, Printer } from "lucide-react";
 import type { AnalyticsSummary } from "@/lib/analytics-store";
-import {
-  BEACON_BAND,
-  BEACON_BASE,
-  BEACON_BEAM,
-  BEACON_BEAM_CORE,
-  BEACON_GALLERY,
-  BEACON_LANTERN,
-  BEACON_LIGHT,
-  BEACON_ROOF,
-  BEACON_TOWER,
-} from "@/components/brand/beaconPaths";
 import { siteConfig } from "@/data/site";
 
 const TZ = "Africa/Nairobi";
@@ -216,18 +205,8 @@ export function AdminPdfExport({ summary }: { summary: AnalyticsSummary }) {
               position: "relative",
             }}
           >
-            {/* Lighthouse mark */}
-            <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
-              <path d={BEACON_BEAM} fill="#0d9488" opacity="0.45" />
-              <path d={BEACON_BEAM_CORE} fill="#0d9488" />
-              <path d={BEACON_ROOF} fill="#0f172a" />
-              <path d={BEACON_TOWER} fill="#0f172a" />
-              <path d={BEACON_BASE} fill="#0f172a" />
-              <path d={BEACON_GALLERY} fill="#0f172a" />
-              <path d={BEACON_LANTERN} fill="#0f172a" />
-              <path d={BEACON_BAND} fill="#0d9488" />
-              <circle cx={BEACON_LIGHT.cx} cy={BEACON_LIGHT.cy} r={BEACON_LIGHT.r} fill="#0d9488" />
-            </svg>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/email/beacon-mark.png" width={36} height={36} alt="" style={{ display: "block", borderRadius: 10 }} />
           </div>
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 22, fontWeight: 700, color: "#0f172a" }}>

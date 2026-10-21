@@ -6,6 +6,7 @@ import { CONCEPT_A, type ConceptVariant } from "@/components/brand/conceptA";
 import { CONCEPT_A_MOTION, ConceptALockup, ConceptAMark } from "@/components/brand/ConceptAMark";
 import { CONCEPT_B, type ConceptBVariant } from "@/components/brand/conceptB";
 import { CONCEPT_B_MOTION, ConceptBLockup, ConceptBMark } from "@/components/brand/ConceptBMark";
+import { FINAL_MOTION, FinalLockup, FinalMark } from "@/components/brand/FinalMark";
 import { ARTISTIC_PATHS } from "@/components/brand/artisticPaths";
 import { ArtisticMark } from "@/components/brand/artisticMarks";
 import { LOGO_OPTIONS } from "@/components/brand/logoOptions";
@@ -18,12 +19,28 @@ const wordmark = Fraunces({
 
 export const metadata: Metadata = {
   title: "Logo options",
-  description: "Concept B lighthouse studies for The Beacon Studio. The live mark is unchanged.",
+  description: "The Beacon Studio lighthouse: smoothed wave and starburst, lockups, and the live mark.",
   robots: { index: false, follow: false },
 };
 
 const SMALL = [16, 32, 64] as const;
 const EARLIER_SIZES = [16, 32, 64, 128] as const;
+
+const FINAL_FILES = [
+  ["icon", "final-icon.svg"],
+  ["animated", "final-animated.svg"],
+  ["horizontal dark", "final-horizontal-dark.svg"],
+  ["horizontal light", "final-horizontal-light.svg"],
+  ["stacked dark", "final-stacked-dark.svg"],
+  ["stacked light", "final-stacked-light.svg"],
+  ["mono", "final-flat.svg"],
+  ["favicon", "final-favicon.svg"],
+] as const;
+
+const FIELD: CSSProperties = {
+  background: "#1E0A32",
+  color: "#f6f3ff",
+};
 
 const PURPLE: CSSProperties = {
   background: "#16082e",
@@ -62,13 +79,107 @@ export default function LogoOptionsPage() {
           Logo options
         </h1>
         <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted">
-          Concept B traces the chosen lighthouse and removes the long ray. The light at the lantern
-          stays inside the width of the base. The live mark stays as it is until one of these is chosen.
+          This is the live mark. The tower is the approved auto-trace. The wave and the starburst
+          rays are the same shapes with the jagged edges drawn as clean curves. The header, footer,
+          portal, and emails use it. Earlier studies stay below.
         </p>
 
+        <style>{FINAL_MOTION}</style>
         <style>{CONCEPT_B_MOTION}</style>
         <style>{CONCEPT_A_MOTION}</style>
-        <section id="concept-b" className="mt-10">
+        <section id="final-candidate" className="mt-10">
+          <h2 className="font-display text-xl font-semibold text-heading">Final candidate</h2>
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">
+            On the large mark the lighthouse rises in, the lantern ignites, and the rays bloom with
+            the glow. Then the glow breathes, the rays twinkle, and the wave shimmers. Reduced
+            motion shows the finished still mark.
+          </p>
+          <p className="mt-3 text-xs text-muted">
+            {FINAL_FILES.map(([label, file], index) => (
+              <span key={file}>
+                {index > 0 ? " · " : null}
+                <Link href={`/logo-options/${file}`} className="text-accent underline-offset-2 hover:underline">
+                  {label}
+                </Link>
+              </span>
+            ))}
+          </p>
+          <div id="final-compare" className="mt-4 grid gap-3 lg:grid-cols-2">
+            <div
+              className="flex flex-col items-center rounded-[var(--radius-md)] px-4 py-5"
+              style={FIELD}
+            >
+              <p className="self-start text-[10px] font-semibold uppercase tracking-[0.16em] opacity-70">
+                Source
+              </p>
+              {/* Unmodified source photograph. next/image would recompress it. */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/logo-options/final-source.jpg"
+                alt="Chosen study: spiral lighthouse, teal starburst, two-curl wave, deep purple field"
+                className="mt-3 w-full max-w-[420px]"
+              />
+            </div>
+            <div
+              className="flex flex-col items-center rounded-[var(--radius-md)] px-4 py-5"
+              style={FIELD}
+            >
+              <p className="self-start text-[10px] font-semibold uppercase tracking-[0.16em] opacity-70">
+                Vector
+              </p>
+              <FinalMark size={400} animated className="mt-3" />
+            </div>
+          </div>
+          <div className="mt-3 grid gap-3 lg:grid-cols-2">
+            <div className="rounded-[var(--radius-md)] px-4 py-4" style={FIELD}>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] opacity-70">
+                Horizontal, dark
+              </p>
+              <div className="mt-3">
+                <FinalLockup layout="horizontal" markSize={112} wordmarkClassName={wordmark.className} />
+              </div>
+            </div>
+            <div className="rounded-[var(--radius-md)] px-4 py-4" style={TEAL}>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] opacity-70">
+                Horizontal, light
+              </p>
+              <div className="mt-3">
+                <FinalLockup layout="horizontal" markSize={112} wordmarkClassName={wordmark.className} />
+              </div>
+            </div>
+            <div className="rounded-[var(--radius-md)] px-4 py-4" style={FIELD}>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] opacity-70">
+                Stacked, dark
+              </p>
+              <div className="mt-3 flex justify-center">
+                <FinalLockup layout="stacked" markSize={150} wordmarkClassName={wordmark.className} />
+              </div>
+            </div>
+            <div className="rounded-[var(--radius-md)] px-4 py-4" style={TEAL}>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] opacity-70">
+                Stacked, light
+              </p>
+              <div className="mt-3 flex justify-center">
+                <FinalLockup layout="stacked" markSize={150} wordmarkClassName={wordmark.className} />
+              </div>
+            </div>
+          </div>
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+            <div className="rounded-[var(--radius-md)] px-4 py-4" style={TEAL}>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] opacity-70">Mono</p>
+              {/* currentColor resolves to black inside a standalone SVG image. */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/logo-options/final-flat.svg" alt="One-color lighthouse silhouette" className="mt-3 h-44" />
+            </div>
+            <div className="flex flex-col rounded-[var(--radius-md)] px-4 py-4" style={FIELD}>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] opacity-70">Favicon</p>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/logo-options/final-favicon.svg" alt="Rounded app icon" className="mt-3 h-28 w-28" />
+            </div>
+          </div>
+        </section>
+
+        <section id="concept-b" className="mt-14">
           <h2 className="font-display text-xl font-semibold text-heading">Concept B</h2>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">
             The same flowing tower, the same violet-to-teal gradient, and the same base wave.
