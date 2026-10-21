@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Archive, Forward, Loader2, Mail, Paperclip, PenLine, Reply, Search, Send } from "lucide-react";
+import { AdminToast, useAdminToast } from "@/components/admin/AdminToast";
 import type {
   MailFolder,
   MailThreadDetail,
@@ -66,6 +67,7 @@ export function AdminMailbox() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [note, setNote] = useState<string | null>(null);
+  const { toast, flash } = useAdminToast();
 
   const visibleCounts = useMemo(() => counts, [counts]);
 
@@ -109,7 +111,21 @@ export function AdminMailbox() {
 
   useEffect(() => {
     function onOpen(event: Event) {
-      const id = (event as CustomEvent<{ threadId?: string }>).detail?.threadId;
+      const detail = (event as CustomEvent<{ threadId?: string; compose?: { to?: string; subject?: string; text?: string } }>).detail;
+      if (detail?.compose?.to) {
+        setSelected(null);
+        setError(null);
+        setNote(null);
+        setComposer({
+          ...emptyComposer(),
+          to: detail.compose.to,
+          subject: detail.compose.subject || "",
+          text: detail.compose.text || "",
+        });
+        flash(`Compose opened for ${detail.compose.to}.`);
+        return;
+      }
+      const id = detail?.threadId;
       if (id) {
         document.getElementById("mailbox")?.scrollIntoView({ behavior: "smooth" });
         void openThread(id);
@@ -164,19 +180,25 @@ export function AdminMailbox() {
       if (data.thread) setSelected(data.thread);
       if (action === "draft") {
         setNote("Draft saved.");
+        flash("Draft saved.");
         setFolder("drafts");
         setComposer(null);
       } else if (data.sent) {
         setNote("Sent.");
+        flash("Sent.");
         setComposer(null);
         if (folder === "drafts") setFolder("sent");
       } else {
-        setError(data.error || "Email not configured");
+        const message = data.error || "Email not configured. The message was kept as a draft.";
+        setError(message);
+        flash(message);
         setFolder("drafts");
       }
       await loadList();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not save.");
+      const message = err instanceof Error ? err.message : "Could not save.";
+      setError(message);
+      flash(message);
     } finally {
       setBusy(false);
     }
@@ -192,6 +214,16 @@ export function AdminMailbox() {
         body: JSON.stringify({ action, threadId }),
       });
       if (!res.ok) throw new Error("Could not update the thread.");
+      const saved =
+        action === "archive"
+          ? "Archived."
+          : action === "restore"
+            ? "Restored."
+            : action === "read"
+              ? "Marked read."
+              : "Marked unread.";
+      setNote(saved);
+      flash(saved);
       if (action === "archive") {
         setSelected(null);
         setFolder("archive");
@@ -199,7 +231,9 @@ export function AdminMailbox() {
       await loadList();
       if (action !== "archive") await openThread(threadId);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not update the thread.");
+      const message = err instanceof Error ? err.message : "Could not update the thread.";
+      setError(message);
+      flash(message);
     } finally {
       setBusy(false);
     }
@@ -244,6 +278,7 @@ export function AdminMailbox() {
 
   return (
     <section id="mailbox" className="admin-panel admin-section p-5 sm:p-6">
+      <AdminToast message={toast} />
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="admin-kicker">Email</p>

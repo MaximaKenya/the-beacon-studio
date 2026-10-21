@@ -834,11 +834,37 @@ export async function ingestInboundEmail(input: {
     if (insight.suggestedReply) thread.suggestedReply = insight.suggestedReply;
     thread.tags = insight.tags;
   }
+  let savedLead = false;
+  if (!thread.leadId && fromEmail) {
+    try {
+      const { captureLead } = await import("@/lib/leads");
+      const fromName = input.from.replace(/<[^>]+>/g, "").replace(/"/g, "").trim();
+      const saved = await captureLead(
+        {
+          kind: "email",
+          sourceId: thread.id,
+          source: "email",
+          channel: "email",
+          name: fromName,
+          email: fromEmail,
+          message: [message.subject, text, insight?.summary || ""].filter(Boolean).join("\n"),
+          ...(insight?.tags?.length ? { aiHint: { services: insight.tags } } : {}),
+        },
+        { ai: false }
+      );
+      savedLead = Boolean(saved);
+    } catch (error) {
+      console.error("[email] lead", error instanceof Error ? error.message : "lead failed");
+    }
+  }
   const linked = await linksFor(thread);
   const lead = linked.leads[0];
   if (lead) {
     thread.leadId = lead.id;
     thread.leadKind = lead.kind;
+  } else if (savedLead) {
+    thread.leadId = `email:${thread.id}`;
+    thread.leadKind = "email";
   } else if (insight?.isLead) {
     thread.tags = [...new Set([...(thread.tags || []), "lead"])];
   }

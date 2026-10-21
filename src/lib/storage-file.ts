@@ -11,6 +11,7 @@ const DEFAULT_FILES: Record<string, unknown> = {
   "payments.json": [],
   "mailbox.json": { threads: [] },
   "contacts.json": [],
+  "leads.json": [],
   "clients.json": [],
   "projects.json": [],
   "messages.json": [],

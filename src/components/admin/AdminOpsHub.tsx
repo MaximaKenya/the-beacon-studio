@@ -17,6 +17,9 @@ import {
 } from "lucide-react";
 import type { PaymentRecord } from "@/lib/payments";
 import { formatNairobi } from "@/lib/time";
+import { AdminToast, useAdminToast } from "@/components/admin/AdminToast";
+import { LeadEmailButton, LeadPhoneLinks } from "@/components/admin/LeadContactLinks";
+import { openAdminCompose } from "@/lib/admin-compose";
 import { DocumentActions } from "@/components/documents/DocumentActions";
 import { ChatPanel } from "@/components/portal/ChatPanel";
 import type { QuotationRecord } from "@/lib/documents";
@@ -28,6 +31,7 @@ type Booking = {
   createdAt?: string;
   name?: string;
   email?: string;
+  phone?: string;
   type?: string;
   meetingType?: string;
   notes?: string;
@@ -73,6 +77,7 @@ type Contact = {
   createdAt?: string;
   name?: string;
   email?: string;
+  phone?: string;
   message?: string;
   read?: boolean;
   replied?: boolean;
@@ -173,22 +178,54 @@ export function AdminOpsHub({
   const [sentimentFilter, setSentimentFilter] = useState<string>("all");
   const [msgProjectId, setMsgProjectId] = useState<string | null>(null);
   const [lastQuote, setLastQuote] = useState<QuotationRecord | null>(null);
-  const [toast, setToast] = useState<string | null>(null);
+  const [bookingDate, setBookingDate] = useState("");
+  const [bookingTime, setBookingTime] = useState("");
+  const { toast, flash } = useAdminToast();
 
   const reactions = useMemo(() => {
     if (sentimentFilter === "all") return ops.reactions;
     return ops.reactions.filter((r) => r.sentiment === sentimentFilter);
   }, [ops.reactions, sentimentFilter]);
 
+  function openBooking(item: Booking) {
+    setNote(item.adminNotes ?? "");
+    setBookingDate(item.date || "");
+    setBookingTime(item.time || "");
+    setDrawer({ type: "booking", item });
+  }
+
   async function run(action: Record<string, unknown>, successMsg?: string) {
     setBusy(true);
     try {
       const data = await opsAction(action);
       if (data.quotation) setLastQuote(data.quotation as QuotationRecord);
-      setToast(successMsg ?? "Saved");
+      if (data.booking && typeof data.booking === "object") {
+        const next = data.booking as Booking;
+        setBookingDate(next.date || "");
+        setBookingTime(next.time || "");
+      }
+      setDrawer((current) => {
+        if (!current) return current;
+        if (current.type === "booking" && data.booking) return { type: "booking", item: data.booking as Booking };
+        if (current.type === "intake" && data.intake) return { type: "intake", item: data.intake as Intake };
+        if (current.type === "contact" && data.contact) return { type: "contact", item: data.contact as Contact };
+        if (current.type === "payment" && data.payment) return { type: "payment", item: data.payment as PaymentRecord };
+        if (current.type === "intake" && action.action === "intake.convert") {
+          const project = data.project as { id?: string } | undefined;
+          return {
+            type: "intake",
+            item: { ...current.item, status: "converted", projectId: project?.id || current.item.projectId },
+          };
+        }
+        return current;
+      });
+      const emailNote = typeof data.emailNote === "string" && data.emailNote ? ` ${data.emailNote}` : "";
+      flash(`${successMsg ?? "Saved"}.${emailNote}`.replace(/\s+\./g, ".").trim());
       onRefresh();
+      return data;
     } catch (e) {
-      setToast(e instanceof Error ? e.message : "Failed");
+      flash(e instanceof Error ? e.message : "Failed");
+      return null;
     } finally {
       setBusy(false);
     }
@@ -201,7 +238,7 @@ export function AdminOpsHub({
       body: JSON.stringify({ action: "subscriber.export" }),
     });
     if (!res.ok) {
-      setToast("Export failed");
+      flash("Export failed");
       return;
     }
     const blob = await res.blob();
@@ -211,7 +248,7 @@ export function AdminOpsHub({
     a.download = `beacon-subscribers-${Date.now()}.csv`;
     a.click();
     URL.revokeObjectURL(url);
-    setToast("CSV downloaded");
+    flash("CSV downloaded");
   }
 
   return (
@@ -231,11 +268,7 @@ export function AdminOpsHub({
         </Link>
       </div>
 
-      {toast && (
-        <p className="rounded-xl border border-accent/30 bg-accent/5 px-4 py-2 text-sm text-accent">
-          {toast}
-        </p>
-      )}
+      <AdminToast message={toast} />
 
       {/* Needs attention */}
       <div className="admin-panel border-accent/35 p-5 sm:p-6">
@@ -268,8 +301,7 @@ export function AdminOpsHub({
                         (b) => b.id === item.refId || `book-${b.id}` === item.id
                       );
                       if (hit) {
-                        setNote(hit.adminNotes ?? "");
-                        setDrawer({ type: "booking", item: hit });
+                        openBooking(hit);
                         return;
                       }
                     }
@@ -368,10 +400,7 @@ export function AdminOpsHub({
                 <li key={b.id ?? b.createdAt}>
                   <button
                     type="button"
-                    onClick={() => {
-                      setNote(b.adminNotes ?? "");
-                      setDrawer({ type: "booking", item: b });
-                    }}
+                    onClick={() => openBooking(b)}
                     className={`w-full rounded-xl border px-3 py-2.5 text-left text-sm transition hover:border-accent/40 ${
                       b.read !== true
                         ? "border-accent/30 bg-accent/5"
@@ -724,15 +753,40 @@ export function AdminOpsHub({
                 <p>
                   <strong>{drawer.item.name}</strong>
                   <br />
-                  {drawer.item.email}
+                  <LeadEmailButton email={drawer.item.email || ""} subject={`Re: ${drawer.item.meetingType || "Booking"}`} />
                 </p>
+                {drawer.item.phone && (
+                  <p>
+                    <LeadPhoneLinks phone={drawer.item.phone} />
+                  </p>
+                )}
                 <p className="text-muted">
-                  {drawer.item.date} {drawer.item.time} ·{" "}
+                  Status: {drawer.item.status || "pending"} · {drawer.item.date} {drawer.item.time} ·{" "}
                   {drawer.item.meetingType ?? drawer.item.type}
                 </p>
                 {(drawer.item.message || drawer.item.notes) && (
                   <p>{drawer.item.message || drawer.item.notes}</p>
                 )}
+                <div className="grid grid-cols-2 gap-2">
+                  <label className="text-xs text-muted">
+                    Date
+                    <input
+                      type="date"
+                      value={bookingDate}
+                      onChange={(event) => setBookingDate(event.target.value)}
+                      className="mt-1 w-full rounded-xl border border-border bg-surface/50 px-3 py-2 text-sm"
+                    />
+                  </label>
+                  <label className="text-xs text-muted">
+                    Time
+                    <input
+                      type="time"
+                      value={bookingTime}
+                      onChange={(event) => setBookingTime(event.target.value)}
+                      className="mt-1 w-full rounded-xl border border-border bg-surface/50 px-3 py-2 text-sm"
+                    />
+                  </label>
+                </div>
                 <label className="block text-xs text-muted">Admin notes</label>
                 <textarea
                   value={note}
@@ -741,27 +795,19 @@ export function AdminOpsHub({
                   className="w-full rounded-xl border border-border bg-surface/50 px-3 py-2 text-sm"
                 />
                 <div className="flex flex-wrap gap-2">
-                  {(["confirmed", "completed", "cancelled"] as const).map((st) => (
-                    <button
-                      key={st}
-                      type="button"
-                      disabled={busy || !drawer.item.id}
-                      onClick={() =>
-                        void run(
-                          {
-                            action: "booking.update",
-                            id: drawer.item.id,
-                            status: st,
-                            adminNotes: note,
-                          },
-                          `Booking ${st}`
-                        )
-                      }
-                      className="rounded-xl border border-border px-3 py-2 text-xs capitalize hover:border-accent/40"
-                    >
-                      {st}
-                    </button>
-                  ))}
+                  <button
+                    type="button"
+                    disabled={busy || !drawer.item.id}
+                    onClick={() =>
+                      void run(
+                        { action: "booking.update", id: drawer.item.id, status: "confirmed", adminNotes: note },
+                        "Booking confirmed"
+                      )
+                    }
+                    className="rounded-xl bg-accent px-3 py-2 text-xs font-semibold text-background"
+                  >
+                    Confirm
+                  </button>
                   <button
                     type="button"
                     disabled={busy || !drawer.item.id}
@@ -773,13 +819,72 @@ export function AdminOpsHub({
                           status: "reschedule",
                           rescheduleNote: note || "Reschedule requested",
                           adminNotes: note,
+                          ...(bookingDate ? { date: bookingDate } : {}),
+                          ...(bookingTime ? { time: bookingTime } : {}),
                         },
-                        "Reschedule note saved"
+                        "Reschedule saved"
                       )
                     }
                     className="rounded-xl border border-border px-3 py-2 text-xs hover:border-accent/40"
                   >
-                    Reschedule note
+                    Reschedule
+                  </button>
+                  <button
+                    type="button"
+                    disabled={busy || !drawer.item.id}
+                    onClick={() =>
+                      void run(
+                        { action: "booking.update", id: drawer.item.id, status: "declined", adminNotes: note },
+                        "Booking declined"
+                      )
+                    }
+                    className="rounded-xl border border-border px-3 py-2 text-xs hover:border-accent/40"
+                  >
+                    Decline
+                  </button>
+                  <button
+                    type="button"
+                    disabled={busy || !drawer.item.id}
+                    onClick={() =>
+                      void run(
+                        { action: "booking.update", id: drawer.item.id, status: "completed", adminNotes: note },
+                        "Booking completed"
+                      )
+                    }
+                    className="rounded-xl border border-border px-3 py-2 text-xs hover:border-accent/40"
+                  >
+                    Completed
+                  </button>
+                  <button
+                    type="button"
+                    disabled={busy || !drawer.item.email}
+                    onClick={() => openAdminCompose(drawer.item.email || "", `Re: ${drawer.item.meetingType || "Booking"}`)}
+                    className="rounded-xl border border-border px-3 py-2 text-xs hover:border-accent/40"
+                  >
+                    Reply
+                  </button>
+                  <button
+                    type="button"
+                    disabled={busy || !drawer.item.id}
+                    onClick={() => void run({ action: "booking.convert", id: drawer.item.id }, "Lead saved")}
+                    className="rounded-xl border border-accent/40 px-3 py-2 text-xs text-accent"
+                  >
+                    Convert to lead
+                  </button>
+                  <button
+                    type="button"
+                    disabled={busy || !drawer.item.id}
+                    onClick={() =>
+                      void run(
+                        { action: "booking.update", id: drawer.item.id, close: true, adminNotes: note },
+                        "Booking closed"
+                      ).then((result) => {
+                        if (result) setDrawer(null);
+                      })
+                    }
+                    className="rounded-xl border border-border px-3 py-2 text-xs hover:border-accent/40"
+                  >
+                    Close
                   </button>
                 </div>
               </div>
@@ -929,8 +1034,13 @@ export function AdminOpsHub({
                 <p>
                   <strong>{drawer.item.name}</strong>
                   <br />
-                  {drawer.item.email}
+                  <LeadEmailButton email={drawer.item.email || ""} />
                 </p>
+                {drawer.item.phone && (
+                  <p>
+                    <LeadPhoneLinks phone={drawer.item.phone} />
+                  </p>
+                )}
                 <p className="whitespace-pre-wrap">{drawer.item.message}</p>
                 <div className="flex flex-wrap gap-2">
                   <button
@@ -982,12 +1092,14 @@ export function AdminOpsHub({
                   >
                     Archive
                   </button>
-                  <a
-                    href={`mailto:${drawer.item.email}`}
-                    className="rounded-xl border border-accent/40 px-3 py-2 text-xs text-accent"
+                  <button
+                    type="button"
+                    disabled={!drawer.item.email}
+                    onClick={() => openAdminCompose(drawer.item.email || "", `Re: ${drawer.item.name || "your message"}`)}
+                    className="rounded-xl border border-accent/40 px-3 py-2 text-xs text-accent disabled:opacity-50"
                   >
-                    Reply via email
-                  </a>
+                    Reply
+                  </button>
                 </div>
               </div>
             )}

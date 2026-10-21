@@ -28,6 +28,11 @@ export type InboxItem = {
   projectId?: string;
   clientId?: string;
   reviewId?: string;
+  date?: string;
+  time?: string;
+  meetingType?: string;
+  rescheduleNote?: string;
+  convertedToLead?: boolean;
 };
 
 type ContactRow = {
@@ -72,9 +77,12 @@ type BookingRow = {
   meetingType?: string;
   date?: string;
   time?: string;
+  source?: string;
   status?: string;
   read?: boolean;
   replied?: boolean;
+  rescheduleNote?: string;
+  convertedToLead?: boolean;
 };
 
 function text(value: unknown): string {
@@ -84,6 +92,14 @@ function text(value: unknown): string {
 function shown(value: unknown): string {
   const s = text(value);
   return s || "—";
+}
+
+function bookingStatus(row: BookingRow): string {
+  const status = text(row.status);
+  if (status && status !== "pending" && status !== "new") return status;
+  if (row.replied) return "replied";
+  if (status) return status;
+  return row.read ? "read" : "pending";
 }
 
 function topicLabel(id: string): string {
@@ -163,9 +179,14 @@ export async function listInbox(): Promise<InboxItem[]> {
       email: shown(row.email),
       phone: shown(row.phone || clientPhone(clients, text(row.email))),
       message: [row.meetingType || "Call", when, note].filter(Boolean).join(" · "),
-      leadSource: "booking",
+      leadSource: text(row.source) || "booking",
       createdAt: text(row.createdAt) || new Date(0).toISOString(),
-      status: row.replied ? "replied" : text(row.status) || "pending",
+      status: bookingStatus(row),
+      date: text(row.date),
+      time: text(row.time),
+      meetingType: text(row.meetingType),
+      rescheduleNote: text(row.rescheduleNote),
+      convertedToLead: row.convertedToLead === true,
     });
   }
 

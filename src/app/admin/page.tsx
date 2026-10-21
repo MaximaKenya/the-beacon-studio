@@ -22,6 +22,7 @@ import {
 } from "@/components/admin/AdminCharts";
 import { AdminPdfExport } from "@/components/admin/AdminPdfExport";
 import { AdminInbox } from "@/components/admin/AdminInbox";
+import { AdminLeads } from "@/components/admin/AdminLeads";
 import { AdminMailbox } from "@/components/admin/AdminMailbox";
 import { AdminOpsHub, type AdminOpsData } from "@/components/admin/AdminOpsHub";
 import { AdminProjectsPanel } from "@/components/admin/AdminProjectsPanel";
@@ -32,6 +33,7 @@ const ADMIN_NAV = [
   { id: "mailbox", label: "Mail" },
   { id: "automations", label: "Automations" },
   { id: "inbox", label: "Inbox" },
+  { id: "leads", label: "Leads" },
   { id: "operations", label: "Operations" },
   { id: "projects", label: "Projects" },
   { id: "analytics", label: "Analytics" },
@@ -436,6 +438,7 @@ export default function AdminPage() {
           <AdminMailbox />
           <AdminAutomations />
           <AdminInbox />
+          <AdminLeads />
         </div>
 
         {ops && (

@@ -19,16 +19,9 @@ import { createQuotation, createReceiptFromPayment, listQuotations, listReceipts
 import { listPayments, updatePaymentById } from "@/lib/payments";
 import { ensureThread } from "@/lib/messages";
 import { createAccessToken } from "@/lib/portal-auth";
+import { convertBookingToLead, updateBookingAdmin } from "@/lib/booking-admin";
 
 export const runtime = "nodejs";
-
-type BookingRow = Record<string, unknown> & {
-  id?: string;
-  status?: string;
-  adminNotes?: string;
-  rescheduleNote?: string;
-  read?: boolean;
-};
 
 type IntakeRow = Record<string, unknown> & {
   id?: string;
@@ -77,17 +70,26 @@ export async function POST(request: Request) {
   // ── Bookings ──────────────────────────────────────────────
   if (action === "booking.update") {
     const id = String(body.id ?? "");
-    const bookings = await readJsonFile<BookingRow[]>("bookings.json", []);
-    const idx = bookings.findIndex((b) => b.id === id);
-    if (idx < 0) return NextResponse.json({ error: "Not found" }, { status: 404 });
-    const status = typeof body.status === "string" ? body.status : undefined;
-    if (status) bookings[idx].status = status;
-    if (typeof body.adminNotes === "string") bookings[idx].adminNotes = body.adminNotes;
-    if (typeof body.rescheduleNote === "string")
-      bookings[idx].rescheduleNote = body.rescheduleNote;
-    bookings[idx].read = true;
-    await writeJsonFile("bookings.json", bookings);
-    return NextResponse.json({ ok: true, booking: bookings[idx] });
+    const result = await updateBookingAdmin(id, {
+      ...(typeof body.status === "string" ? { status: body.status } : {}),
+      ...(typeof body.adminNotes === "string" ? { adminNotes: body.adminNotes } : {}),
+      ...(typeof body.rescheduleNote === "string" ? { rescheduleNote: body.rescheduleNote } : {}),
+      ...(typeof body.date === "string" ? { date: body.date } : {}),
+      ...(typeof body.time === "string" ? { time: body.time } : {}),
+      ...(body.close === true ? { close: true } : {}),
+    });
+    if (!result) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    return NextResponse.json({ ok: true, ...result });
+  }
+
+  if (action === "booking.convert") {
+    const id = String(body.id ?? "");
+    const result = await convertBookingToLead(id);
+    if (!result) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    if (!result.created && !result.booking.convertedToLead) {
+      return NextResponse.json({ error: "This booking has no email or phone to save as a lead." }, { status: 400 });
+    }
+    return NextResponse.json({ ok: true, booking: result.booking, created: result.created });
   }
 
   // ── Intakes ───────────────────────────────────────────────

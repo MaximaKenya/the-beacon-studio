@@ -131,6 +131,25 @@ export async function POST(request: Request) {
     intakes.push(entry);
     await writeJsonFile("intakes.json", intakes);
 
+    try {
+      const { captureLead } = await import("@/lib/leads");
+      await captureLead({
+        kind: "intake",
+        sourceId: entry.id,
+        source: "start-a-project",
+        channel: "start-a-project",
+        name,
+        email,
+        phone,
+        company,
+        budget,
+        services: projectTypes,
+        message: brief,
+      });
+    } catch (error) {
+      console.error("[intake] lead", error instanceof Error ? error.message : "lead failed");
+    }
+
     const typeLabel = serviceLabels(projectTypes) || projectType;
     try {
       const { recordSiteForm } = await import("@/lib/mailbox");
