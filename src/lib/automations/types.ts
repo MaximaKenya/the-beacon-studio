@@ -17,6 +17,21 @@ export type AutomationNote = {
   text: string;
 };
 
+export type SandboxStepKind = "trigger" | "data" | "ai" | "preview" | "note";
+
+export type SandboxStep = {
+  id: string;
+  kind: SandboxStepKind;
+  title: string;
+  detail: string;
+};
+
+export type SandboxRunView = {
+  at: string;
+  sentToMe: boolean;
+  steps: SandboxStep[];
+};
+
 export type AutomationInstance = {
   id: string;
   templateId: string;
@@ -34,6 +49,7 @@ export type AutomationInstance = {
   periodEnd?: string;
   bundleId?: string;
   demo?: boolean;
+  lastRunView?: SandboxRunView;
   createdAt: string;
   updatedAt: string;
   activatedAt?: string;

@@ -2,6 +2,7 @@ import { randomUUID } from "crypto";
 import { templateById } from "@/automations/templates/public";
 import { deliver } from "@/lib/automations/channels";
 import { groqText } from "@/lib/automations/groq";
+import { traceStep } from "@/lib/automations/trace";
 import { createChargeLink } from "@/lib/automations/paylinks";
 import { addLog } from "@/lib/automations/store";
 import type {
@@ -33,6 +34,8 @@ export type EngineInput = {
   body?: Record<string, unknown>;
   origin: string;
   now?: Date;
+  /** Studio-only test delivery. Customer addresses are never used. */
+  deliverTo?: { email?: string; phone?: string };
 };
 
 function nowOf(input: EngineInput): Date {
@@ -111,13 +114,20 @@ async function sendOut(
   input: EngineInput,
   target: { email?: string; phone?: string; subject: string; text: string; channel?: string }
 ) {
+  traceStep({
+    kind: "preview",
+    title: target.subject,
+    detail: `To ${target.email || "no email"}${target.phone ? ` · ${target.phone}` : ""}\n\n${target.text}`,
+  });
+  const live = input.deliverTo;
   const result = await deliver({
     instance: input.instance,
-    email: target.email,
-    phone: target.phone,
-    subject: target.subject,
-    text: target.text,
+    email: live ? live.email : target.email,
+    phone: live ? live.phone : target.phone,
+    subject: live ? `[Demo test] ${target.subject}` : target.subject,
+    text: live ? `This is a test for you. The customer was not contacted.\n\n${target.text}` : target.text,
     channel: target.channel || textOf(input.instance.config.channel) || "both",
+    liveTest: Boolean(live),
   });
   await touch(input.instance, nowOf(input), "messages");
   addLog(input.doc, input.instance.id, `${target.subject}. ${result.note}`);
@@ -331,6 +341,11 @@ async function runFaq(input: EngineInput): Promise<{ ok: boolean; message: strin
   const knowledge = textOf(input.instance.config.knowledge);
   const system = `Answer only from the FAQ below. If the answer is not in the FAQ, say you do not have it and ask for an email. Do not use outside knowledge. FAQ:\n${knowledge}`;
   const reply = (await groqText(system, question)) || "I can only answer from the FAQ stored for this business, and that answer is not in it. Leave your email and the team will follow up.";
+  traceStep({
+    kind: "preview",
+    title: textOf(input.instance.config.widgetTitle) || "FAQ answer",
+    detail: `Shown to ${textOf(input.body?.name) || "the visitor"} in the chat widget\n\n${reply}`,
+  });
   const email = textOf(input.body?.email);
   const name = textOf(input.body?.name) || "Visitor";
   if (email || /do not have|not in it/i.test(reply)) {
@@ -409,7 +424,10 @@ async function runDigest(input: EngineInput): Promise<{ ok: boolean; message: st
     addLog(input.doc, input.instance.id, "First report is scheduled.");
     return { ok: true, message: "Report scheduled." };
   }
-  const mine = input.doc.instances.filter((item) => item.ownerEmail === input.instance.ownerEmail && !item.demo);
+  const mine = input.doc.instances.filter((item) => {
+    if (item.ownerEmail !== input.instance.ownerEmail) return false;
+    return input.instance.demo ? Boolean(item.demo) : !item.demo;
+  });
   const leads = input.doc.leads.filter((lead) => mine.some((item) => item.id === lead.instanceId)).length;
   const paid = input.doc.charges.filter((charge) => charge.status === "paid" && mine.some((item) => item.id === charge.instanceId));
   const payments = paid.reduce((sum, charge) => sum + charge.amountKes, 0);

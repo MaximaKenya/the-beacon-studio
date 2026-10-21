@@ -573,6 +573,21 @@ h4 {
   background: color-mix(in srgb, var(--accent) 10%, transparent);
 }
 
+.sandbox-step {
+  animation: sandbox-in 0.4s ease both;
+}
+
+@keyframes sandbox-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 .admin-tabs a[aria-current="page"] {
   color: var(--background);
   background: var(--accent);

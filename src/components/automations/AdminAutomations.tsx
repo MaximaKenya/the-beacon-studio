@@ -8,6 +8,7 @@ import {
   type DeskLead,
   type DeskLog,
 } from "@/components/automations/AutomationDesk";
+import { DemoSandbox } from "@/components/automations/DemoSandbox";
 import type { ChannelReadiness } from "@/lib/automations/channels";
 import { formatKes } from "@/lib/fx";
 import { parseResponseJson } from "@/lib/safe-json";
@@ -31,7 +32,7 @@ type AdminView = {
   paused: number;
   demos: number;
   clients: ClientView[];
-  demosList: DeskInstance[];
+  sandbox?: { instances: DeskInstance[] };
   channels?: ChannelReadiness;
 };
 
@@ -42,7 +43,7 @@ const empty: AdminView = {
   paused: 0,
   demos: 0,
   clients: [],
-  demosList: [],
+  sandbox: { instances: [] },
 };
 
 export function AdminAutomations() {
@@ -80,6 +81,9 @@ export function AdminAutomations() {
             <Summary label="Paused" value={String(data.paused)} />
             <Summary label="Demos" value={String(data.demos)} />
           </div>
+          {data.sandbox && data.sandbox.instances.length > 0 && (
+            <DemoSandbox instances={data.sandbox.instances} onChanged={() => void load()} />
+          )}
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {data.clients.length === 0 && <p className="text-sm text-muted">No client automations yet.</p>}
             {data.clients.map((client) => (
@@ -109,21 +113,6 @@ export function AdminAutomations() {
               channels={selected.channels}
               onChanged={() => void load()}
             />
-          )}
-          {data.demosList.length > 0 && (
-            <div>
-              <h3 className="mb-3 text-sm font-medium text-foreground">Demo previews</h3>
-              <AutomationDesk
-                instances={data.demosList}
-                logs={[]}
-                charges={[]}
-                leads={[]}
-                endpoint="/api/admin/automations"
-                canActivate
-                channels={data.channels}
-                onChanged={() => void load()}
-              />
-            </div>
           )}
         </div>
       )}

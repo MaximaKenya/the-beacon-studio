@@ -71,9 +71,11 @@ export async function deliver(input: {
   subject: string;
   text: string;
   channel?: string;
+  /** Send only to the addresses passed in. Used for a studio test of a sandbox run. */
+  liveTest?: boolean;
 }): Promise<{ emailed: boolean; sms: boolean; whatsapp?: string; note: string }> {
   const wa = input.phone ? whatsappLink(input.phone, input.text) : "";
-  if (input.instance.demo) {
+  if (input.instance.demo && !input.liveTest) {
     return {
       emailed: false,
       sms: false,

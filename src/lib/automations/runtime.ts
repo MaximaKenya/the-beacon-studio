@@ -5,6 +5,7 @@ import { parseTemplateConfig } from "@/automations/templates/schema";
 import { upcomingSlots } from "@/automations/slots";
 import { upsertClient } from "@/lib/clients";
 import { channelReadiness, deliver } from "@/lib/automations/channels";
+import { SANDBOX_EMAIL } from "@/lib/automations/setup-guides";
 import { markChargePaid, recordReview, runEngine } from "@/lib/automations/engine";
 import { addLog, instancesForEmail, loadAutomations, saveAutomations } from "@/lib/automations/store";
 import type { AutomationDoc, AutomationInstance } from "@/lib/automations/types";
@@ -285,10 +286,10 @@ export async function adminSnapshot() {
     active: active.length,
     pending: live.filter((item) => item.status === "pending_payment").length,
     paused: live.filter((item) => item.status === "paused").length,
-    demos: doc.instances.filter((item) => item.demo).length,
+    demos: doc.instances.filter((item) => item.ownerEmail === SANDBOX_EMAIL).length,
     channels: channelReadiness(),
     clients,
-    demosList: snapshotFor(doc, doc.instances.filter((item) => item.demo)).instances,
+    sandbox: snapshotFor(doc, doc.instances.filter((item) => item.ownerEmail === SANDBOX_EMAIL)),
   };
 }
 

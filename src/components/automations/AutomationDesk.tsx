@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { templateById } from "@/automations/templates/public";
+import type { SandboxRunView } from "@/lib/automations/types";
 import type { ChannelReadiness } from "@/lib/automations/channels";
 import { formatKes, formatUsd } from "@/lib/fx";
 import { formatNairobi } from "@/lib/time";
@@ -22,6 +23,7 @@ export type DeskInstance = {
   billing: "monthly" | "annual";
   periodEnd?: string;
   demo?: boolean;
+  lastRunView?: SandboxRunView;
   stats: {
     runs: number;
     leads: number;
