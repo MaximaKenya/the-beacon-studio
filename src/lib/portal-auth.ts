@@ -1,6 +1,12 @@
 import { createHmac, randomInt, timingSafeEqual } from "crypto";
 import { cookies } from "next/headers";
 import { readJsonFile, writeJsonFile } from "@/lib/storage";
+import {
+  applySessionCookie,
+  expireSessionCookie,
+  sessionCookieOptionsFromRequest,
+  type SessionCookieOptions,
+} from "@/lib/session-cookie";
 
 const COOKIE = "beacon_portal";
 const CODES_FILE = "portal-codes.json";
@@ -97,20 +103,19 @@ export async function verifyOneTimeCode(email: string, code: string): Promise<bo
   return true;
 }
 
-export async function setPortalSessionCookie(token: string): Promise<void> {
-  const jar = await cookies();
-  jar.set(COOKIE, token, {
-    httpOnly: true,
-    sameSite: "lax",
-    path: "/",
-    maxAge: 60 * 60 * 24 * 30,
-    secure: process.env.NODE_ENV === "production",
-  });
+const PORTAL_MAX_AGE = 60 * 60 * 24 * 30;
+
+export function portalSessionCookieOptions(request: Request): SessionCookieOptions {
+  return sessionCookieOptionsFromRequest(request, PORTAL_MAX_AGE);
 }
 
-export async function clearPortalSessionCookie(): Promise<void> {
-  const jar = await cookies();
-  jar.delete(COOKIE);
+/** Set the portal session on the response that is about to be returned. */
+export function setPortalSessionCookie(response: { headers: Headers }, request: Request, token: string): void {
+  applySessionCookie(response, COOKIE, token, portalSessionCookieOptions(request));
+}
+
+export function clearPortalSessionCookie(response: { headers: Headers }, request: Request): void {
+  expireSessionCookie(response, COOKIE, portalSessionCookieOptions(request));
 }
 
 export async function getPortalSession(): Promise<{

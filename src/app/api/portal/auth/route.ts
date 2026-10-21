@@ -29,22 +29,27 @@ async function maybeSendPortalCodeEmail(email: string, code: string): Promise<bo
   return result.sent;
 }
 
+const NO_STORE = { "Cache-Control": "no-store" };
+
 /** GET — current session */
 export async function GET() {
   const session = await getPortalSession();
   if (!session) {
-    return NextResponse.json({ authenticated: false });
+    return NextResponse.json({ authenticated: false }, { headers: NO_STORE });
   }
   const client = await findClientById(session.clientId);
   if (!client) {
-    return NextResponse.json({ authenticated: false });
+    return NextResponse.json({ authenticated: false }, { headers: NO_STORE });
   }
   const projects = await findProjectsByClient(client.id);
-  return NextResponse.json({
-    authenticated: true,
-    client: { id: client.id, name: client.name, email: client.email },
-    projects: projects.map((p) => ({ id: p.id, title: p.title, status: p.status })),
-  });
+  return NextResponse.json(
+    {
+      authenticated: true,
+      client: { id: client.id, name: client.name, email: client.email },
+      projects: projects.map((p) => ({ id: p.id, title: p.title, status: p.status })),
+    },
+    { headers: NO_STORE }
+  );
 }
 
 /**
@@ -59,8 +64,9 @@ export async function POST(request: Request) {
   const action = typeof body.action === "string" ? body.action : "";
 
   if (action === "logout") {
-    await clearPortalSessionCookie();
-    return NextResponse.json({ ok: true });
+    const response = NextResponse.json({ ok: true }, { headers: NO_STORE });
+    clearPortalSessionCookie(response, request);
+    return response;
   }
 
   if (action === "request-code") {
@@ -107,13 +113,17 @@ export async function POST(request: Request) {
     }
     const projects = await findProjectsByClient(client.id);
     const token = createAccessToken(client.id, client.email, projects[0]?.id);
-    await setPortalSessionCookie(token);
-    return NextResponse.json({
-      ok: true,
-      token,
-      client: { id: client.id, name: client.name, email: client.email },
-      projectId: projects[0]?.id,
-    });
+    const response = NextResponse.json(
+      {
+        ok: true,
+        token,
+        client: { id: client.id, name: client.name, email: client.email },
+        projectId: projects[0]?.id,
+      },
+      { headers: NO_STORE }
+    );
+    setPortalSessionCookie(response, request, token);
+    return response;
   }
 
   if (action === "token") {
@@ -126,12 +136,16 @@ export async function POST(request: Request) {
     if (!client) {
       return NextResponse.json({ error: "Client not found." }, { status: 404 });
     }
-    await setPortalSessionCookie(token);
-    return NextResponse.json({
-      ok: true,
-      client: { id: client.id, name: client.name, email: client.email },
-      projectId: payload.projectId,
-    });
+    const response = NextResponse.json(
+      {
+        ok: true,
+        client: { id: client.id, name: client.name, email: client.email },
+        projectId: payload.projectId,
+      },
+      { headers: NO_STORE }
+    );
+    setPortalSessionCookie(response, request, token);
+    return response;
   }
 
   return NextResponse.json({ error: "Unknown action." }, { status: 400 });
