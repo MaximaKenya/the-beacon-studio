@@ -199,11 +199,13 @@ If a forward URL is unset, the event is logged and not sent. Paystack still gets
 
 The buffet lives at `/automations`. Checkout uses the same Paystack account, always with reference `BS-<id>` and `metadata.app` = `beacon-studio`.
 
-Reminders, digests, and renewals run from `GET` or `POST /api/automations/tick`. Set `CRON_SECRET` and schedule it hourly on Heroku Scheduler:
+Reminders, digests, and renewals run from `GET` or `POST /api/automations/tick`. The same request also sends booking emails: a reminder about 24 hours before the call, another inside the last hour, and one follow-up after the call. Set `CRON_SECRET`. The Vercel cron in `vercel.json` is once a day, which is too coarse for the 1-hour reminder. On Heroku Scheduler, run this every hour:
 
 ```bash
 curl -X POST https://<app>.herokuapp.com/api/automations/tick -H "Authorization: Bearer $CRON_SECRET"
 ```
+
+There is no in-process timer. A sleeping Heroku dyno will not send the 1-hour reminder unless Scheduler (or another hourly caller) hits that URL. `RESEND_API_KEY` has to be set or the tick records the booking as still due and tries again next hour.
 
 `GROQ_API_KEY` powers qualification, FAQ answers, drafts, and field suggestions. `RESEND_API_KEY` and `RESEND_FROM_EMAIL` send the emails. SMS is optional (`AT_API_KEY`, `AT_USERNAME`, `AT_SENDER_ID`); without them the studio sends email and a `wa.me` link.
 

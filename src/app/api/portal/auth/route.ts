@@ -13,17 +13,23 @@ import {
   verifyPortalToken,
 } from "@/lib/portal-auth";
 import { siteConfig } from "@/data/site";
+import { brandedEmail } from "@/lib/email-html";
 import { isResendConfigured, sendResendEmail } from "@/lib/resend";
 
 export const runtime = "nodejs";
 
 async function maybeSendPortalCodeEmail(email: string, code: string): Promise<boolean> {
   if (!isResendConfigured()) return false;
+  const letter = brandedEmail({
+    heading: "Your portal code",
+    greeting: "Hello,",
+    bodyText: `Your one-time portal code is ${code}. It expires in 15 minutes.\n\nOpen the client portal and enter this code for ${email}.`,
+  });
   const result = await sendResendEmail({
     to: email,
     subject: `${siteConfig.brand.name} portal code`,
-    text: `Your one-time portal code is ${code}. It expires in 15 minutes.`,
-    html: `<p>Your one-time portal code is <strong>${code}</strong>. It expires in 15 minutes.</p>`,
+    text: letter.text,
+    html: letter.html,
     idempotencyKey: `portal-code/${email}/${code}`,
   });
   return result.sent;

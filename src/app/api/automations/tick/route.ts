@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { runDueJobs } from "@/lib/automations/runtime";
+import { runBookingReminders } from "@/lib/booking-reminders";
 
 export const runtime = "nodejs";
 
@@ -16,7 +17,8 @@ async function handle(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const result = await runDueJobs(new URL(request.url).origin);
-  return NextResponse.json({ ok: true, ...result });
+  const reminders = await runBookingReminders();
+  return NextResponse.json({ ok: true, ...result, reminders });
 }
 
 export async function GET(request: Request) {

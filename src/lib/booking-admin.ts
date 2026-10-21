@@ -1,9 +1,6 @@
-import { siteConfig } from "@/data/site";
-import { brandedEmail } from "@/lib/email-html";
+import { sendBookingClientEmail, type BookingMailKind, type ClientBooking } from "@/lib/booking-mail";
 import { captureLead } from "@/lib/leads";
-import { isResendConfigured, sendResendEmail } from "@/lib/resend";
 import { readJsonFile, writeJsonFile } from "@/lib/storage";
-import { isValidEmail } from "@/lib/validation";
 
 export const BOOKING_STATUSES = [
   "pending",
@@ -34,6 +31,12 @@ export type BookingRecord = {
   replied?: boolean;
   adminNotes?: string;
   rescheduleNote?: string;
+  meetingUrl?: string;
+  calendarSequence?: number;
+  reminder24SentAt?: string;
+  reminder1SentAt?: string;
+  followUpSentAt?: string;
+  followUpOptOut?: boolean;
   convertedToLead?: boolean;
   createdAt?: string;
 };
@@ -59,49 +62,25 @@ async function readBookings(): Promise<BookingRecord[]> {
   return Array.isArray(rows) ? rows : [];
 }
 
-function meetingLabel(booking: BookingRecord): string {
-  const id = booking.meetingType || "call";
-  return (
-    siteConfig.booking.meetingTypes.find((item) => item.id === id)?.label ||
-    siteConfig.booking.meetingTypes.find((item) => item.label === id)?.label ||
-    id
-  );
+function mailKind(status: string): BookingMailKind | null {
+  if (status === "confirmed") return "confirmed";
+  if (status === "reschedule") return "reschedule";
+  if (status === "declined") return "declined";
+  if (status === "cancelled") return "cancelled";
+  return null;
 }
 
 async function emailBookingStatus(booking: BookingRecord, status: string): Promise<{ emailed: boolean; emailNote: string }> {
-  const email = typeof booking.email === "string" ? booking.email.trim() : "";
-  if (!email || !isValidEmail(email)) return { emailed: false, emailNote: "" };
-  if (!isResendConfigured()) {
-    return { emailed: false, emailNote: "Email was not sent — Resend is not configured." };
-  }
-  const name = booking.name || "there";
-  const when = [booking.date, booking.time].filter(Boolean).join(" at ");
-  const label = meetingLabel(booking);
-  let heading = "Booking update";
-  let body = `Your ${label}${when ? ` on ${when}` : ""} has been updated.`;
-  if (status === "confirmed") {
-    heading = "Booking confirmed";
-    body = `Your ${label}${when ? ` on ${when}` : ""} is confirmed.`;
-  } else if (status === "declined" || status === "cancelled") {
-    heading = "Booking declined";
-    body = `We can't keep the ${label}${when ? ` on ${when}` : ""}. Reply to this email if you would like another time.`;
-  } else if (status === "reschedule") {
-    heading = "Please reschedule";
-    const note = booking.rescheduleNote ? `\n\n${booking.rescheduleNote}` : "";
-    body = `We need to move your ${label}${when ? ` (${when})` : ""}.${note}`;
-  } else {
-    return { emailed: false, emailNote: "" };
-  }
-  const letter = brandedEmail({ heading, greeting: `Hi ${name},`, bodyText: body });
-  const result = await sendResendEmail({
-    to: email,
-    subject: `${heading} — ${siteConfig.brand.name}`,
-    html: letter.html,
-    text: letter.text,
-    idempotencyKey: `booking-${status}/${booking.id}/${booking.rescheduleNote || when || "update"}`,
-  });
-  if (result.sent) return { emailed: true, emailNote: "A status email was sent." };
-  return { emailed: false, emailNote: "Email was not sent." };
+  const kind = mailKind(status);
+  if (!kind) return { emailed: false, emailNote: "" };
+  const when = [booking.date, booking.time].filter(Boolean).join(" ");
+  const result = await sendBookingClientEmail(
+    booking as ClientBooking,
+    kind,
+    undefined,
+    `booking-${status}/${booking.id}/${booking.calendarSequence || 0}/${booking.rescheduleNote || when || "update"}`
+  );
+  return { emailed: result.emailed, emailNote: result.emailNote };
 }
 
 export async function updateBookingAdmin(
@@ -116,8 +95,12 @@ export async function updateBookingAdmin(
   const previous = current.status || "pending";
   if (typeof patch.adminNotes === "string") current.adminNotes = patch.adminNotes;
   if (typeof patch.rescheduleNote === "string") current.rescheduleNote = patch.rescheduleNote;
+  const nextDate = typeof patch.date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(patch.date) ? patch.date : current.date;
+  const nextTime = typeof patch.time === "string" && /^\d{2}:\d{2}$/.test(patch.time) ? patch.time : current.time;
+  const moved = nextDate !== current.date || nextTime !== current.time || patch.status === "reschedule";
   if (typeof patch.date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(patch.date)) current.date = patch.date;
   if (typeof patch.time === "string" && /^\d{2}:\d{2}$/.test(patch.time)) current.time = patch.time;
+  if (moved) current.calendarSequence = (current.calendarSequence || 0) + 1;
   if (patch.close) {
     current.read = true;
     if (!current.status || current.status === "pending" || current.status === "new") current.status = "closed";

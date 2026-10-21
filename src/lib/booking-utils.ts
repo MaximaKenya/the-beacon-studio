@@ -1,4 +1,5 @@
 import { siteConfig } from "@/data/site";
+import { buildBookingIcs } from "@/lib/booking-calendar";
 
 export type BookedSlot = { date: string; time: string; durationMinutes?: number };
 
@@ -179,34 +180,24 @@ export function generateICS(params: {
   organizerEmail: string;
   attendeeEmail: string;
   attendeeName: string;
+  id?: string;
+  sequence?: number;
+  location?: string;
+  url?: string;
 }): string {
-  const start = new Date(`${params.date}T${params.time}:00+03:00`);
-  const end = new Date(start.getTime() + params.durationMinutes * 60_000);
-
-  const fmt = (d: Date) =>
-    d
-      .toISOString()
-      .replace(/[-:]/g, "")
-      .replace(/\.\d{3}/, "");
-
-  const uid = `${Date.now()}@${siteConfig.seo.siteUrl.replace(/^https?:\/\//, "")}`;
-
-  return [
-    "BEGIN:VCALENDAR",
-    "VERSION:2.0",
-    "PRODID:-//Portfolio//Booking//EN",
-    "CALSCALE:GREGORIAN",
-    "METHOD:REQUEST",
-    "BEGIN:VEVENT",
-    `UID:${uid}`,
-    `DTSTAMP:${fmt(new Date())}`,
-    `DTSTART:${fmt(start)}`,
-    `DTEND:${fmt(end)}`,
-    `SUMMARY:${params.title}`,
-    `DESCRIPTION:${params.description.replace(/\n/g, "\\n")}`,
-    `ORGANIZER;CN=${siteConfig.brand.name}:mailto:${params.organizerEmail}`,
-    `ATTENDEE;CN=${params.attendeeName}:mailto:${params.attendeeEmail}`,
-    "END:VEVENT",
-    "END:VCALENDAR",
-  ].join("\r\n");
+  return buildBookingIcs({
+    id: params.id,
+    date: params.date,
+    time: params.time,
+    durationMinutes: params.durationMinutes,
+    title: params.title,
+    description: params.description,
+    location: params.location,
+    url: params.url,
+    organizerEmail: params.organizerEmail,
+    attendeeEmail: params.attendeeEmail,
+    attendeeName: params.attendeeName,
+    sequence: params.sequence,
+    method: "REQUEST",
+  });
 }

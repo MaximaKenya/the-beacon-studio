@@ -181,7 +181,10 @@ export function Pricing() {
           ))}
         </div>
 
-        <p className="mt-8 max-w-3xl text-sm leading-relaxed text-muted">{siteConfig.pricingDisclaimer}</p>
+        <p className="sleek-card mt-8 max-w-3xl rounded-3xl p-5 text-sm leading-relaxed text-foreground">
+          The audit is free. You pay a deposit only after we agree what success looks like. If the first workflow misses that mark, we revise it before the next invoice.
+        </p>
+        <p className="mt-4 max-w-3xl text-sm leading-relaxed text-muted">{siteConfig.pricingDisclaimer}</p>
         <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted">{siteConfig.productAccessNote}</p>
       </div>
     </section>
