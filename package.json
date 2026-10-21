@@ -11,7 +11,8 @@
     "heroku-postbuild": "npm run build",
     "start": "next start",
     "lint": "eslint",
-    "db:migrate-files": "tsx scripts/migrate-files.ts"
+    "db:migrate-files": "tsx scripts/migrate-files.ts",
+    "automations:run": "tsx scripts/run-each-automation.ts"
   },
   "dependencies": {
     "framer-motion": "^12.23.12",

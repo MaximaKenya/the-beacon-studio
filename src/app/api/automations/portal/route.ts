@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { addInstanceNote, portalSnapshot, saveInstanceConfig, setInstanceStatus } from "@/lib/automations/runtime";
+import { addInstanceNote, portalSnapshot, saveInstanceConfig, setInstanceStatus, stopFollowUps } from "@/lib/automations/runtime";
 import { getPortalSession } from "@/lib/portal-auth";
 import { parseRequestJson } from "@/lib/storage";
 
@@ -28,5 +28,6 @@ export async function POST(request: Request) {
   }
   if (action === "config") return NextResponse.json(await saveInstanceConfig(id, body.config, session.email));
   if (action === "note") return NextResponse.json(await addInstanceNote(id, String(body.text || ""), "client", session.email));
+  if (action === "stop") return NextResponse.json(await stopFollowUps(id, session.email));
   return NextResponse.json({ error: "Unknown action." }, { status: 400 });
 }

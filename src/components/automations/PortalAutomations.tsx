@@ -9,6 +9,7 @@ import {
   type DeskLead,
   type DeskLog,
 } from "@/components/automations/AutomationDesk";
+import type { ChannelReadiness } from "@/lib/automations/channels";
 import { parseResponseJson } from "@/lib/safe-json";
 
 type Snapshot = {
@@ -16,6 +17,7 @@ type Snapshot = {
   logs: DeskLog[];
   charges: DeskCharge[];
   leads: DeskLead[];
+  channels?: ChannelReadiness;
 };
 
 const empty: Snapshot = { instances: [], logs: [], charges: [], leads: [] };
@@ -57,6 +59,7 @@ export function PortalAutomations() {
           charges={data.charges}
           leads={data.leads}
           endpoint="/api/automations/portal"
+          channels={data.channels}
           onChanged={() => void load()}
         />
       ) : (

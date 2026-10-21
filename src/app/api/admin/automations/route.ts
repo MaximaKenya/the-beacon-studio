@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
-import { addInstanceNote, adminSnapshot, saveInstanceConfig, setInstanceStatus } from "@/lib/automations/runtime";
+import { addInstanceNote, adminSnapshot, saveInstanceConfig, setInstanceStatus, stopFollowUps } from "@/lib/automations/runtime";
 import { parseRequestJson } from "@/lib/storage";
 
 export const runtime = "nodejs";
@@ -30,5 +30,6 @@ export async function POST(request: Request) {
   }
   if (action === "config") return NextResponse.json(await saveInstanceConfig(id, body.config));
   if (action === "note") return NextResponse.json(await addInstanceNote(id, String(body.text || ""), "studio"));
+  if (action === "stop") return NextResponse.json(await stopFollowUps(id));
   return NextResponse.json({ error: "Unknown action." }, { status: 400 });
 }

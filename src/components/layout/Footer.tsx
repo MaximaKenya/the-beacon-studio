@@ -8,6 +8,7 @@ import { SuiteLine } from "@/components/brand/SuiteLine";
 import { useFeatures } from "@/providers/FeatureProvider";
 import { trackEvent } from "@/lib/analytics";
 import { mailtoHref, phoneHref, trackCallClick, trackEmailClick } from "@/lib/contact-actions";
+import { isPlaceholderContact } from "@/lib/launch";
 
 const iconMap = {
   linkedin: Linkedin,
@@ -43,7 +44,7 @@ export function Footer() {
               {siteConfig.brand.disambiguation}
             </p>
             <ul className="mt-5 flex items-center gap-2" aria-label="Social links">
-              {siteConfig.social.map((link) => {
+              {siteConfig.social.filter((link) => !isPlaceholderContact(link.href)).map((link) => {
                 const Icon = iconMap[link.icon];
                 return (
                   <li key={link.name}>
@@ -72,16 +73,18 @@ export function Footer() {
                   <Phone className="h-4 w-4" />
                 </a>
               </li>
-              <li>
-                <a
-                  href={mailtoHref("Hello Beacon")}
-                  onClick={() => trackEmailClick("footer")}
-                  className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-elevated/80 text-muted transition-colors hover:text-accent"
-                  aria-label="Email"
-                >
-                  <Mail className="h-4 w-4" />
-                </a>
-              </li>
+              {!isPlaceholderContact(siteConfig.email) && (
+                <li>
+                  <a
+                    href={mailtoHref("Hello Beacon")}
+                    onClick={() => trackEmailClick("footer")}
+                    className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-elevated/80 text-muted transition-colors hover:text-accent"
+                    aria-label="Email"
+                  >
+                    <Mail className="h-4 w-4" />
+                  </a>
+                </li>
+              )}
             </ul>
             <p className="mt-3 text-xs text-muted">
               <a
@@ -91,14 +94,18 @@ export function Footer() {
               >
                 {siteConfig.phoneDisplay}
               </a>
-              {" · "}
-              <a
-                href={mailtoHref()}
-                onClick={() => trackEmailClick("footer_text")}
-                className="hover:text-accent"
-              >
-                {siteConfig.email}
-              </a>
+              {!isPlaceholderContact(siteConfig.email) && (
+                <>
+                  {" · "}
+                  <a
+                    href={mailtoHref()}
+                    onClick={() => trackEmailClick("footer_text")}
+                    className="hover:text-accent"
+                  >
+                    {siteConfig.email}
+                  </a>
+                </>
+              )}
             </p>
             <p className="mt-6 text-xs text-muted">
               © {year} {siteConfig.brand.legalName}. {siteConfig.footer.note}

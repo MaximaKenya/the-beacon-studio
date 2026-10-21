@@ -1,4 +1,5 @@
 import { siteConfig } from "@/data/site";
+import { isPlaceholderContact } from "@/lib/launch";
 import { absoluteUrl } from "@/lib/seo";
 
 export function JsonLd({ data }: { data: object }) {
@@ -45,10 +46,12 @@ export function OrganizationJsonLd() {
         legalName: siteConfig.brand.legalName,
         description: siteConfig.seo.description,
         url: baseUrl,
-        email: siteConfig.email,
+        ...(isPlaceholderContact(siteConfig.email) ? {} : { email: siteConfig.email }),
         telephone: phone,
         logo: absoluteUrl(siteConfig.seo.ogImage),
-        sameAs: siteConfig.social.filter((link) => link.icon !== "email").map((link) => link.href),
+        sameAs: siteConfig.social
+          .filter((link) => link.icon !== "email" && !isPlaceholderContact(link.href))
+          .map((link) => link.href),
         address: {
           "@type": "PostalAddress",
           addressLocality: "Nairobi",
@@ -74,7 +77,7 @@ export function OrganizationJsonLd() {
         description: siteConfig.brand.description,
         url: baseUrl,
         telephone: phone,
-        email: siteConfig.email,
+        ...(isPlaceholderContact(siteConfig.email) ? {} : { email: siteConfig.email }),
         image: absoluteUrl(siteConfig.seo.ogImage),
         priceRange: "KES 2500-6500/month",
         address: {

@@ -120,11 +120,43 @@ async function sendOut(
     channel: target.channel || textOf(input.instance.config.channel) || "both",
   });
   await touch(input.instance, nowOf(input), "messages");
-  const via = [result.emailed ? "email" : "", result.sms ? "sms" : "", result.whatsapp && !result.sms ? "WhatsApp link" : ""]
-    .filter(Boolean)
-    .join(", ");
-  addLog(input.doc, input.instance.id, `${target.subject}${via ? ` (${via})` : ""}. ${input.instance.demo ? "Demo: not sent." : ""}`.trim());
+  addLog(input.doc, input.instance.id, `${target.subject}. ${result.note}`);
   return result;
+}
+
+/** Next run in Africa/Nairobi. Weekday is 1 (Monday) through 7 (Sunday). */
+export function nextLocalRun(
+  from: Date,
+  options: { hour?: number; weekday?: number; everyDays?: number }
+): string {
+  const hour = Math.min(23, Math.max(0, Math.round(options.hour ?? 8)));
+  const every = Math.max(1, options.everyDays ?? 1);
+  const offset = 3 * 60 * 60 * 1000;
+  const atHour = (addDays: number) => {
+    const local = new Date(from.getTime() + offset);
+    return new Date(Date.UTC(local.getUTCFullYear(), local.getUTCMonth(), local.getUTCDate() + addDays, hour, 0, 0) - offset);
+  };
+  if (options.weekday && options.weekday >= 1 && options.weekday <= 7) {
+    const local = new Date(from.getTime() + offset);
+    const iso = local.getUTCDay() === 0 ? 7 : local.getUTCDay();
+    let add = (options.weekday - iso + 7) % 7;
+    if (atHour(add).getTime() <= from.getTime()) add += 7;
+    return atHour(add).toISOString();
+  }
+  const today = atHour(0);
+  if (today.getTime() > from.getTime()) return today.toISOString();
+  return atHour(every).toISOString();
+}
+
+function digestEvery(input: EngineInput): { hour: number; weekday?: number; everyDays: number } {
+  const recurrence = textOf(input.instance.config.recurrence);
+  const everyDays = recurrence === "daily" || input.instance.templateId === "daily-sales" ? 1 : recurrence === "monthly" ? 30 : 7;
+  const weekday = Number(input.instance.config.weekday);
+  return {
+    hour: numOf(input.instance.config.sendHour) || 8,
+    ...(everyDays >= 7 && weekday >= 1 && weekday <= 7 ? { weekday } : {}),
+    everyDays,
+  };
 }
 
 function ownerEmail(instance: AutomationInstance): string {
@@ -242,7 +274,7 @@ async function runPayments(input: EngineInput, escalate: boolean): Promise<{ ok:
         status: "unpaid",
         remindersSent: 0,
       };
-      if (charge.amountKes > 0 && charge.email) {
+      if (charge.amountKes > 0 && charge.email && !input.instance.demo) {
         const link = await createChargeLink({
           email: charge.email,
           amountKes: charge.amountKes,
@@ -373,7 +405,7 @@ export async function recordReview(input: EngineInput, score: number, comment: s
 async function runDigest(input: EngineInput): Promise<{ ok: boolean; message: string }> {
   const at = nowOf(input);
   if (input.mode === "activate") {
-    schedule(input.doc, input.instance.id, plusDays(at, 1), "digest");
+    schedule(input.doc, input.instance.id, nextLocalRun(at, digestEvery(input)), "digest");
     addLog(input.doc, input.instance.id, "First report is scheduled.");
     return { ok: true, message: "Report scheduled." };
   }
@@ -391,14 +423,20 @@ async function runDigest(input: EngineInput): Promise<{ ok: boolean; message: st
     metrics.includes("runs") ? `Runs: ${runs}` : "",
     textOf(input.instance.config.note),
   ].filter(Boolean);
+  const plain = lines.join("\n");
+  const written =
+    (await groqText(
+      "Turn these figures into a short report for the business owner. Use only the figures given. Do not invent numbers.",
+      `${plain}\n${textOf(input.instance.config.note)}`
+    )) || plain;
   const recipients = textOf(input.instance.config.recipients) || ownerEmail(input.instance);
   await sendOut(input, {
     email: recipients.split(",")[0]?.trim() || ownerEmail(input.instance),
     subject: `${input.instance.businessName} report`,
-    text: lines.join("\n"),
-    channel: "email",
+    text: written,
+    channel: textOf(input.instance.config.channel) || "email",
   });
-  schedule(input.doc, input.instance.id, plusDays(at, input.instance.templateId === "daily-sales" ? 1 : 7), "digest");
+  schedule(input.doc, input.instance.id, nextLocalRun(at, digestEvery(input)), "digest");
   return { ok: true, message: "Report sent." };
 }
 
@@ -553,7 +591,7 @@ async function runStock(input: EngineInput): Promise<{ ok: boolean; message: str
 
 async function runDraft(input: EngineInput): Promise<{ ok: boolean; message: string }> {
   if (input.mode === "activate") {
-    schedule(input.doc, input.instance.id, plusDays(nowOf(input), 1), "draft");
+    schedule(input.doc, input.instance.id, nextLocalRun(nowOf(input), { hour: 8, weekday: Number(input.instance.config.weekday) || 1, everyDays: 7 }), "draft");
     return { ok: true, message: "Drafts scheduled." };
   }
   const topics = textOf(input.instance.config.topics);
@@ -563,7 +601,7 @@ async function runDraft(input: EngineInput): Promise<{ ok: boolean; message: str
       topics
     )) || `Drafts (Groq is not configured yet):\n${topics}`;
   await sendOut(input, { email: ownerEmail(input.instance), subject: "Social drafts", text: draft, channel: "email" });
-  schedule(input.doc, input.instance.id, plusDays(nowOf(input), 7), "draft");
+  schedule(input.doc, input.instance.id, nextLocalRun(nowOf(input), { hour: 8, weekday: Number(input.instance.config.weekday) || 1, everyDays: 7 }), "draft");
   return { ok: true, message: "Drafts emailed." };
 }
 

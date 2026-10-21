@@ -3,6 +3,7 @@
 import { FormEvent, useState } from "react";
 import { CheckCircle2, Loader2, Send } from "lucide-react";
 import { siteConfig } from "@/data/site";
+import { isPlaceholderContact } from "@/lib/launch";
 import { SmartContactRouter } from "@/components/features/SmartContactRouter";
 import { trackEvent } from "@/lib/analytics";
 import { readStoredAttribution } from "@/lib/attribution-client";
@@ -48,14 +49,14 @@ export function ContactForm() {
       return;
     }
 
-    // Optional mailto follow-up — message is already in admin Contacts
-    const subject = encodeURIComponent(`Portfolio contact from ${name}`);
-    const body = encodeURIComponent(`Name: ${name}\nEmail: ${email}\n\n${message}`);
-    const mailto = `mailto:${siteConfig.email}?subject=${subject}&body=${body}`;
-    try {
-      window.open(mailto, "_self");
-    } catch {
-      /* ignore */
+    if (!isPlaceholderContact(siteConfig.email)) {
+      const subject = encodeURIComponent(`Portfolio contact from ${name}`);
+      const body = encodeURIComponent(`Name: ${name}\nEmail: ${email}\n\n${message}`);
+      try {
+        window.open(`mailto:${siteConfig.email}?subject=${subject}&body=${body}`, "_self");
+      } catch {
+        /* The message is already saved. */
+      }
     }
 
     trackEvent("lead_submit", { source: "contact-form" });
@@ -75,14 +76,8 @@ export function ContactForm() {
           Message saved
         </h3>
         <p className="mt-2 max-w-sm text-sm text-muted">
-          Thanks — your message is in the studio inbox. We&apos;ll follow up at{" "}
-          <a
-            href={`mailto:${siteConfig.email}`}
-            className="text-accent hover:text-accent-hover"
-          >
-            {siteConfig.email}
-          </a>
-          . Replies also show in the{" "}
+          Thanks — your message is in the studio inbox. We&apos;ll follow up
+          {isPlaceholderContact(siteConfig.email) ? " by phone" : ` at ${siteConfig.email}`}. Replies also show in the{" "}
           <a href="/portal/login" className="text-accent hover:text-accent-hover">
             client portal
           </a>{" "}

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Outfit, Plus_Jakarta_Sans } from "next/font/google";
 import { siteConfig } from "@/data/site";
+import { isPlaceholderContact } from "@/lib/launch";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import dynamic from "next/dynamic";
@@ -53,7 +54,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: siteConfig.seo.title,
     description: siteConfig.seo.description,
-    creator: siteConfig.seo.twitterHandle,
+    ...(isPlaceholderContact(siteConfig.seo.twitterHandle) ? {} : { creator: siteConfig.seo.twitterHandle }),
     images: [siteConfig.seo.ogImage],
   },
   robots: {

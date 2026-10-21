@@ -11,6 +11,7 @@ import { useFeatures } from "@/providers/FeatureProvider";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { AnimatedIcon } from "@/components/ui/AnimatedIcon";
 import { mailtoHref, phoneHref, trackCallClick, trackEmailClick } from "@/lib/contact-actions";
+import { isPlaceholderContact } from "@/lib/launch";
 import { trackEvent } from "@/lib/analytics";
 
 /** Primary nav stays single-line; overflow items live in More */
@@ -164,14 +165,16 @@ export function Header() {
           >
             <Phone className="h-3.5 w-3.5" />
           </a>
-          <a
-            href={mailtoHref("Hello Beacon")}
-            onClick={() => trackEmailClick("header")}
-            className="hidden h-8 w-8 items-center justify-center rounded-full bg-surface/70 text-muted transition-colors hover:text-accent xl:inline-flex"
-            aria-label={`Email ${siteConfig.email}`}
-          >
-            <Mail className="h-3.5 w-3.5" />
-          </a>
+          {!isPlaceholderContact(siteConfig.email) && (
+            <a
+              href={mailtoHref("Hello Beacon")}
+              onClick={() => trackEmailClick("header")}
+              className="hidden h-8 w-8 items-center justify-center rounded-full bg-surface/70 text-muted transition-colors hover:text-accent xl:inline-flex"
+              aria-label={`Email ${siteConfig.email}`}
+            >
+              <Mail className="h-3.5 w-3.5" />
+            </a>
+          )}
 
           <button
             type="button"

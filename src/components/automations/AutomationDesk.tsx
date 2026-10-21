@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { templateById } from "@/automations/templates/public";
+import type { ChannelReadiness } from "@/lib/automations/channels";
 import { formatKes, formatUsd } from "@/lib/fx";
 import { formatNairobi } from "@/lib/time";
 import { parseResponseJson } from "@/lib/safe-json";
@@ -70,6 +71,7 @@ export function AutomationDesk({
   leads,
   endpoint,
   canActivate,
+  channels,
   onChanged,
 }: {
   instances: DeskInstance[];
@@ -78,6 +80,7 @@ export function AutomationDesk({
   leads: DeskLead[];
   endpoint: string;
   canActivate?: boolean;
+  channels?: ChannelReadiness;
   onChanged: () => void;
 }) {
   const [openId, setOpenId] = useState<string | null>(instances[0]?.id ?? null);
@@ -115,6 +118,7 @@ export function AutomationDesk({
 
   return (
     <div className="space-y-4">
+      {channels && <p className="text-sm leading-relaxed text-muted">{channels.summary}</p>}
       {notice && <p className="text-sm text-muted">{notice}</p>}
       {instances.map((instance) => {
         const open = openId === instance.id;
@@ -221,6 +225,11 @@ function InstanceDetail({
             Public page
           </Link>
         )}
+        {templateById(instance.templateId)?.behavior === "sequence" && (
+          <button type="button" disabled={busy} className="admin-btn" onClick={() => onAct("stop")}>
+            Stop follow-ups
+          </button>
+        )}
       </div>
       <p className="text-sm text-muted">
         Billing {instance.billing}
@@ -229,7 +238,7 @@ function InstanceDetail({
       </p>
       <div className="grid gap-4 lg:grid-cols-2">
         <MiniList
-          title="Recent logs"
+          title="Run history"
           empty="No runs yet."
           rows={logs.slice(0, 8).map((log) => ({
             id: log.id,

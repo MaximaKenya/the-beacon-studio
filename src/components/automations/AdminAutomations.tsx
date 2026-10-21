@@ -8,6 +8,7 @@ import {
   type DeskLead,
   type DeskLog,
 } from "@/components/automations/AutomationDesk";
+import type { ChannelReadiness } from "@/lib/automations/channels";
 import { formatKes } from "@/lib/fx";
 import { parseResponseJson } from "@/lib/safe-json";
 
@@ -20,6 +21,7 @@ type ClientView = {
   logs: DeskLog[];
   charges: DeskCharge[];
   leads: DeskLead[];
+  channels?: ChannelReadiness;
 };
 
 type AdminView = {
@@ -30,6 +32,7 @@ type AdminView = {
   demos: number;
   clients: ClientView[];
   demosList: DeskInstance[];
+  channels?: ChannelReadiness;
 };
 
 const empty: AdminView = {
@@ -85,7 +88,7 @@ export function AdminAutomations() {
                 type="button"
                 aria-pressed={client.email === email}
                 onClick={() => setEmail(client.email)}
-                className={`sleek-card rounded-2xl p-4 text-left ${client.email === email ? "ring-1 ring-accent/40" : ""}`}
+                className={`sleek-card rounded-2xl p-4 text-left ${client.email === email ? "choice-selected" : ""}`}
               >
                 <p className="font-medium text-foreground">{client.businessName || client.name}</p>
                 <p className="mt-1 text-xs text-muted">{client.email}</p>
@@ -103,6 +106,7 @@ export function AdminAutomations() {
               leads={selected.leads}
               endpoint="/api/admin/automations"
               canActivate
+              channels={selected.channels}
               onChanged={() => void load()}
             />
           )}
@@ -116,6 +120,7 @@ export function AdminAutomations() {
                 leads={[]}
                 endpoint="/api/admin/automations"
                 canActivate
+                channels={data.channels}
                 onChanged={() => void load()}
               />
             </div>

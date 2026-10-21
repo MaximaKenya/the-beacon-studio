@@ -1,5 +1,27 @@
-import { sendResendEmail } from "@/lib/resend";
+import { groqConfigured } from "@/lib/automations/groq";
+import { isResendConfigured, sendResendEmail } from "@/lib/resend";
 import type { AutomationInstance } from "@/lib/automations/types";
+
+export type ChannelReadiness = {
+  email: "ready" | "not configured";
+  sms: "ready" | "not configured";
+  whatsapp: "link only";
+  groq: "ready" | "not configured";
+  summary: string;
+};
+
+export function channelReadiness(): ChannelReadiness {
+  const email = isResendConfigured() ? "ready" : "not configured";
+  const sms = process.env.AT_API_KEY?.trim() && process.env.AT_USERNAME?.trim() ? "ready" : "not configured";
+  const groq = groqConfigured() ? "ready" : "not configured";
+  const summary = [
+    email === "ready" ? "Email is ready." : "Email is off until RESEND_API_KEY is set. Runs are still saved.",
+    sms === "ready" ? "SMS is ready." : "SMS is off until AT_API_KEY and AT_USERNAME are set.",
+    "WhatsApp is a wa.me link. There is no WhatsApp Business API key yet.",
+    groq === "ready" ? "Groq is ready for drafts and replies." : "Groq is off until GROQ_API_KEY is set. Drafts use the saved text.",
+  ].join(" ");
+  return { email, sms, whatsapp: "link only", groq, summary };
+}
 
 export function whatsappLink(phone: string, text: string): string {
   const digits = phone.replace(/\D/g, "");
@@ -49,29 +71,48 @@ export async function deliver(input: {
   subject: string;
   text: string;
   channel?: string;
-}): Promise<{ emailed: boolean; sms: boolean; whatsapp?: string }> {
+}): Promise<{ emailed: boolean; sms: boolean; whatsapp?: string; note: string }> {
+  const wa = input.phone ? whatsappLink(input.phone, input.text) : "";
   if (input.instance.demo) {
-    return { emailed: false, sms: false, whatsapp: input.phone ? whatsappLink(input.phone, input.text) : undefined };
+    return {
+      emailed: false,
+      sms: false,
+      ...(wa ? { whatsapp: wa } : {}),
+      note: "Demo run. Saved on the automation. Nothing was sent.",
+    };
   }
   const channel = input.channel || "both";
   const wantEmail = channel !== "sms" && channel !== "whatsapp";
   const wantPhone = channel !== "email";
+  const notes: string[] = [];
   let emailed = false;
   let sms = false;
-  const wa = input.phone ? whatsappLink(input.phone, input.text) : "";
-  const text = wa && !wantPhone ? input.text : wa ? `${input.text}\n\nWhatsApp: ${wa}` : input.text;
-  if (wantEmail && input.email && !input.email.endsWith("@example.com")) {
-    const result = await sendResendEmail({
-      to: input.email,
-      subject: input.subject,
-      text,
-      html: `<p>${escapeHtml(input.text).replace(/\n/g, "<br/>")}</p>${wa ? `<p><a href="${escapeHtml(wa)}">Open WhatsApp</a></p>` : ""}`,
-    });
-    emailed = result.sent;
+  const text = wa && wantPhone ? `${input.text}\n\nWhatsApp: ${wa}` : input.text;
+  if (wantEmail && input.email) {
+    if (input.email.endsWith("@example.com")) {
+      notes.push("Email skipped for an example.com address.");
+    } else if (!isResendConfigured()) {
+      notes.push("Email not sent: RESEND_API_KEY is not set.");
+    } else {
+      const result = await sendResendEmail({
+        to: input.email,
+        subject: input.subject,
+        text,
+        html: `<p>${escapeHtml(input.text).replace(/\n/g, "<br/>")}</p>${wa ? `<p><a href="${escapeHtml(wa)}">Open WhatsApp</a></p>` : ""}`,
+      });
+      emailed = result.sent;
+      notes.push(result.sent ? "Email sent." : `Email not sent: ${result.error || "Resend rejected it."}`);
+    }
+  } else if (wantEmail) {
+    notes.push("No email address on this run.");
   }
   if (wantPhone && input.phone) {
     const result = await sendSms(input.phone, input.text);
     sms = result.sent;
+    notes.push(result.sent ? "SMS sent." : "SMS not sent: AT_API_KEY or AT_USERNAME is not set.");
+    if (wa) notes.push("WhatsApp link ready.");
+  } else if (wantPhone) {
+    notes.push("No phone number on this run.");
   }
-  return { emailed, sms, ...(wa ? { whatsapp: wa } : {}) };
+  return { emailed, sms, ...(wa ? { whatsapp: wa } : {}), note: notes.join(" ") || "Nothing to send." };
 }
