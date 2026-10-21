@@ -6,7 +6,6 @@ import { CONCEPT_A, type ConceptVariant } from "@/components/brand/conceptA";
 import { CONCEPT_A_MOTION, ConceptALockup, ConceptAMark } from "@/components/brand/ConceptAMark";
 import { CONCEPT_B, type ConceptBVariant } from "@/components/brand/conceptB";
 import { CONCEPT_B_MOTION, ConceptBLockup, ConceptBMark } from "@/components/brand/ConceptBMark";
-import { FINAL_MARK } from "@/components/brand/finalMark";
 import { FINAL_MOTION, FinalLockup, FinalMark } from "@/components/brand/FinalMark";
 import { ARTISTIC_PATHS } from "@/components/brand/artisticPaths";
 import { ArtisticMark } from "@/components/brand/artisticMarks";
@@ -26,6 +25,20 @@ export const metadata: Metadata = {
 
 const SMALL = [16, 32, 64] as const;
 const EARLIER_SIZES = [16, 32, 64, 128] as const;
+
+const FINAL_FILES = [
+  ["icon", "final-icon.svg"],
+  ["animated", "final-animated.svg"],
+  ["horizontal dark", "final-horizontal-dark.svg"],
+  ["horizontal light", "final-horizontal-light.svg"],
+  ["stacked dark", "final-stacked-dark.svg"],
+  ["stacked light", "final-stacked-light.svg"],
+] as const;
+
+const FIELD: CSSProperties = {
+  background: "#1E0A32",
+  color: "#f6f3ff",
+};
 
 const PURPLE: CSSProperties = {
   background: "#16082e",
@@ -64,9 +77,9 @@ export default function LogoOptionsPage() {
           Logo options
         </h1>
         <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted">
-          The final candidate traces the chosen starburst study: the same spiral lighthouse, the same
-          violet-to-mint gradient, a short teal glow at the lantern, and a two-curl wave. Earlier
-          studies stay below. The live mark is unchanged.
+          The final candidate is the approved auto-trace of the chosen study, cropped to the lighthouse
+          and wave. The dark field is transparent, and a soft teal blur brings the lantern glow back.
+          Earlier studies stay below. The live mark is unchanged.
         </p>
 
         <style>{FINAL_MOTION}</style>
@@ -75,19 +88,15 @@ export default function LogoOptionsPage() {
         <section id="final-candidate" className="mt-10">
           <h2 className="font-display text-xl font-semibold text-heading">Final candidate</h2>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">
-            Spiral stripes, a short teal starburst, and the two-curl wave, drawn to the chosen study.
-            On the large mark the starburst pulses and twinkles, and the wave shimmers. The motion
-            stays still when reduced motion is preferred.
+            Every shape is a path from the auto-trace. On the large mark the lantern glow and starburst
+            pulse, and the wave shimmers. The motion stays still when reduced motion is preferred.
           </p>
           <p className="mt-3 text-xs text-muted">
-            {CONCEPT_FILES.map((file, index) => (
+            {FINAL_FILES.map(([label, file], index) => (
               <span key={file}>
                 {index > 0 ? " · " : null}
-                <Link
-                  href={`/logo-options/final-${file}.svg`}
-                  className="text-accent underline-offset-2 hover:underline"
-                >
-                  {file}
+                <Link href={`/logo-options/${file}`} className="text-accent underline-offset-2 hover:underline">
+                  {label}
                 </Link>
               </span>
             ))}
@@ -95,7 +104,7 @@ export default function LogoOptionsPage() {
           <div id="final-compare" className="mt-4 grid gap-3 lg:grid-cols-2">
             <div
               className="flex flex-col items-center rounded-[var(--radius-md)] px-4 py-5"
-              style={{ background: "#1a0a3c", color: "#f6f3ff" }}
+              style={FIELD}
             >
               <p className="self-start text-[10px] font-semibold uppercase tracking-[0.16em] opacity-70">
                 Source
@@ -110,55 +119,45 @@ export default function LogoOptionsPage() {
             </div>
             <div
               className="flex flex-col items-center rounded-[var(--radius-md)] px-4 py-5"
-              style={{ background: "#1a0a3c", color: "#f6f3ff" }}
+              style={FIELD}
             >
               <p className="self-start text-[10px] font-semibold uppercase tracking-[0.16em] opacity-70">
                 Vector
               </p>
-              <FinalMark size={420} animated className="mt-3" />
-            </div>
-          </div>
-          <div className="mt-3 grid gap-3 sm:grid-cols-2">
-            <FinalFlat label="Flat on purple" style={PURPLE} />
-            <FinalFlat label="Flat on teal" style={TEAL} />
-          </div>
-          <div className="mt-3 grid gap-3 sm:grid-cols-2">
-            <div className="rounded-[var(--radius-md)] px-3 py-3" style={PURPLE}>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] opacity-70">Favicon</p>
-              <div className="mt-3 flex items-end justify-between gap-2">
-                {SMALL.map((size) => (
-                  <div key={size} className="flex flex-col items-center gap-1">
-                    <FinalFavicon size={size} />
-                    <span className="text-[10px] tabular-nums opacity-70">{size}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="rounded-[var(--radius-md)] px-3 py-3" style={TEAL}>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] opacity-70">
-                Favicon on teal
-              </p>
-              <div className="mt-3 flex items-end justify-between gap-2">
-                {SMALL.map((size) => (
-                  <div key={size} className="flex flex-col items-center gap-1">
-                    <FinalFavicon size={size} />
-                    <span className="text-[10px] tabular-nums opacity-70">{size}</span>
-                  </div>
-                ))}
-              </div>
+              <FinalMark size={400} animated className="mt-3" />
             </div>
           </div>
           <div className="mt-3 grid gap-3 lg:grid-cols-2">
-            <div className="rounded-[var(--radius-md)] px-4 py-4" style={PURPLE}>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] opacity-70">Horizontal</p>
+            <div className="rounded-[var(--radius-md)] px-4 py-4" style={FIELD}>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] opacity-70">
+                Horizontal, dark
+              </p>
               <div className="mt-3">
                 <FinalLockup layout="horizontal" markSize={112} wordmarkClassName={wordmark.className} />
               </div>
             </div>
             <div className="rounded-[var(--radius-md)] px-4 py-4" style={TEAL}>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] opacity-70">Stacked</p>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] opacity-70">
+                Horizontal, light
+              </p>
+              <div className="mt-3">
+                <FinalLockup layout="horizontal" markSize={112} wordmarkClassName={wordmark.className} />
+              </div>
+            </div>
+            <div className="rounded-[var(--radius-md)] px-4 py-4" style={FIELD}>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] opacity-70">
+                Stacked, dark
+              </p>
               <div className="mt-3 flex justify-center">
-                <FinalLockup layout="stacked" markSize={140} wordmarkClassName={wordmark.className} />
+                <FinalLockup layout="stacked" markSize={150} wordmarkClassName={wordmark.className} />
+              </div>
+            </div>
+            <div className="rounded-[var(--radius-md)] px-4 py-4" style={TEAL}>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] opacity-70">
+                Stacked, light
+              </p>
+              <div className="mt-3 flex justify-center">
+                <FinalLockup layout="stacked" markSize={150} wordmarkClassName={wordmark.className} />
               </div>
             </div>
           </div>
@@ -394,36 +393,6 @@ export default function LogoOptionsPage() {
             ))}
           </div>
         </section>
-      </div>
-    </div>
-  );
-}
-
-function FinalFavicon({ size }: { size: number }) {
-  return (
-    <svg width={size} height={size} viewBox="40 40 400 400" aria-hidden>
-      <rect x="40" y="40" width="400" height="400" rx="72" fill="#1a0a3c" />
-      <path d={FINAL_MARK.solid} fill="#f3eefe" />
-      <path d={FINAL_MARK.wave} fill="#2ed9c4" />
-      <path d={FINAL_MARK.window} fill="#ffffff" />
-      {FINAL_MARK.rays.map((d, index) => (
-        <path key={index} d={d} fill="#bffff6" />
-      ))}
-    </svg>
-  );
-}
-
-function FinalFlat({ label, style }: { label: string; style: CSSProperties }) {
-  return (
-    <div className="rounded-[var(--radius-md)] px-3 py-3" style={style}>
-      <p className="text-[10px] font-semibold uppercase tracking-[0.16em] opacity-70">{label}</p>
-      <div className="mt-3 flex items-end justify-between gap-2">
-        {SMALL.map((size) => (
-          <div key={size} className="flex flex-col items-center gap-1">
-            <FinalMark size={size} tone="flat" />
-            <span className="text-[10px] tabular-nums opacity-70">{size}</span>
-          </div>
-        ))}
       </div>
     </div>
   );
