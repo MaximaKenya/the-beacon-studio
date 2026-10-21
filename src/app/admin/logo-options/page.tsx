@@ -1,18 +1,37 @@
 import type { CSSProperties } from "react";
 import type { Metadata } from "next";
+import { Fraunces } from "next/font/google";
 import Link from "next/link";
+import { CONCEPT_A, type ConceptVariant } from "@/components/brand/conceptA";
+import { CONCEPT_A_MOTION, ConceptALockup, ConceptAMark } from "@/components/brand/ConceptAMark";
 import { ARTISTIC_PATHS } from "@/components/brand/artisticPaths";
 import { ArtisticMark } from "@/components/brand/artisticMarks";
 import { LOGO_OPTIONS } from "@/components/brand/logoOptions";
 
+const wordmark = Fraunces({
+  subsets: ["latin"],
+  display: "swap",
+  axes: ["SOFT", "WONK", "opsz"],
+});
+
 export const metadata: Metadata = {
   title: "Logo options",
-  description: "Artistic mark studies for The Beacon Studio. The live mark is unchanged.",
+  description: "Concept A lighthouse studies for The Beacon Studio. The live mark is unchanged.",
   robots: { index: false, follow: false },
 };
 
 const SMALL = [16, 32, 64] as const;
 const EARLIER_SIZES = [16, 32, 64, 128] as const;
+
+const PURPLE: CSSProperties = {
+  background: "#16082e",
+  color: "#f6f3ff",
+};
+
+const TEAL: CSSProperties = {
+  background: "#e5f7f4",
+  color: "#14312e",
+};
 
 const DARK: CSSProperties = {
   background: "#140e24",
@@ -30,6 +49,8 @@ const LIGHT: CSSProperties = {
   ["--mark-grad-to" as string]: "#7ecfc4",
 };
 
+const CONCEPT_FILES = ["icon", "horizontal", "stacked", "flat", "favicon", "animated"] as const;
+
 export default function LogoOptionsPage() {
   return (
     <div className="px-4 pb-16 pt-20 sm:px-6 lg:px-8">
@@ -39,13 +60,86 @@ export default function LogoOptionsPage() {
           Logo options
         </h1>
         <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted">
-          Six artistic studies. Each is one gesture — a stroke, a spiral, a ripple — drawn with a
-          changing weight. The large marks use a brand gradient. The small row is the flat
-          single-color version, the one a favicon would use. The mark on the live site stays as it
-          is until one of these is chosen.
+          Concept A is the flowing lighthouse with one open beam. The five variations below keep
+          that drawing and change the weight, the lantern, the beam, and the wave. The live mark
+          stays as it is until one of these is chosen.
         </p>
 
-        <section id="artistic-studies" className="mt-10">
+        <style>{CONCEPT_A_MOTION}</style>
+        <section id="concept-a" className="mt-10">
+          <h2 className="font-display text-xl font-semibold text-heading">Concept A</h2>
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">
+            Violet to teal, on deep purple. The horizontal ray is shorter than the original study.
+            On the large marks the lantern fades in, the beam draws, and both keep a quiet pulse.
+          </p>
+          <div className="mt-5 flex flex-col gap-8">
+            {CONCEPT_A.map((variant) => (
+              <article
+                key={variant.id}
+                className="rounded-[var(--radius-lg)] border border-border bg-surface p-4 sm:p-5"
+              >
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-accent">
+                  {variant.id.toUpperCase()}
+                </p>
+                <h3 className="mt-1 font-display text-2xl font-semibold tracking-tight text-heading">
+                  {variant.name}
+                </h3>
+                <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted">{variant.story}</p>
+                <p className="mt-3 text-xs text-muted">
+                  {CONCEPT_FILES.map((file, index) => (
+                    <span key={file}>
+                      {index > 0 ? " · " : null}
+                      <Link
+                        href={`/logo-options/${variant.id}-${file}.svg`}
+                        className="text-accent underline-offset-2 hover:underline"
+                      >
+                        {file}
+                      </Link>
+                    </span>
+                  ))}
+                </p>
+                <div className="mt-4 grid gap-3 lg:grid-cols-2">
+                  <ConceptHero label="Dark purple" style={PURPLE} variant={variant} />
+                  <ConceptHero label="Light teal" style={TEAL} variant={variant} />
+                </div>
+                <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                  <ConceptFlat label="Flat on purple" style={PURPLE} variant={variant} />
+                  <ConceptFlat label="Flat on teal" style={TEAL} variant={variant} />
+                </div>
+                <div className="mt-3 grid gap-3 lg:grid-cols-2">
+                  <div className="rounded-[var(--radius-md)] px-4 py-4" style={PURPLE}>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.16em] opacity-70">
+                      Horizontal
+                    </p>
+                    <div className="mt-3">
+                      <ConceptALockup
+                        variant={variant}
+                        layout="horizontal"
+                        markSize={96}
+                        wordmarkClassName={wordmark.className}
+                      />
+                    </div>
+                  </div>
+                  <div className="rounded-[var(--radius-md)] px-4 py-4" style={TEAL}>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.16em] opacity-70">
+                      Stacked
+                    </p>
+                    <div className="mt-3 flex justify-center">
+                      <ConceptALockup
+                        variant={variant}
+                        layout="stacked"
+                        markSize={120}
+                        wordmarkClassName={wordmark.className}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section id="artistic-studies" className="mt-14">
           <h2 className="font-display text-xl font-semibold text-heading">Artistic studies</h2>
           <div className="mt-5 flex flex-col gap-8">
             {ARTISTIC_PATHS.map((mark) => (
@@ -128,6 +222,49 @@ export default function LogoOptionsPage() {
             ))}
           </div>
         </section>
+      </div>
+    </div>
+  );
+}
+
+function ConceptHero({
+  label,
+  style,
+  variant,
+}: {
+  label: string;
+  style: CSSProperties;
+  variant: ConceptVariant;
+}) {
+  return (
+    <div className="flex flex-col items-center rounded-[var(--radius-md)] px-4 py-5" style={style}>
+      <p className="self-start text-[10px] font-semibold uppercase tracking-[0.16em] opacity-70">
+        {label}
+      </p>
+      <ConceptAMark variant={variant} size={280} animated className="mt-2" />
+    </div>
+  );
+}
+
+function ConceptFlat({
+  label,
+  style,
+  variant,
+}: {
+  label: string;
+  style: CSSProperties;
+  variant: ConceptVariant;
+}) {
+  return (
+    <div className="rounded-[var(--radius-md)] px-3 py-3" style={style}>
+      <p className="text-[10px] font-semibold uppercase tracking-[0.16em] opacity-70">{label}</p>
+      <div className="mt-3 flex items-end justify-between gap-2">
+        {SMALL.map((size) => (
+          <div key={size} className="flex flex-col items-center gap-1">
+            <ConceptAMark variant={variant} size={size} tone="flat" />
+            <span className="text-[10px] tabular-nums opacity-70">{size}</span>
+          </div>
+        ))}
       </div>
     </div>
   );

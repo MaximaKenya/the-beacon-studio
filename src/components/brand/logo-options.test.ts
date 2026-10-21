@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 import { ARTISTIC_PATHS } from "./artisticPaths";
+import { CONCEPT_A } from "./conceptA";
 import { badge, geometric, monoline, striped } from "./logoOptionPaths";
 
 const files = {
@@ -39,6 +40,42 @@ describe("logo option svg files", () => {
     assert.equal(svg.match(/id="beam"/g)?.length, 1);
     assert.ok(svg.includes(geometric.beam));
     assert.doesNotMatch(svg, /<image\b/);
+  });
+});
+
+describe("concept A logo family", () => {
+  it("exports icon, lockups, flat, favicon, and an animated svg for each variation", () => {
+    assert.equal(CONCEPT_A.length, 5);
+    const kinds = ["icon", "horizontal", "stacked", "flat", "favicon", "animated"] as const;
+    for (const mark of CONCEPT_A) {
+      assert.match(mark.id, /^a[1-5]$/);
+      assert.ok(mark.tower.includes("M"));
+      assert.ok(mark.beam.length > 20);
+      assert.ok(mark.wave.length > 20);
+      for (const kind of kinds) {
+        const svg = readFileSync(`public/logo-options/${mark.id}-${kind}.svg`, "utf8");
+        assert.match(svg, /<svg\b/);
+        assert.doesNotMatch(svg, /<image\b/);
+        assert.ok(svg.includes(kind === "favicon" ? mark.solid : mark.beam), `${mark.id}-${kind}`);
+      }
+      const icon = readFileSync(`public/logo-options/${mark.id}-icon.svg`, "utf8");
+      assert.match(icon, /#e2d2ff/);
+      assert.match(icon, /#3ed6c6/);
+      const flat = readFileSync(`public/logo-options/${mark.id}-flat.svg`, "utf8");
+      assert.match(flat, /currentColor/);
+      assert.doesNotMatch(flat, /linearGradient/);
+      const horizontal = readFileSync(`public/logo-options/${mark.id}-horizontal.svg`, "utf8");
+      const stacked = readFileSync(`public/logo-options/${mark.id}-stacked.svg`, "utf8");
+      assert.match(horizontal, /currentColor/);
+      assert.match(stacked, /currentColor/);
+      const animated = readFileSync(`public/logo-options/${mark.id}-animated.svg`, "utf8");
+      assert.match(animated, /prefers-reduced-motion/);
+      assert.match(animated, /concept-a-beam/);
+      assert.match(animated, /concept-a-glow/);
+      const favicon = readFileSync(`public/logo-options/${mark.id}-favicon.svg`, "utf8");
+      assert.match(favicon, /viewBox="0 0 320 320"/);
+      assert.match(favicon, /#16082e/);
+    }
   });
 });
 
