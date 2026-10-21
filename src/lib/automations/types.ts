@@ -69,7 +69,8 @@ export type AutomationJob = {
   id: string;
   instanceId: string;
   runAt: string;
-  status: "due" | "done" | "cancelled";
+  status: "due" | "running" | "done" | "cancelled";
+  claimedAt?: string;
   kind: string;
   chargeId?: string;
   bookingId?: string;

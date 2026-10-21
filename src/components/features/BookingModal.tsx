@@ -27,6 +27,8 @@ import {
   isDayAvailable,
   type BookedSlot,
 } from "@/lib/booking-utils";
+import { rememberBookingDraft } from "@/lib/booking-draft-client";
+import { VisitorTimeZone } from "@/components/booking/VisitorTimeZone";
 import { trackEvent } from "@/lib/analytics";
 import { readStoredAttribution } from "@/lib/attribution-client";
 import { fetchWithTimeout, FetchTimeoutError } from "@/lib/fetch-with-timeout";
@@ -112,6 +114,19 @@ export function BookingModal() {
     if (!selectedDate) return [];
     return generateTimeSlots(selectedDate, booked, slotDuration);
   }, [selectedDate, booked, slotDuration]);
+
+  useEffect(() => {
+    if (!bookingOpen) return;
+    rememberBookingDraft({
+      email,
+      name,
+      phone,
+      meetingType,
+      date: selectedDate || "",
+      time: selectedTime || "",
+      source: "booking-modal",
+    });
+  }, [bookingOpen, email, name, phone, meetingType, selectedDate, selectedTime]);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -312,6 +327,20 @@ export function BookingModal() {
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
+                      onBlur={() =>
+                        rememberBookingDraft(
+                          {
+                            email,
+                            name,
+                            phone,
+                            meetingType,
+                            date: selectedDate || "",
+                            time: selectedTime || "",
+                            source: "booking-modal",
+                          },
+                          true
+                        )
+                      }
                       className="w-full rounded-xl border border-border bg-surface px-4 py-2.5 text-sm text-foreground placeholder:text-muted focus:border-accent/50 focus:outline-none focus:ring-2 focus:ring-accent/20"
                     />
                   </div>
@@ -373,6 +402,8 @@ export function BookingModal() {
                 </form>
               ) : (
                 <>
+                  <VisitorTimeZone date={selectedDate ?? undefined} time={selectedTime ?? undefined} />
+
                   {siteConfig.booking.meetingTypes.length > 1 && (
                     <div className="mb-4 flex flex-wrap gap-2">
                       {siteConfig.booking.meetingTypes.map((type) => (

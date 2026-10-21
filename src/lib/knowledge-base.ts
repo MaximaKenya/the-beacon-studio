@@ -434,7 +434,7 @@ function buildReply(intent: Intent): string {
         : `Email ${email} or [Book a Call](/#book) to start a project with ${brand.name}.`;
 
     case "portal":
-      return `Clients track progress, docs, messages, and ready-made automations in the **client portal**. Sign in at [Portal login](/portal/login) with a one-time code (emailed when Resend is configured, otherwise shown on-screen). Submit a project intake first if you don't have an account yet — [Start a Project](/#services). Automations: [buffet](/automations).`;
+      return `Clients track progress, docs, messages, and ready-made automations in the **client portal**. Sign in at [Portal login](/portal/login) with a single-use email link. The same email includes a one-time code if the link does not open (shown on-screen when email delivery is not configured). Submit a project intake first if you don't have an account yet — [Start a Project](/#services). Automations: [buffet](/automations).`;
 
     case "faq":
       return `Top answers from our FAQ:\n\n${formatFaq()}\n\nMore at [FAQ](/#faq).`;

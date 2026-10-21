@@ -1,6 +1,8 @@
-import { readBookings, sendBookingClientEmail, writeBookings, type BookingMailKind, type ClientBooking } from "@/lib/booking-mail";
+import { BOOKING_FILE, readBookings, sendBookingClientEmail, type BookingMailKind, type ClientBooking } from "@/lib/booking-mail";
 import { nairobiStart } from "@/lib/booking-calendar";
 import { durationForMeeting } from "@/lib/booking-utils";
+import { mutateJsonFile } from "@/lib/storage";
+import { claimIsFresh } from "@/lib/tick-claim";
 
 const HOUR = 60 * 60 * 1000;
 const SKIP = new Set(["declined", "cancelled", "closed"]);
@@ -30,24 +32,47 @@ export function reminderKind(
   return null;
 }
 
+function claimKey(kind: "reminder-24h" | "reminder-1h" | "follow-up"): "reminder24ClaimAt" | "reminder1ClaimAt" | "followUpClaimAt" {
+  if (kind === "reminder-24h") return "reminder24ClaimAt";
+  if (kind === "reminder-1h") return "reminder1ClaimAt";
+  return "followUpClaimAt";
+}
+
+function markSent(booking: ClientBooking, kind: "reminder-24h" | "reminder-1h" | "follow-up", stamp: string) {
+  if (kind === "reminder-24h") booking.reminder24SentAt = stamp;
+  if (kind === "reminder-1h") booking.reminder1SentAt = stamp;
+  if (kind === "follow-up") booking.followUpSentAt = stamp;
+}
+
 export async function runBookingReminders(now = new Date()): Promise<{ sent: number; due: number }> {
   const rows = await readBookings();
   let sent = 0;
   let due = 0;
-  let changed = false;
   const stamp = now.toISOString();
   for (const booking of rows) {
     const kind = reminderKind(booking, now.getTime());
     if (!kind || !booking.id) continue;
     due += 1;
-    const result = await sendBookingClientEmail(booking, kind, undefined, `booking-${kind}/${booking.id}`);
+    const id = booking.id;
+    let claimed = false;
+    await mutateJsonFile<ClientBooking[]>(BOOKING_FILE, [], (current) => {
+      claimed = false;
+      const row = current.find((item) => item.id === id);
+      if (!row || reminderKind(row, now.getTime()) !== kind) return current;
+      if (claimIsFresh(row[claimKey(kind)], now.getTime())) return current;
+      row[claimKey(kind)] = stamp;
+      claimed = true;
+      return current;
+    });
+    if (!claimed) continue;
+    const result = await sendBookingClientEmail(booking, kind, undefined, `booking-${kind}/${id}`);
     if (!result.emailed) continue;
-    if (kind === "reminder-24h") booking.reminder24SentAt = stamp;
-    if (kind === "reminder-1h") booking.reminder1SentAt = stamp;
-    if (kind === "follow-up") booking.followUpSentAt = stamp;
-    changed = true;
+    await mutateJsonFile<ClientBooking[]>(BOOKING_FILE, [], (current) => {
+      const row = current.find((item) => item.id === id);
+      if (row) markSent(row, kind, stamp);
+      return current;
+    });
     sent += 1;
   }
-  if (changed) await writeBookings(rows);
   return { sent, due };
 }

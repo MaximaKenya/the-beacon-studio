@@ -13,6 +13,8 @@ import {
   isDayAvailable,
   type BookedSlot,
 } from "@/lib/booking-utils";
+import { rememberBookingDraft } from "@/lib/booking-draft-client";
+import { VisitorTimeZone } from "@/components/booking/VisitorTimeZone";
 
 const AUDIT_ID = "automation-audit";
 
@@ -54,6 +56,18 @@ export function AuditBooking() {
   }, [booked, duration]);
 
   const slots = date ? generateTimeSlots(date, booked, duration) : [];
+
+  useEffect(() => {
+    rememberBookingDraft({
+      email,
+      name,
+      phone,
+      meetingType: AUDIT_ID,
+      date,
+      time,
+      source: "audit-booking",
+    });
+  }, [email, name, phone, date, time]);
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
@@ -117,6 +131,7 @@ export function AuditBooking() {
       <p className="mt-2 text-sm text-muted">
         {siteConfig.booking.hoursStart}–{siteConfig.booking.hoursEnd}, weekdays, {getTimezoneLabel()}.
       </p>
+      <VisitorTimeZone date={date} time={time} />
 
       <fieldset className="mt-6">
         <legend className="text-sm font-medium text-foreground">Day</legend>
@@ -183,6 +198,12 @@ export function AuditBooking() {
             autoComplete="email"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
+            onBlur={() =>
+              rememberBookingDraft(
+                { email, name, phone, meetingType: AUDIT_ID, date, time, source: "audit-booking" },
+                true
+              )
+            }
             className="field mt-2 w-full px-4 py-3"
           />
         </label>

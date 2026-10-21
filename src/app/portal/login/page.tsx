@@ -21,10 +21,13 @@ function LoginForm() {
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [issuedCode, setIssuedCode] = useState<string | null>(null);
+  const [magicPath, setMagicPath] = useState<string | null>(null);
   const [emailConfigured, setEmailConfigured] = useState(false);
   const [step, setStep] = useState<"email" | "code">("email");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const magicInvalid = search.get("magic") === "invalid";
 
   useEffect(() => {
     const token = search.get("token");
@@ -65,17 +68,19 @@ function LoginForm() {
     const data = await parseResponseJson<{
       error?: string;
       code?: string;
+      magicPath?: string;
       emailConfigured?: boolean;
     }>(res, {});
     setBusy(false);
     if (!res.ok) {
-      setError(data.error || "Could not send code.");
+      setError(data.error || "Could not send the sign-in link.");
       return;
     }
     const configured = Boolean(data.emailConfigured);
     const onScreen = typeof data.code === "string" ? data.code : null;
     setEmailConfigured(configured);
     setIssuedCode(onScreen);
+    setMagicPath(typeof data.magicPath === "string" ? data.magicPath : null);
     if (onScreen) setCode(onScreen);
     setStep("code");
   }
@@ -115,11 +120,11 @@ function LoginForm() {
           Client portal
         </h1>
         <p className="mt-2 text-sm text-muted">
-          Sign in with the email you used to contact us. We&apos;ll issue a one-time code.
+          We email a link that works once. The same email has a code if the link does not open.
         </p>
       </div>
 
-      <div className="rounded-2xl border border-border bg-surface/70 p-6 shadow-sm">
+      <div className="sleek-card rounded-3xl p-6">
         {step === "email" ? (
           <form onSubmit={requestCode} className="space-y-4">
             <div>
@@ -139,9 +144,10 @@ function LoginForm() {
                 />
               </div>
             </div>
-            {error && (
+            {(error || magicInvalid) && (
               <p className="text-sm text-accent-warm" role="alert">
-                {error}
+                {error ||
+                  "That sign-in link was already used or has expired. Request a new link, or use the code from the same email."}
               </p>
             )}
             <button
@@ -150,7 +156,7 @@ function LoginForm() {
               className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-accent text-sm font-semibold text-background hover:bg-accent-hover disabled:opacity-60"
             >
               {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-              Get one-time code
+              Email me a sign-in link
             </button>
           </form>
         ) : (
@@ -173,6 +179,15 @@ function LoginForm() {
               </div>
             )}
 
+            {magicPath && (
+              <a
+                href={magicPath}
+                className="inline-flex h-11 w-full items-center justify-center rounded-xl bg-accent text-sm font-semibold text-background"
+              >
+                Open the sign-in link
+              </a>
+            )}
+
             {issuedCode && (
               <div
                 className="rounded-2xl border-2 border-accent/40 bg-accent/10 px-4 py-4 text-center"
@@ -191,14 +206,14 @@ function LoginForm() {
             )}
 
             {emailConfigured && !issuedCode && (
-              <p className="rounded-2xl border border-border bg-background/40 px-3 py-2.5 text-sm text-muted">
-                Check your inbox for the one-time code (also check spam).
+              <p className="sleek-card rounded-2xl px-3 py-2.5 text-sm text-muted">
+                Check your inbox for the sign-in link. The same email includes a code if the link does not open.
               </p>
             )}
 
             <div>
-              <label htmlFor="portal-code" className="mb-1.5 block text-xs text-muted">
-                One-time code
+                <label htmlFor="portal-code" className="mb-1.5 block text-xs text-muted">
+                Code, if you need it
               </label>
               <div className="relative">
                 <KeyRound className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />

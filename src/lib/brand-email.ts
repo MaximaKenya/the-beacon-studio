@@ -12,6 +12,8 @@ export type BrandEmailInput = {
   card?: BrandEmailRow[];
   actions?: BrandEmailAction[];
   unsubscribeUrl?: string;
+  /** Text after the Unsubscribe link. Defaults to the booking follow-up line. */
+  unsubscribeNote?: string;
 };
 
 export function publicSiteUrl(): string {
@@ -62,8 +64,9 @@ export function renderBrandEmail(input: BrandEmailInput): { html: string; text: 
     .join("");
   const actions = (input.actions || []).map(button).join("");
   const card = input.card?.length ? cardTable(input.card) : "";
+  const unsubNote = input.unsubscribeNote || "from follow-ups about this call.";
   const unsub = input.unsubscribeUrl
-    ? `<p class="email-muted" style="margin:10px 0 0;font-size:12px;line-height:1.5;color:#5c6b73;"><a href="${escapeHtml(input.unsubscribeUrl)}" class="email-link" style="color:#0c6e64;">Unsubscribe</a> from follow-ups about this call.</p>`
+    ? `<p class="email-muted" style="margin:10px 0 0;font-size:12px;line-height:1.5;color:#5c6b73;"><a href="${escapeHtml(input.unsubscribeUrl)}" class="email-link" style="color:#0c6e64;">Unsubscribe</a> ${escapeHtml(unsubNote)}</p>`
     : "";
   const text = [
     preview,

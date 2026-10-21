@@ -9,6 +9,11 @@ export type IllustrativeExample = {
   figure: string;
 };
 
+export type LocalWorkflow = {
+  title: string;
+  steps: { title: string; detail: string }[];
+};
+
 export type SeoLanding = {
   slug: string;
   path: string;
@@ -24,6 +29,8 @@ export type SeoLanding = {
   templateIds: string[];
   exampleId: string;
   faqs: FaqItem[];
+  /** The workflow we install. A studio method, not a client result. */
+  workflow?: LocalWorkflow;
 };
 
 export const illustrativeExamples: IllustrativeExample[] = [
@@ -66,6 +73,14 @@ export const illustrativeExamples: IllustrativeExample[] = [
     before: "Orders arrive in a personal WhatsApp chat and stock is counted at closing.",
     after: "Common order questions get a reply. A daily check emails items at the reorder level.",
     figure: "Example shape: the counter is not the only place an order can land.",
+  },
+  {
+    id: "restaurant",
+    industry: "Restaurant",
+    title: "Lunch service on WhatsApp",
+    before: "The host answers “what’s for lunch?” between seating tables.",
+    after: "The day’s plates, including what sold out, go out as a reply. A table booking gets a reminder the afternoon before.",
+    figure: "Example shape: the floor keeps seating. The repeated question does not.",
   },
 ];
 
@@ -412,6 +427,23 @@ export const industryLandings: SeoLanding[] = [
     fit: ["Letting agents", "Landlords with several units", "Agencies"],
     templateIds: ["lead-reply", "rent-collection", "maintenance", "appointments"],
     exampleId: "estate",
+    workflow: {
+      title: "A Kilimani listing enquiry, then the rent pass",
+      steps: [
+        {
+          title: "The enquiry",
+          detail: "A WhatsApp or form question about a listing gets the price, the viewing days, and three questions: budget, move date, and beds.",
+        },
+        {
+          title: "The lead list",
+          detail: "The answers land in one list for the agent. Viewings, keys, and negotiations stay with the agent.",
+        },
+        {
+          title: "The rent pass",
+          detail: "On the 25th, tenants with a balance get the amount and an M-Pesa pay link. A payment that day takes them off the list.",
+        },
+      ],
+    },
     faqs: [
       {
         id: "re-1",
@@ -451,6 +483,23 @@ export const industryLandings: SeoLanding[] = [
     fit: ["Schools", "Academies", "Training centres"],
     templateIds: ["school-fees", "lead-reply", "faq-bot"],
     exampleId: "school",
+    workflow: {
+      title: "Fee week from the bursar’s sheet",
+      steps: [
+        {
+          title: "The sheet",
+          detail: "Student, parent phone, balance, and due date. The office already keeps this list.",
+        },
+        {
+          title: "The reminder",
+          detail: "Three days before the date, each parent gets their own amount and a pay link.",
+        },
+        {
+          title: "The leftover list",
+          detail: "Paid rows drop off. The office calls only the names still there.",
+        },
+      ],
+    },
     faqs: [
       {
         id: "sch-1",
@@ -488,6 +537,23 @@ export const industryLandings: SeoLanding[] = [
     fit: ["Clinics", "Dental", "Optical", "Physiotherapy"],
     templateIds: ["appointments", "clinic-recall", "faq-bot"],
     exampleId: "clinic",
+    workflow: {
+      title: "Tomorrow’s diary, without the afternoon calls",
+      steps: [
+        {
+          title: "The diary",
+          detail: "Reception shares the next day’s name, phone, and time. No diagnosis goes into the automation.",
+        },
+        {
+          title: "The 4pm pass",
+          detail: "Each patient gets a Nairobi-time note: see you tomorrow at 10:30, reply 1 to confirm.",
+        },
+        {
+          title: "The recall",
+          detail: "A return date 90 days out uses the same list. The desk keeps the replies and the visit.",
+        },
+      ],
+    },
     faqs: [
       {
         id: "cl-1",
@@ -525,6 +591,23 @@ export const industryLandings: SeoLanding[] = [
     fit: ["SACCOs", "Microfinance teams", "Chamas with a formal list"],
     templateIds: ["sacco-repayments", "debt-collection", "invoice-reminders"],
     exampleId: "sacco",
+    workflow: {
+      title: "The due list leaves the officer’s phone",
+      steps: [
+        {
+          title: "The export",
+          detail: "Members, balance, and due date. One sheet from the system the SACCO already uses.",
+        },
+        {
+          title: "The morning note",
+          detail: "On the due date, the member gets the amount and the pay link. The wording stays with the studio.",
+        },
+        {
+          title: "The same-day stop",
+          detail: "A payment before the afternoon pass removes that member. Paid balances are not chased twice.",
+        },
+      ],
+    },
     faqs: [
       {
         id: "sa-1",
@@ -562,6 +645,23 @@ export const industryLandings: SeoLanding[] = [
     fit: ["Shops", "Restaurants", "Wholesalers", "Beauty retail"],
     templateIds: ["faq-bot", "low-stock", "reviews", "lead-reply"],
     exampleId: "retail",
+    workflow: {
+      title: "The counter chat and the reorder list",
+      steps: [
+        {
+          title: "The notes",
+          detail: "Sizes, prices, hours, and where the shop is. Written once, from the counter’s own answers.",
+        },
+        {
+          title: "The reply",
+          detail: "“Do you have the 5kg unga?” gets that answer. A person still takes the order.",
+        },
+        {
+          title: "The evening check",
+          detail: "Items at the reorder level arrive in one email, from the sheet the shop already keeps.",
+        },
+      ],
+    },
     faqs: [
       {
         id: "rt-1",
@@ -578,6 +678,60 @@ export const industryLandings: SeoLanding[] = [
         id: "rt-3",
         question: "What does a Kenyan retailer automate first?",
         answer: "Usually the repeated WhatsApp reply, or the stock alert. The free audit picks one.",
+      },
+    ],
+  },
+  {
+    slug: "restaurants",
+    path: "/industries/restaurants",
+    kind: "industry",
+    eyebrow: "Restaurants",
+    title: "AI automation for restaurants in Kenya",
+    description:
+      "Today’s menu on WhatsApp, sold-out plates, and a reminder for table bookings. AI automation for Kenyan restaurants that stays off the pass.",
+    keywords: [...sharedKeywords, "restaurant automation Kenya", "WhatsApp menu Nairobi", "table booking reminders"],
+    intro:
+      "Lunch service should not stop so someone can retype the menu. The reply carries today’s plates. The floor still seats the room.",
+    pains: [
+      "“What’s for lunch?” arrives while the room is being seated.",
+      "A sold-out plate is still offered because the chat was not updated.",
+      "Table bookings are confirmed by a call the same afternoon.",
+    ],
+    fit: ["Restaurants", "Cafés", "Catering counters"],
+    templateIds: ["faq-bot", "appointments", "reviews"],
+    exampleId: "restaurant",
+    workflow: {
+      title: "Lunch service on WhatsApp",
+      steps: [
+        {
+          title: "The board",
+          detail: "Before lunch, the kitchen marks today’s plates and anything that has sold out.",
+        },
+        {
+          title: "The reply",
+          detail: "“What is the lunch plate?” gets the menu and the sold-out note. Orders still come to a person.",
+        },
+        {
+          title: "The table",
+          detail: "A booking gets a reminder the afternoon before, Nairobi time. The floor still seats the room.",
+        },
+      ],
+    },
+    faqs: [
+      {
+        id: "rs-1",
+        question: "Does this take orders and payments?",
+        answer: "It answers from the menu you post. Taking payment and firing a ticket to the kitchen is custom software, quoted after the audit.",
+      },
+      {
+        id: "rs-2",
+        question: "Can the menu change every day?",
+        answer: "Yes. Update the notes before service. The next reply uses the new list, including plates that sold out.",
+      },
+      {
+        id: "rs-3",
+        question: "What should a Nairobi restaurant automate first?",
+        answer: "Usually the lunch reply, or the table reminder. The free 20-minute audit picks one.",
       },
     ],
   },

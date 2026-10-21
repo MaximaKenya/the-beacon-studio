@@ -94,6 +94,12 @@ export async function POST(request: Request) {
 
     bookings.unshift(booking);
     await writeJsonFile("bookings.json", bookings);
+    try {
+      const { completeBookingDrafts } = await import("@/lib/booking-drafts");
+      await completeBookingDrafts(email);
+    } catch (error) {
+      console.error("[book] draft", error instanceof Error ? error.message : "draft failed");
+    }
 
     try {
       const { captureLead } = await import("@/lib/leads");

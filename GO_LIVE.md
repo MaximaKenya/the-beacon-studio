@@ -199,13 +199,25 @@ If a forward URL is unset, the event is logged and not sent. Paystack still gets
 
 The buffet lives at `/automations`. Checkout uses the same Paystack account, always with reference `BS-<id>` and `metadata.app` = `beacon-studio`.
 
-Reminders, digests, and renewals run from `GET` or `POST /api/automations/tick`. The same request also sends booking emails: a reminder about 24 hours before the call, another inside the last hour, and one follow-up after the call. Set `CRON_SECRET`. The Vercel cron in `vercel.json` is once a day, which is too coarse for the 1-hour reminder. On Heroku Scheduler, run this every hour:
+Reminders, digests, and renewals run from `GET` or `POST /api/automations/tick`. The same request also sends booking emails: a reminder about 24 hours before the call, another inside the last hour, one follow-up after the call, and one note when a booking was started and not finished (about 2 hours later, with an unsubscribe link).
+
+### GitHub Actions secret
+
+Add this repository secret under Settings → Secrets and variables → Actions. The name has to be exact:
+
+**`CRON_SECRET`**
+
+Use the same value as the live app's `CRON_SECRET` environment variable. `.github/workflows/automations-tick.yml` reads `secrets.CRON_SECRET` and sends `Authorization: Bearer <that value>` to `POST https://thebeaconstudio.co.ke/api/automations/tick`. The workflow runs at minute 5 of every hour (`5 * * * *`) and can also be started by hand (`workflow_dispatch`). The run fails if the secret is missing. Do not commit the value.
+
+The daily Vercel cron stays in `vercel.json` (`0 6 * * *` on `/api/automations/tick`). Leave it. It is too coarse for the 1-hour reminder on its own. It is safe beside the hourly run: each reminder is claimed before it is sent, and Resend uses a stable idempotency key (`booking-reminder-24h/<id>`, `booking-reminder-1h/<id>`, `booking-followup/<id>`, `booking-abandoned/<id>`), so the two schedules do not send the same email twice.
+
+There is no in-process timer. Heroku Scheduler, if you still use it, can call the same URL:
 
 ```bash
-curl -X POST https://<app>.herokuapp.com/api/automations/tick -H "Authorization: Bearer $CRON_SECRET"
+curl -X POST https://thebeaconstudio.co.ke/api/automations/tick -H "Authorization: Bearer $CRON_SECRET"
 ```
 
-There is no in-process timer. A sleeping Heroku dyno will not send the 1-hour reminder unless Scheduler (or another hourly caller) hits that URL. `RESEND_API_KEY` has to be set or the tick records the booking as still due and tries again next hour.
+`RESEND_API_KEY` has to be set or the tick leaves the reminder unsent and tries again on a later run.
 
 `GROQ_API_KEY` powers qualification, FAQ answers, drafts, and field suggestions. `RESEND_API_KEY` and `RESEND_FROM_EMAIL` send the emails. SMS is optional (`AT_API_KEY`, `AT_USERNAME`, `AT_SENDER_ID`); without them the studio sends email and a `wa.me` link.
 

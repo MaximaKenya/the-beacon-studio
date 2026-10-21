@@ -119,7 +119,7 @@ Pricing section: /#pricing
 - ${beaconGroundingFacts()}
 
 ## Client portal
-- Login: /portal/login (OTP via Resend when configured, else on-screen)
+- Login: /portal/login (single-use email link, one-time code as fallback; code shown on-screen when Resend is unset)
 - Dashboard: /portal
 - Use for progress, documents, messaging, and deposits
 

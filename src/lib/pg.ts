@@ -234,14 +234,28 @@ export async function readDocument(filename: string): Promise<unknown | undefine
   return result.rows[0]?.data;
 }
 
+function enqueue<T>(filename: string, task: () => Promise<T>): Promise<T> {
+  const prev = writeQueues.get(filename) ?? Promise.resolve();
+  let result!: T;
+  const next = prev.catch(() => undefined).then(async () => {
+    result = await task();
+  });
+  writeQueues.set(
+    filename,
+    next.finally(() => {
+      if (writeQueues.get(filename) === next) writeQueues.delete(filename);
+    })
+  );
+  return next.then(() => result);
+}
+
 export async function writeDocument(filename: string, data: unknown): Promise<void> {
   const payload = JSON.stringify(data);
   if (typeof payload !== "string") {
     throw new Error(`Refusing to store non-JSON value for ${filename}`);
   }
 
-  const prev = writeQueues.get(filename) ?? Promise.resolve();
-  const next = prev.catch(() => undefined).then(async () => {
+  await enqueue(filename, async () => {
     await getPool().query(
       `INSERT INTO app_documents (filename, data, updated_at)
        VALUES ($1, $2::json, now())
@@ -251,12 +265,50 @@ export async function writeDocument(filename: string, data: unknown): Promise<vo
       [filename, payload]
     );
   });
+}
 
-  writeQueues.set(
-    filename,
-    next.finally(() => {
-      if (writeQueues.get(filename) === next) writeQueues.delete(filename);
-    })
-  );
-  await next;
+/**
+ * Read-modify-write under a row lock. Overlapping ticks (hourly GitHub Actions
+ * and the daily Vercel cron) cannot both claim the same reminder.
+ */
+export async function mutateDocument<T>(
+  filename: string,
+  fallback: T,
+  mutate: (current: T) => T | Promise<T>
+): Promise<T> {
+  const seed = JSON.stringify(fallback);
+  return enqueue(filename, async () => {
+    const client = await getPool().connect();
+    try {
+      await client.query("BEGIN");
+      await client.query(
+        `INSERT INTO app_documents (filename, data, updated_at)
+         VALUES ($1, $2::json, now())
+         ON CONFLICT (filename) DO NOTHING`,
+        [filename, seed]
+      );
+      const locked = await client.query<{ data: T }>(
+        "SELECT data FROM app_documents WHERE filename = $1 FOR UPDATE",
+        [filename]
+      );
+      const current = locked.rows[0]?.data ?? fallback;
+      const result = await mutate(current);
+      const payload = JSON.stringify(result);
+      await client.query(
+        "UPDATE app_documents SET data = $2::json, updated_at = now() WHERE filename = $1",
+        [filename, payload]
+      );
+      await client.query("COMMIT");
+      return result;
+    } catch (err) {
+      try {
+        await client.query("ROLLBACK");
+      } catch {
+        /* ignore */
+      }
+      throw err;
+    } finally {
+      client.release();
+    }
+  });
 }

@@ -40,6 +40,7 @@ export async function deliver(input: {
   channel?: string;
   /** Send only to the addresses passed in. Used for a studio test of a sandbox run. */
   liveTest?: boolean;
+  idempotencyKey?: string;
 }): Promise<{ emailed: boolean; sms: boolean; whatsapp?: string; note: string }> {
   if (input.instance.demo && !input.liveTest) {
     return {
@@ -65,6 +66,7 @@ export async function deliver(input: {
         subject: input.subject,
         text,
         html: `<p>${escapeHtml(input.text).replace(/\n/g, "<br/>")}</p>`,
+        ...(input.idempotencyKey ? { idempotencyKey: input.idempotencyKey } : {}),
       });
       emailed = result.sent;
       notes.push(result.sent ? "Email sent." : `Email not sent: ${result.error || "Resend rejected it."}`);
