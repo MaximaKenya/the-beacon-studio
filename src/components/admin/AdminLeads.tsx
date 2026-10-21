@@ -18,7 +18,7 @@ import {
   type LeadFilters,
   type LeadStatus,
   type StudioLead,
-} from "@/lib/leads";
+} from "@/lib/lead-model";
 
 const SCORE_OPTIONS = [
   { id: "", label: "Any score" },
