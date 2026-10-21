@@ -4,6 +4,7 @@ import { describe, it } from "node:test";
 import { ARTISTIC_PATHS } from "./artisticPaths";
 import { CONCEPT_A } from "./conceptA";
 import { CONCEPT_B, CONCEPT_B_BASE } from "./conceptB";
+import { FINAL_MARK } from "./finalMark";
 import { badge, geometric, monoline, striped } from "./logoOptionPaths";
 
 const files = {
@@ -137,6 +138,49 @@ describe("concept B logo family", () => {
     assert.ok(CONCEPT_B[1].light.length > 0);
     assert.equal(CONCEPT_B[3].light, "");
     assert.ok(CONCEPT_B[2].extent.maxX > CONCEPT_B[0].extent.maxX);
+  });
+});
+
+describe("final starburst logo", () => {
+  it("exports the traced mark, lockups, a flat mono file, a favicon, and a reduced-motion animation", () => {
+    const kinds = ["icon", "horizontal", "stacked", "flat", "favicon", "animated"] as const;
+    for (const kind of kinds) {
+      const svg = readFileSync(`public/logo-options/final-${kind}.svg`, "utf8");
+      assert.match(svg, /<svg\b/);
+      assert.doesNotMatch(svg, /<image\b/);
+    }
+    const icon = readFileSync("public/logo-options/final-icon.svg", "utf8");
+    assert.match(icon, /#f6f1ff/);
+    assert.match(icon, /#2ed9c4/);
+    assert.match(icon, /#7ef6ea/);
+    assert.ok(icon.includes(FINAL_MARK.tower));
+    assert.ok(icon.includes(FINAL_MARK.wave));
+    assert.ok(icon.includes(FINAL_MARK.window));
+    for (const ray of FINAL_MARK.rays) assert.ok(icon.includes(ray));
+    const flat = readFileSync("public/logo-options/final-flat.svg", "utf8");
+    assert.match(flat, /currentColor/);
+    assert.doesNotMatch(flat, /linearGradient/);
+    assert.ok(flat.includes(FINAL_MARK.wave));
+    const animated = readFileSync("public/logo-options/final-animated.svg", "utf8");
+    assert.match(animated, /prefers-reduced-motion/);
+    assert.match(animated, /final-glow/);
+    assert.match(animated, /final-ray/);
+    assert.match(animated, /final-wave/);
+    assert.match(animated, /final-pulse/);
+    assert.match(animated, /final-twinkle/);
+    assert.match(animated, /final-shimmer/);
+    assert.match(animated, /final-core/);
+    const favicon = readFileSync("public/logo-options/final-favicon.svg", "utf8");
+    assert.match(favicon, /#1a0a3c/);
+    assert.match(favicon, /#2ed9c4/);
+    assert.ok(favicon.includes(FINAL_MARK.solid));
+    assert.doesNotMatch(favicon, /linearGradient/);
+    const horizontal = readFileSync("public/logo-options/final-horizontal.svg", "utf8");
+    const stacked = readFileSync("public/logo-options/final-stacked.svg", "utf8");
+    assert.match(horizontal, /currentColor/);
+    assert.match(stacked, /currentColor/);
+    assert.ok(horizontal.includes(FINAL_MARK.tower));
+    assert.ok(stacked.includes(FINAL_MARK.tower));
   });
 });
 
