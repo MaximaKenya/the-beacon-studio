@@ -8,8 +8,8 @@
       .final-wave { animation: final-shimmer 3.8s ease-in-out infinite; }
     }
     @keyframes final-pulse { 0%, 100% { opacity: 0.15; } 50% { opacity: 1; } }
-    @keyframes final-burst { 0%, 100% { opacity: 0.35; } 50% { opacity: 1; } }
-    @keyframes final-shimmer { 0%, 100% { opacity: 0.45; } 50% { opacity: 1; } }
+    @keyframes final-burst { 0%, 100% { opacity: 0.45; filter: brightness(0.55); } 50% { opacity: 1; filter: brightness(1); } }
+    @keyframes final-shimmer { 0%, 100% { opacity: 0.4; filter: brightness(0.7); } 50% { opacity: 1; filter: brightness(1); } }
   </style>
   <defs>
     <filter id="final-glow-blur" x="-180%" y="-180%" width="460%" height="460%" color-interpolation-filters="sRGB">
