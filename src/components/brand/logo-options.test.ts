@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
+import { ARTISTIC_PATHS } from "./artisticPaths";
 import { badge, geometric, monoline, striped } from "./logoOptionPaths";
 
 const files = {
@@ -38,5 +39,31 @@ describe("logo option svg files", () => {
     assert.equal(svg.match(/id="beam"/g)?.length, 1);
     assert.ok(svg.includes(geometric.beam));
     assert.doesNotMatch(svg, /<image\b/);
+  });
+});
+
+describe("artistic logo studies", () => {
+  it("exports a gradient file and a flat currentColor file for each study", () => {
+    assert.equal(ARTISTIC_PATHS.length, 6);
+    for (const mark of ARTISTIC_PATHS) {
+      assert.ok(mark.name.length > 0, mark.id);
+      assert.ok(mark.story.length > 0, mark.id);
+      assert.ok(mark.paths.length > 0, mark.id);
+      const color = readFileSync(`public/logo-options/${mark.id}.svg`, "utf8");
+      const flat = readFileSync(`public/logo-options/${mark.id}-flat.svg`, "utf8");
+      assert.match(color, /<svg\b/);
+      assert.match(color, /linearGradient/);
+      assert.match(color, /var\(--mark-grad-from, #d4c4f7\)/);
+      assert.match(color, /var\(--mark-grad-to, #45baab\)/);
+      assert.doesNotMatch(color, /<image\b/);
+      assert.match(flat, /<svg\b/);
+      assert.match(flat, /currentColor/);
+      assert.doesNotMatch(flat, /linearGradient/);
+      assert.doesNotMatch(flat, /<image\b/);
+      for (const d of mark.paths) {
+        assert.ok(color.includes(d), mark.id);
+        assert.ok(flat.includes(d), mark.id);
+      }
+    }
   });
 });
