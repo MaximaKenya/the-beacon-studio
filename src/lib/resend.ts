@@ -1,10 +1,11 @@
 /**
  * Resend send helper. Without RESEND_API_KEY, callers keep the local workflow
- * and skip email. The admin mailbox treats the integration as configured only
- * when both RESEND_API_KEY and RESEND_FROM_EMAIL are set.
+ * and skip email. Every send uses EMAIL_FROM, or the verified studio address.
  */
 import { Resend } from "resend";
 import { siteConfig } from "@/data/site";
+
+export const DEFAULT_FROM = "The Beacon Studio <hello@thebeaconstudio.co.ke>";
 
 export type ResendAttachment = {
   filename: string;
@@ -18,9 +19,9 @@ export function isResendConfigured(): boolean {
   return Boolean(process.env.RESEND_API_KEY?.trim());
 }
 
-/** Mailbox send + inbound fetch need a real from-address, not the Resend sandbox. */
+/** Sending needs the API key. The from-address has a default on the verified domain. */
 export function isMailboxConfigured(): boolean {
-  return Boolean(process.env.RESEND_API_KEY?.trim() && process.env.RESEND_FROM_EMAIL?.trim());
+  return isResendConfigured();
 }
 
 export function resendClient(): Resend | null {
@@ -29,15 +30,18 @@ export function resendClient(): Resend | null {
   return new Resend(key);
 }
 
+function configuredFrom(): string {
+  return process.env.EMAIL_FROM?.trim() || DEFAULT_FROM;
+}
+
 export function fromAddress(): string {
-  const raw = process.env.RESEND_FROM_EMAIL?.trim() || "";
+  const raw = configuredFrom();
   const match = raw.match(/<([^>]+)>/);
   return (match ? match[1] : raw).trim().toLowerCase();
 }
 
 export function fromHeader(): string {
-  const raw = process.env.RESEND_FROM_EMAIL?.trim() || "";
-  if (!raw) return `${siteConfig.brand.name} <onboarding@resend.dev>`;
+  const raw = configuredFrom();
   if (raw.includes("<")) return raw;
   return `${siteConfig.brand.name} <${raw}>`;
 }

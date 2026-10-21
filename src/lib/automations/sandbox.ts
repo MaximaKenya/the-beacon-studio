@@ -349,7 +349,7 @@ export async function runSandboxNow(id: string, sendToMe: boolean): Promise<{ ok
   const steps = await previewSandboxInstance(doc, instance, target && (target.email || target.phone) ? target : undefined);
   if (sendToMe) {
     const emailNote = target?.email ? `Email test: ${target.email}.` : "Studio email is still a placeholder, so no test email was sent.";
-    const phoneNote = target?.phone ? `Phone on file: ${siteConfig.phoneDisplay}. SMS sends only when Africa's Talking is configured.` : "No studio phone is set.";
+    const phoneNote = "Africa's Talking is not connected. WhatsApp is not connected. Marketing is not connected.";
     steps.push({
       id: randomUUID(),
       kind: "note",

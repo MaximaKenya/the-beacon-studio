@@ -13,31 +13,20 @@ import {
   verifyPortalToken,
 } from "@/lib/portal-auth";
 import { siteConfig } from "@/data/site";
+import { isResendConfigured, sendResendEmail } from "@/lib/resend";
 
 export const runtime = "nodejs";
 
 async function maybeSendPortalCodeEmail(email: string, code: string): Promise<boolean> {
-  const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) return false;
-  const from = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
-  try {
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from,
-        to: [email],
-        subject: `${siteConfig.brand.name} portal code`,
-        text: `Your one-time portal code is ${code}. It expires in 15 minutes.`,
-      }),
-    });
-    return res.ok;
-  } catch {
-    return false;
-  }
+  if (!isResendConfigured()) return false;
+  const result = await sendResendEmail({
+    to: email,
+    subject: `${siteConfig.brand.name} portal code`,
+    text: `Your one-time portal code is ${code}. It expires in 15 minutes.`,
+    html: `<p>Your one-time portal code is <strong>${code}</strong>. It expires in 15 minutes.</p>`,
+    idempotencyKey: `portal-code/${email}/${code}`,
+  });
+  return result.sent;
 }
 
 /** GET — current session */
@@ -87,7 +76,7 @@ export async function POST(request: Request) {
       );
     }
     const code = await issueOneTimeCode(email);
-    const resendConfigured = Boolean(process.env.RESEND_API_KEY);
+    const resendConfigured = isResendConfigured();
     const emailed = resendConfigured ? await maybeSendPortalCodeEmail(email, code) : false;
     /** Show OTP on-screen when Resend is unset or send failed (local/dev E2E). */
     const showCodeOnScreen = !emailed;

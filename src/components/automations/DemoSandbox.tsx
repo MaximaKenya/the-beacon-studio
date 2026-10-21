@@ -69,8 +69,8 @@ export function DemoSandbox({
   }
 
   const testHint = isPlaceholderContact(siteConfig.email)
-    ? `Send to me uses ${siteConfig.phoneDisplay}. The studio email is not set yet, so no test email goes out.`
-    : `Send to me delivers only to ${siteConfig.email} or ${siteConfig.phoneDisplay}.`;
+    ? "Send to me has no studio email yet. Africa's Talking, WhatsApp, and marketing are not connected."
+    : `Send to me delivers only to ${siteConfig.email}. Africa's Talking, WhatsApp, and marketing are not connected.`;
 
   return (
     <div className="space-y-4">

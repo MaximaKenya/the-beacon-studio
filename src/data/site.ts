@@ -439,8 +439,8 @@ export const siteConfig = {
   tagline: "Products and custom software.",
   bio: `I'm Max, founder of The Beacon Studio. I build software from Nairobi for people anywhere.`,
 
-  /** TODO(go-live): replace email, LinkedIn, and Twitter before public launch */
-  email: "hello@example.com",
+  /** LinkedIn and Twitter are still placeholders and stay off the public pages. */
+  email: "hello@thebeaconstudio.co.ke",
   /** Kenya E.164. tel: links and https://wa.me/254706397373 */
   phone: "+254706397373",
   /** Display form for UI */
@@ -470,7 +470,7 @@ export const siteConfig = {
   heroVideo: "" as string,
 
   seo: {
-    siteUrl: "https://the-beacon-studio-0def818a6eaf.herokuapp.com",
+    siteUrl: "https://thebeaconstudio.co.ke",
     ogImage: "/opengraph-image",
     twitterHandle: "@yourusername",
     title: "The Beacon Studio — Products and custom software",
@@ -532,7 +532,7 @@ export const siteConfig = {
     },
     {
       name: "Email",
-      href: "mailto:hello@example.com",
+      href: "mailto:hello@thebeaconstudio.co.ke",
       icon: "email" as const,
     },
   ] satisfies SocialLink[],

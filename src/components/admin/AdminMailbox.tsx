@@ -270,9 +270,10 @@ export function AdminMailbox() {
 
       {configured === false && (
         <p className="mt-4 rounded-2xl bg-background/50 px-4 py-3 text-sm text-foreground" role="status">
-          Email not configured. Set <span className="font-mono text-xs">RESEND_API_KEY</span>,{" "}
-          <span className="font-mono text-xs">RESEND_FROM_EMAIL</span>, and{" "}
-          <span className="font-mono text-xs">RESEND_WEBHOOK_SECRET</span>. Threads still save here. Sending and inbound mail stay off until those keys exist.
+          Email not configured. Set <span className="font-mono text-xs">RESEND_API_KEY</span>. Mail leaves
+          from The Beacon Studio &lt;hello@thebeaconstudio.co.ke&gt; unless{" "}
+          <span className="font-mono text-xs">EMAIL_FROM</span> is set. Inbound mail also needs{" "}
+          <span className="font-mono text-xs">RESEND_WEBHOOK_SECRET</span>. Threads still save here.
         </p>
       )}
 

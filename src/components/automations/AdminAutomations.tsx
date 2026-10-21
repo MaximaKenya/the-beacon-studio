@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import {
   AutomationDesk,
+  ChannelStatus,
   type DeskCharge,
   type DeskInstance,
   type DeskLead,
@@ -81,6 +82,7 @@ export function AdminAutomations() {
             <Summary label="Paused" value={String(data.paused)} />
             <Summary label="Demos" value={String(data.demos)} />
           </div>
+          {data.channels && <ChannelStatus channels={data.channels} />}
           {data.sandbox && data.sandbox.instances.length > 0 && (
             <DemoSandbox instances={data.sandbox.instances} onChanged={() => void load()} />
           )}
@@ -110,7 +112,6 @@ export function AdminAutomations() {
               leads={selected.leads}
               endpoint="/api/admin/automations"
               canActivate
-              channels={selected.channels}
               onChanged={() => void load()}
             />
           )}

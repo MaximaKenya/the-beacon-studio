@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import {
   AutomationDesk,
+  ChannelStatus,
   type DeskCharge,
   type DeskInstance,
   type DeskLead,
@@ -52,6 +53,7 @@ export function PortalAutomations() {
           Add from the buffet
         </Link>
       </div>
+      {data?.channels && <ChannelStatus channels={data.channels} />}
       {data ? (
         <AutomationDesk
           instances={data.instances}
@@ -59,7 +61,6 @@ export function PortalAutomations() {
           charges={data.charges}
           leads={data.leads}
           endpoint="/api/automations/portal"
-          channels={data.channels}
           onChanged={() => void load()}
         />
       ) : (

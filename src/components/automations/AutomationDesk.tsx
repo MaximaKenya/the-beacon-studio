@@ -66,6 +66,25 @@ export type DeskLead = {
 
 type ActionResult = { ok?: boolean; message?: string; error?: string };
 
+export function ChannelStatus({ channels }: { channels: ChannelReadiness }) {
+  const items = [
+    ["Email", channels.email === "ready" ? "ready" : "not configured"],
+    ["Africa's Talking", channels.sms],
+    ["WhatsApp", channels.whatsapp],
+    ["Marketing", channels.marketing],
+    ["Groq", channels.groq === "ready" ? "ready" : "not configured"],
+  ] as const;
+  return (
+    <ul className="flex flex-wrap gap-2">
+      {items.map(([label, state]) => (
+        <li key={label} className="sleek-card rounded-full px-3 py-1 text-xs text-muted">
+          {label} · {state}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 export function AutomationDesk({
   instances,
   logs,
@@ -73,7 +92,6 @@ export function AutomationDesk({
   leads,
   endpoint,
   canActivate,
-  channels,
   onChanged,
 }: {
   instances: DeskInstance[];
@@ -82,7 +100,6 @@ export function AutomationDesk({
   leads: DeskLead[];
   endpoint: string;
   canActivate?: boolean;
-  channels?: ChannelReadiness;
   onChanged: () => void;
 }) {
   const [openId, setOpenId] = useState<string | null>(instances[0]?.id ?? null);
@@ -120,7 +137,6 @@ export function AutomationDesk({
 
   return (
     <div className="space-y-4">
-      {channels && <p className="text-sm leading-relaxed text-muted">{channels.summary}</p>}
       {notice && <p className="text-sm text-muted">{notice}</p>}
       {instances.map((instance) => {
         const open = openId === instance.id;
