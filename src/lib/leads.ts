@@ -122,7 +122,8 @@ function appendMessage(current: string, incoming: string): string {
   const next = incoming.trim();
   if (!next) return current;
   if (!current.trim()) return next.slice(0, 4000);
-  if (current.includes(next)) return current;
+  const compact = (value: string) => value.replace(/\s+/g, " ").trim();
+  if (compact(current).includes(compact(next))) return current;
   return `${current}\n---\n${next}`.slice(0, 4000);
 }
 

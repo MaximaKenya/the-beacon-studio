@@ -31,9 +31,13 @@ const KENYAN_PHONE_RE = /(?:\+?254|0)[\s.-]?[17]\d{2}[\s.-]?\d{3}[\s.-]?\d{3}\b/
 const INTL_PHONE_RE = /(?:\+\d{1,3}[\s.-]?)?\d(?:[\s().-]*\d){8,14}/g;
 
 const COMPANY_RES = [
-  /\b(?:company|business|organisation|organization|church|school|ngo|sacco)\s*(?:name\s*)?(?:is|:)\s+([A-Za-z0-9][\w&.'’-]{1,40}(?:\s+[A-Za-z0-9][\w&.'’-]{1,40}){0,4})/i,
-  /\b(?:i work at|we work at|we(?:'re| are) (?:from|at|with)|calling from|writing from)\s+([A-Za-z0-9][\w&.'’-]{1,40}(?:\s+[A-Za-z0-9][\w&.'’-]{1,40}){0,3})/i,
-  /\b([A-Z][\w&.'’-]{1,40}(?:\s+[A-Z][\w&.'’-]{1,40}){0,3})\s+(?:Ltd|Limited|Inc|LLC|PLC)\b/,
+  /\b(?:company|business|organisation|organization|church|school|ngo|sacco)\s*(?:name\s*)?(?:is|:)\s+([A-Za-z0-9][\w&'’-]{1,40}(?:\s+[A-Za-z0-9][\w&'’-]{1,40}){0,4})/i,
+  /\b(?:i work at|we work at|we(?:'re| are) (?:from|at|with)|calling from|writing from)\s+([A-Za-z0-9][\w&'’-]{1,40}(?:\s+[A-Za-z0-9][\w&'’-]{1,40}){0,3})/i,
+  /\b([A-Z][\w&'’]+(?:\s+[A-Z][\w&'’]*){0,3}\s+(?:Ltd|Limited|Inc|LLC|PLC))\b/,
+];
+
+const PERSON_RES = [
+  /\b(?:please\s+)?(?:reach|contact|speak to|talk to)\s+([A-Z][a-z'’.-]+(?:\s+[A-Z][a-z'’.-]+){1,2})\b/,
 ];
 
 const BUDGET_RES = [
@@ -169,10 +173,24 @@ function tidyName(value: string): string {
 }
 
 function cleanCompany(value: string): string {
-  const tidy = value.replace(/[.,;:]+$/g, "").replace(/\s+/g, " ").trim();
+  let tidy = value.replace(/\s+/g, " ").trim();
+  tidy = (tidy.split(/[.!?;]/)[0] ?? "").trim();
+  tidy = tidy.replace(/\s+\b(?:budget|please|phone|email|call|around|about)\b.*$/i, "").trim();
+  tidy = tidy.replace(/[.,;:]+$/g, "").trim();
   const first = tidy.split(/\s+/)[0] ?? "";
   if (!tidy || tidy.length < 2 || tidy.length > 80 || COMPANY_STOP.test(first)) return "";
   return tidy;
+}
+
+function collectPersonName(text: string, seeded: string): string {
+  const fromHelper = tidyName(seeded);
+  if (fromHelper) return fromHelper;
+  for (const pattern of PERSON_RES) {
+    const match = text.match(pattern);
+    const name = match?.[1] ? tidyName(match[1]) : "";
+    if (name.split(/\s+/).length >= 2) return name;
+  }
+  return "";
 }
 
 function collectCompany(text: string): string {
@@ -253,7 +271,7 @@ export function extractContactDetailsSync(text: string): ExtractedContact {
   }
   const services = collectServices(source);
   return {
-    name: tidyName(beacon.name),
+    name: collectPersonName(source, beacon.name),
     email: emails[0] || "",
     emails,
     phone: phones[0] || "",

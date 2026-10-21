@@ -61,6 +61,22 @@ describe("message details", () => {
     assert.equal(extracted.services.includes("microsoft-365"), true);
   });
 
+  it("stops a company name at the next sentence and reads a reach-me name", () => {
+    const extracted = extractContactDetailsSync(
+      "Please reach Kamau Otieno at kamau.work@example.com. Company is Harambee Foods. Budget around KES 150,000 for a school website."
+    );
+    assert.equal(extracted.name, "Kamau Otieno");
+    assert.equal(extracted.email, "kamau.work@example.com");
+    assert.equal(extracted.company, "Harambee Foods");
+    assert.match(extracted.budget, /150,000/);
+  });
+
+  it("keeps a Ltd suffix on the company", () => {
+    const extracted = extractContactDetailsSync("I am Amina Wanjiku from Acme Ltd. Call 0712 345 678.");
+    assert.equal(extracted.name, "Amina Wanjiku");
+    assert.equal(extracted.company, "Acme Ltd");
+  });
+
   it("lets an AI hint fill gaps without replacing regex hits", () => {
     const base = extractContactDetailsSync("Call 0712345678 about firewall help.");
     const merged = applyAiHint(base, {
