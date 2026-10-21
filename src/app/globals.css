@@ -588,6 +588,15 @@ h4 {
   }
 }
 
+.mail-html img {
+  max-width: 100%;
+  height: auto;
+}
+
+.mail-html a {
+  text-decoration: underline;
+}
+
 .admin-tabs a[aria-current="page"] {
   color: var(--background);
   background: var(--accent);

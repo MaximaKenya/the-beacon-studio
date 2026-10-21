@@ -81,6 +81,8 @@ export function AdminMailbox() {
     setCounts(data.counts ?? { inbox: 0, sent: 0, drafts: 0, archive: 0, unread: 0 });
     setThreads(data.threads ?? []);
     setLoading(false);
+    const unread = data.counts?.unread ?? 0;
+    window.dispatchEvent(new CustomEvent("beacon-mail-unread", { detail: { unread } }));
   }
 
   async function openThread(id: string) {
@@ -203,7 +205,7 @@ export function AdminMailbox() {
     }
   }
 
-  function startReply(mode: "reply" | "forward") {
+  function startReply(mode: "reply" | "forward", preset?: string) {
     if (!selected) return;
     const last = [...selected.messages].reverse().find((message) => message.direction !== "draft");
     const to = mode === "reply" ? last?.from || selected.participants[0] || "" : "";
@@ -217,7 +219,11 @@ export function AdminMailbox() {
       to,
       cc: "",
       subject,
-      text: mode === "forward" && last ? `\n\n---------- Forwarded message ----------\nFrom: ${last.from}\nSubject: ${last.subject}\n\n${last.text}` : "",
+      text:
+        preset ??
+        (mode === "forward" && last
+          ? `\n\n---------- Forwarded message ----------\nFrom: ${last.from}\nSubject: ${last.subject}\n\n${last.text}`
+          : ""),
       files: [],
     });
   }
@@ -242,7 +248,7 @@ export function AdminMailbox() {
         <div>
           <p className="admin-kicker">Email</p>
           <h2 className="mt-1 font-display text-xl font-semibold text-heading">
-            Mailbox
+            Mail
             {visibleCounts.unread > 0 && (
               <span className="ml-2 align-middle rounded-full bg-accent px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-background">
                 {visibleCounts.unread} unread
@@ -250,7 +256,7 @@ export function AdminMailbox() {
             )}
           </h2>
           <p className="mt-1 max-w-2xl text-sm text-muted">
-            Inbox, sent, drafts, and archive. Threads link to the lead or client already in the studio inbox.
+            Inbox for hello@thebeaconstudio.co.ke. Reply, archive, and open a linked lead from the same thread.
           </p>
         </div>
         <button
@@ -293,6 +299,15 @@ export function AdminMailbox() {
             >
               {item.label}
               <span className="ml-1 font-mono text-[10px] opacity-80">{visibleCounts[item.id]}</span>
+              {item.id === "inbox" && visibleCounts.unread > 0 && (
+                <span
+                  className={`ml-1 rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${
+                    folder === "inbox" ? "bg-background text-accent" : "bg-accent text-background"
+                  }`}
+                >
+                  {visibleCounts.unread}
+                </span>
+              )}
             </button>
           ))}
         </div>
@@ -302,7 +317,7 @@ export function AdminMailbox() {
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search subject, people, or message"
+            placeholder="Search subject, people, tags, or message"
             className="w-full rounded-xl py-2 pl-9 pr-3 text-sm"
           />
         </label>
@@ -332,7 +347,16 @@ export function AdminMailbox() {
               <span className="mt-1 block truncate text-xs text-muted">
                 {thread.clientName || thread.participants[0] || "Studio"} · {formatNairobi(thread.updatedAt)}
               </span>
-              <span className="mt-1 block truncate text-xs text-foreground/80">{thread.preview}</span>
+              <span className="mt-1 block truncate text-xs text-foreground/80">{thread.summary || thread.preview}</span>
+              {thread.tags && thread.tags.length > 0 && (
+                <span className="mt-2 flex flex-wrap gap-1">
+                  {thread.tags.map((tag) => (
+                    <span key={tag} className="rounded-full bg-accent/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-accent">
+                      {tag}
+                    </span>
+                  ))}
+                </span>
+              )}
             </button>
           ))}
         </div>
@@ -430,6 +454,15 @@ export function AdminMailbox() {
                   <button type="button" className="admin-btn h-9" onClick={() => startReply("reply")}>
                     <Reply className="h-4 w-4" /> Reply
                   </button>
+                  {selected.suggestedReply && (
+                    <button
+                      type="button"
+                      className="admin-btn h-9"
+                      onClick={() => startReply("reply", selected.suggestedReply)}
+                    >
+                      Use suggested reply
+                    </button>
+                  )}
                   <button type="button" className="admin-btn h-9" onClick={() => startReply("forward")}>
                     <Forward className="h-4 w-4" /> Forward
                   </button>
@@ -451,6 +484,21 @@ export function AdminMailbox() {
                   </button>
                 </div>
               </div>
+
+              {(selected.summary || (selected.tags && selected.tags.length > 0)) && (
+                <div className="rounded-2xl bg-background/50 px-3 py-3 text-sm">
+                  {selected.summary && <p className="text-foreground">{selected.summary}</p>}
+                  {selected.tags && selected.tags.length > 0 && (
+                    <p className="mt-2 flex flex-wrap gap-1">
+                      {selected.tags.map((tag) => (
+                        <span key={tag} className="rounded-full bg-accent/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-accent">
+                          {tag}
+                        </span>
+                      ))}
+                    </p>
+                  )}
+                </div>
+              )}
 
               {(selected.links.client || selected.links.leads.length > 0) && (
                 <div className="rounded-2xl bg-accent/10 px-3 py-3 text-sm">
@@ -497,7 +545,14 @@ export function AdminMailbox() {
                     <p className={`font-mono text-[10px] uppercase tracking-wider ${message.direction === "out" ? "text-background/80" : "text-muted"}`}>
                       {message.direction} · {message.from} · {formatNairobi(message.createdAt)}
                     </p>
-                    <p className="mt-2 whitespace-pre-wrap">{message.text}</p>
+                    {message.html ? (
+                      <div
+                        className="mail-html mt-2 whitespace-pre-wrap leading-relaxed"
+                        dangerouslySetInnerHTML={{ __html: message.html }}
+                      />
+                    ) : (
+                      <p className="mt-2 whitespace-pre-wrap">{message.text}</p>
+                    )}
                     {message.attachments.length > 0 && (
                       <ul className="mt-2 space-y-1">
                         {message.attachments.map((file) => (

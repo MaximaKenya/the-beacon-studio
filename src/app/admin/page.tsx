@@ -29,7 +29,7 @@ import { AdminAutomations } from "@/components/automations/AdminAutomations";
 import { parseResponseJson } from "@/lib/safe-json";
 
 const ADMIN_NAV = [
-  { id: "mailbox", label: "Mailbox" },
+  { id: "mailbox", label: "Mail" },
   { id: "automations", label: "Automations" },
   { id: "inbox", label: "Inbox" },
   { id: "operations", label: "Operations" },
@@ -99,6 +99,7 @@ export default function AdminPage() {
   const [storageHealth, setStorageHealth] = useState<StorageHealth | null>(null);
   const [kpis, setKpis] = useState<StudioKpis | null>(null);
   const [activeSection, setActiveSection] = useState<string>(ADMIN_NAV[0].id);
+  const [mailUnread, setMailUnread] = useState(0);
 
   const wingLabels = useMemo(() => {
     const map = new Map(siteConfig.products.map((p) => [p.id, p.name]));
@@ -156,6 +157,15 @@ export default function AdminPage() {
         .catch(() => setStorageHealth(null));
     }, 0);
     return () => window.clearTimeout(handle);
+  }, []);
+
+  useEffect(() => {
+    function onUnread(event: Event) {
+      const unread = (event as CustomEvent<{ unread?: number }>).detail?.unread;
+      if (typeof unread === "number") setMailUnread(unread);
+    }
+    window.addEventListener("beacon-mail-unread", onUnread);
+    return () => window.removeEventListener("beacon-mail-unread", onUnread);
   }, []);
 
   useEffect(() => {
@@ -242,7 +252,7 @@ export default function AdminPage() {
             </div>
           </div>
           <p className="mb-5 text-sm leading-relaxed text-muted">
-            Mailbox, leads, client projects, and site analytics.
+            Mail, leads, client projects, and site analytics.
           </p>
           <form onSubmit={login} className="space-y-4">
             <div>
@@ -356,6 +366,15 @@ export default function AdminPage() {
               onClick={() => setActiveSection(item.id)}
             >
               {item.label}
+              {item.id === "mailbox" && mailUnread > 0 && (
+                <span
+                  className={`ml-1.5 inline-flex min-w-5 items-center justify-center rounded-full px-1.5 text-[10px] font-semibold ${
+                    activeSection === item.id ? "bg-background text-accent" : "bg-accent text-background"
+                  }`}
+                >
+                  {mailUnread}
+                </span>
+              )}
             </a>
           ))}
         </nav>

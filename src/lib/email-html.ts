@@ -20,7 +20,7 @@ export function escapeHtml(value: string): string {
     .replace(/'/g, "&#39;");
 }
 
-/** Plain text for display. Inbound HTML is never rendered. */
+/** Plain text extracted from HTML. The admin thread view renders sanitized HTML separately. */
 export function htmlToText(html: string): string {
   return html
     .replace(/<style[\s\S]*?<\/style>/gi, " ")

@@ -21,6 +21,48 @@ const SCHEMA_SQL = `
   );
   -- Client project progress lives in the projects.json document:
   -- status, milestones, percent complete, updates, notes, and dates.
+
+  CREATE TABLE IF NOT EXISTS mail_threads (
+    id text PRIMARY KEY,
+    subject text NOT NULL,
+    folder text NOT NULL,
+    unread boolean NOT NULL DEFAULT true,
+    participants jsonb NOT NULL DEFAULT '[]'::jsonb,
+    preview text NOT NULL DEFAULT '',
+    created_at timestamptz NOT NULL,
+    updated_at timestamptz NOT NULL,
+    client_id text,
+    client_name text,
+    lead_id text,
+    lead_kind text,
+    summary text,
+    suggested_reply text,
+    tags jsonb NOT NULL DEFAULT '[]'::jsonb
+  );
+  CREATE TABLE IF NOT EXISTS mail_messages (
+    id text PRIMARY KEY,
+    thread_id text NOT NULL REFERENCES mail_threads(id) ON DELETE CASCADE,
+    direction text NOT NULL,
+    from_address text NOT NULL,
+    to_addresses jsonb NOT NULL DEFAULT '[]'::jsonb,
+    cc_addresses jsonb NOT NULL DEFAULT '[]'::jsonb,
+    subject text NOT NULL,
+    body_text text NOT NULL DEFAULT '',
+    body_html text,
+    created_at timestamptz NOT NULL,
+    resend_id text,
+    message_id text,
+    in_reply_to text,
+    references_header text,
+    attachments jsonb NOT NULL DEFAULT '[]'::jsonb
+  );
+  CREATE UNIQUE INDEX IF NOT EXISTS mail_messages_resend_id_idx
+    ON mail_messages (resend_id)
+    WHERE resend_id IS NOT NULL;
+  CREATE INDEX IF NOT EXISTS mail_messages_thread_idx
+    ON mail_messages (thread_id, created_at);
+  CREATE INDEX IF NOT EXISTS mail_threads_updated_idx
+    ON mail_threads (updated_at DESC);
 `;
 
 type GlobalWithPool = typeof globalThis & {
