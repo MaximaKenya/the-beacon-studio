@@ -129,14 +129,11 @@ async function atomicWrite(filePath: string, content: string): Promise<void> {
   }
 }
 
-export async function writeJsonFile<T>(filename: string, data: T): Promise<void> {
-  await ensureDataFiles();
-  const filePath = path.join(DATA_DIR, filename);
-  const content = JSON.stringify(data, null, 2);
-
+function enqueue<T>(filename: string, task: () => Promise<T>): Promise<T> {
   const prev = writeQueues.get(filename) ?? Promise.resolve();
+  let result!: T;
   const next = prev.catch(() => undefined).then(async () => {
-    await atomicWrite(filePath, content);
+    result = await task();
   });
   writeQueues.set(
     filename,
@@ -144,5 +141,40 @@ export async function writeJsonFile<T>(filename: string, data: T): Promise<void>
       if (writeQueues.get(filename) === next) writeQueues.delete(filename);
     })
   );
-  await next;
+  return next.then(() => result);
+}
+
+export async function writeJsonFile<T>(filename: string, data: T): Promise<void> {
+  await ensureDataFiles();
+  const filePath = path.join(DATA_DIR, filename);
+  const content = JSON.stringify(data, null, 2);
+  await enqueue(filename, async () => {
+    await atomicWrite(filePath, content);
+  });
+}
+
+/** Read and write one file inside the same queue so two callers cannot claim the same row. */
+export async function mutateJsonFile<T>(
+  filename: string,
+  fallback: T,
+  mutate: (current: T) => T | Promise<T>
+): Promise<T> {
+  await ensureDataFiles();
+  const filePath = path.join(DATA_DIR, filename);
+  return enqueue(filename, async () => {
+    let current = fallback;
+    try {
+      const raw = (await readFile(filePath, "utf-8")).trim();
+      if (raw) {
+        const parsed = JSON.parse(raw) as T;
+        const shapeOk = Array.isArray(fallback) ? Array.isArray(parsed) : parsed !== null && typeof parsed === "object";
+        if (shapeOk) current = parsed;
+      }
+    } catch {
+      current = fallback;
+    }
+    const result = await mutate(current);
+    await atomicWrite(filePath, JSON.stringify(result, null, 2));
+    return result;
+  });
 }

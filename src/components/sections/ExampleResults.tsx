@@ -46,6 +46,10 @@ export function ExampleResults() {
           <Link href="/industries/retail" className="text-accent hover:underline">
             Retail
           </Link>
+          {" · "}
+          <Link href="/industries/restaurants" className="text-accent hover:underline">
+            Restaurants
+          </Link>
         </p>
       </div>
     </section>

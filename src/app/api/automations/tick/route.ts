@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { runDueJobs } from "@/lib/automations/runtime";
+import { runAbandonedBookingNudges } from "@/lib/booking-drafts";
 import { runBookingReminders } from "@/lib/booking-reminders";
 
 export const runtime = "nodejs";
@@ -18,7 +19,8 @@ async function handle(request: Request) {
   }
   const result = await runDueJobs(new URL(request.url).origin);
   const reminders = await runBookingReminders();
-  return NextResponse.json({ ok: true, ...result, reminders });
+  const abandoned = await runAbandonedBookingNudges();
+  return NextResponse.json({ ok: true, ...result, reminders, abandoned });
 }
 
 export async function GET(request: Request) {

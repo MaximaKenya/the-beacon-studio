@@ -7,6 +7,7 @@ import { RoiCalculator } from "@/components/sections/RoiCalculator";
 import { HowItWorks } from "@/components/sections/HowItWorks";
 import { PriceEstimate } from "@/components/sections/PriceEstimate";
 import { Pricing } from "@/components/sections/Pricing";
+import { StudioComparison } from "@/components/sections/StudioComparison";
 import { Faq } from "@/components/sections/Faq";
 import { ChecklistBanner } from "@/components/sections/ChecklistBanner";
 import { LeadCapture } from "@/components/sections/LeadCapture";
@@ -26,6 +27,7 @@ export function HomeRest() {
       <HowItWorks />
       <PriceEstimate />
       <Pricing />
+      <StudioComparison />
       <Faq />
       <ChecklistBanner />
       <LeadCapture />

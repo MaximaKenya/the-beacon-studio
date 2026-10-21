@@ -13,24 +13,20 @@ import {
   verifyPortalToken,
 } from "@/lib/portal-auth";
 import { siteConfig } from "@/data/site";
-import { brandedEmail } from "@/lib/email-html";
+import { composePortalSignIn, issueMagicLink, portalMagicUrl } from "@/lib/portal-magic";
 import { isResendConfigured, sendResendEmail } from "@/lib/resend";
 
 export const runtime = "nodejs";
 
-async function maybeSendPortalCodeEmail(email: string, code: string): Promise<boolean> {
+async function maybeSendPortalSignIn(email: string, code: string, magicUrl: string): Promise<boolean> {
   if (!isResendConfigured()) return false;
-  const letter = brandedEmail({
-    heading: "Your portal code",
-    greeting: "Hello,",
-    bodyText: `Your one-time portal code is ${code}. It expires in 15 minutes.\n\nOpen the client portal and enter this code for ${email}.`,
-  });
+  const letter = composePortalSignIn({ email, code, magicUrl });
   const result = await sendResendEmail({
     to: email,
-    subject: `${siteConfig.brand.name} portal code`,
+    subject: `${siteConfig.brand.name} portal sign-in`,
     text: letter.text,
     html: letter.html,
-    idempotencyKey: `portal-code/${email}/${code}`,
+    idempotencyKey: `portal-signin/${email}/${code}`,
   });
   return result.sent;
 }
@@ -88,16 +84,18 @@ export async function POST(request: Request) {
       );
     }
     const code = await issueOneTimeCode(email);
+    const magicToken = await issueMagicLink(email);
+    const magicPath = `/api/portal/magic?token=${encodeURIComponent(magicToken)}`;
     const resendConfigured = isResendConfigured();
-    const emailed = resendConfigured ? await maybeSendPortalCodeEmail(email, code) : false;
-    /** Show OTP on-screen when Resend is unset or send failed (local/dev E2E). */
+    const emailed = resendConfigured ? await maybeSendPortalSignIn(email, code, portalMagicUrl(magicToken)) : false;
+    /** Show the code and link on-screen when Resend is unset or send failed (local/dev E2E). */
     const showCodeOnScreen = !emailed;
     return NextResponse.json({
       ok: true,
       message: emailed
-        ? "One-time code sent to your email."
-        : "One-time code issued. Email delivery not configured — use the code shown on screen.",
-      ...(showCodeOnScreen ? { code } : {}),
+        ? "A sign-in link is on its way. The email also has a code if the link does not open."
+        : "Email delivery is not configured. Use the code below, or open the sign-in link on this page.",
+      ...(showCodeOnScreen ? { code, magicPath } : {}),
       emailConfigured: emailed,
       expiresInMinutes: 15,
     });

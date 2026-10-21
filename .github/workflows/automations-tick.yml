@@ -1,0 +1,23 @@
+name: Automations tick
+
+on:
+  schedule:
+    # Minute 5 of every hour. The daily Vercel cron stays in vercel.json.
+    - cron: "5 * * * *"
+  workflow_dispatch:
+
+jobs:
+  tick:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call production automations tick
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          if [ -z "$CRON_SECRET" ]; then
+            echo "Add repository secret CRON_SECRET. It must match the live app."
+            exit 1
+          fi
+          curl --fail-with-body --silent --show-error --request POST \
+            --header "Authorization: Bearer ${CRON_SECRET}" \
+            "https://thebeaconstudio.co.ke/api/automations/tick"

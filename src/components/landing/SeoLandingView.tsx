@@ -100,6 +100,27 @@ export function SeoLandingView({ page }: { page: SeoLanding }) {
         ))}
       </section>
 
+      {page.workflow && (
+        <section className="mt-14" aria-labelledby="workflow-heading">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-accent">The workflow we install</p>
+          <h2 id="workflow-heading" className="mt-2 font-display text-2xl font-semibold text-heading">
+            {page.workflow.title}
+          </h2>
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">
+            A studio method for this industry. Not a client result.
+          </p>
+          <ol className="mt-6 grid gap-4 md:grid-cols-3">
+            {page.workflow.steps.map((step, index) => (
+              <li key={step.title} className="sleek-card rounded-3xl p-6">
+                <p className="font-mono text-xs text-accent">{String(index + 1).padStart(2, "0")}</p>
+                <h3 className="mt-3 font-display text-lg font-semibold text-heading">{step.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-foreground">{step.detail}</p>
+              </li>
+            ))}
+          </ol>
+        </section>
+      )}
+
       {example && (
         <section className="sleek-card mt-10 rounded-3xl p-6 sm:p-8" aria-labelledby="example-heading">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-accent">Illustrative example</p>

@@ -8,7 +8,9 @@ import { channelReadiness, deliver } from "@/lib/automations/channels";
 import { SANDBOX_EMAIL } from "@/lib/automations/setup-guides";
 import { markChargePaid, recordReview, runEngine } from "@/lib/automations/engine";
 import { addLog, instancesForEmail, loadAutomations, saveAutomations } from "@/lib/automations/store";
-import type { AutomationDoc, AutomationInstance } from "@/lib/automations/types";
+import { emptyDoc, type AutomationDoc, type AutomationInstance } from "@/lib/automations/types";
+import { mutateJsonFile } from "@/lib/storage";
+import { jobClaimable } from "@/lib/tick-claim";
 import { createPayment, updatePaymentById, type PaymentRecord } from "@/lib/payments";
 import { beaconPaystackMetadata, beaconPaystackReference, isPaystackConfigured, paystackSecret } from "@/lib/paystack";
 import { isValidEmail, normalizeEmail } from "@/lib/validation";
@@ -60,14 +62,31 @@ export async function fulfillAutomationPayment(payment: PaymentRecord, origin: s
   if (payment.automationInstanceIds?.length) await activateInstances(payment.automationInstanceIds, origin);
 }
 
+async function claimDueJobIds(now: Date): Promise<string[]> {
+  const claimed: string[] = [];
+  await mutateJsonFile<AutomationDoc>("automations.json", emptyDoc(), (doc) => {
+    claimed.length = 0;
+    for (const job of doc.jobs) {
+      if (claimed.length >= 40) break;
+      if (!jobClaimable(job, now.getTime())) continue;
+      job.status = "running";
+      job.claimedAt = now.toISOString();
+      claimed.push(job.id);
+    }
+    return doc;
+  });
+  return claimed;
+}
+
 export async function runDueJobs(origin: string): Promise<{ ran: number }> {
-  const doc = await loadAutomations();
+  await loadAutomations();
   const now = new Date();
-  const due = doc.jobs
-    .filter((job) => job.status === "due" && new Date(job.runAt).getTime() <= now.getTime())
-    .slice(0, 40);
+  const claimedIds = new Set(await claimDueJobIds(now));
+  if (claimedIds.size === 0) return { ran: 0 };
+  const doc = await loadAutomations();
   let ran = 0;
-  for (const job of due) {
+  for (const job of doc.jobs) {
+    if (!claimedIds.has(job.id) || job.status === "done" || job.status === "cancelled") continue;
     const instance = doc.instances.find((item) => item.id === job.instanceId);
     if (!instance || instance.status !== "active") continue;
     if (job.kind === "renewal") {
@@ -85,6 +104,7 @@ export async function runDueJobs(origin: string): Promise<{ ran: number }> {
           phone: booking.phone,
           subject: `Reminder — ${instance.businessName}`,
           text: `Hello ${booking.name}, this is your ${job.label || ""} reminder for ${new Date(booking.start).toUTCString()}.`,
+          idempotencyKey: `automation-reminder/${job.id}`,
         });
         instance.stats.messages += 1;
         instance.stats.reminders += 1;

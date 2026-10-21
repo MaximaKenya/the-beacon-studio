@@ -171,6 +171,7 @@ export function Footer() {
                 { href: "/industries/clinics", label: "Clinics" },
                 { href: "/industries/saccos", label: "SACCOs" },
                 { href: "/industries/retail", label: "Retail" },
+                { href: "/industries/restaurants", label: "Restaurants" },
                 { href: "/portal/login", label: "Client portal" },
               ].map((link) => (
                 <li key={link.href}>

@@ -41,7 +41,11 @@ export type ClientBooking = {
   reminder24SentAt?: string;
   reminder1SentAt?: string;
   followUpSentAt?: string;
+  reminder24ClaimAt?: string;
+  reminder1ClaimAt?: string;
+  followUpClaimAt?: string;
   followUpOptOut?: boolean;
+  createdAt?: string;
 };
 
 const PREPARE: Record<string, string> = {

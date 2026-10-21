@@ -1,6 +1,7 @@
 import {
   ensureSchema,
   pingDatabase,
+  mutateDocument,
   readDocument,
   storageBackend,
   usesPostgres,
@@ -78,6 +79,19 @@ export async function writeJsonFile<T>(filename: string, data: T): Promise<void>
   }
   await ensureSchema();
   await writeDocument(filename, data);
+}
+
+/** Locked read-modify-write. Use this when two ticks must not send the same email. */
+export async function mutateJsonFile<T>(
+  filename: string,
+  fallback: T,
+  mutate: (current: T) => T | Promise<T>
+): Promise<T> {
+  if (!usesPostgres()) {
+    return files.mutateJsonFile(filename, fallback, mutate);
+  }
+  await ensureSchema();
+  return mutateDocument(filename, fallback, mutate);
 }
 
 export type StorageHealth = {
