@@ -58,9 +58,18 @@ export function Hero() {
               {siteConfig.cta.secondary}
             </MagneticButton>
           </div>
+          <ul className="mt-6 flex flex-wrap gap-2" aria-label="Why book">
+            {["Nairobi studio", "Reply in 1–2 business days", "Free 20-min audit", "No deposit until we agree"].map(
+              (item) => (
+                <li key={item} className="sleek-card rounded-full px-3 py-1.5 text-xs font-medium text-foreground">
+                  {item}
+                </li>
+              )
+            )}
+          </ul>
           <p className="mt-5 text-sm text-muted">
-            Free 20-minute audit. We agree success criteria before you pay a deposit.{" "}
-            <a href="/book" className="text-accent underline-offset-4 hover:underline">
+            We agree success criteria before you pay a deposit.{" "}
+            <a href="/book" className="font-semibold text-accent underline-offset-4 hover:underline">
               Pick a time
             </a>
             .

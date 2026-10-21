@@ -2,6 +2,7 @@ import { randomUUID } from "crypto";
 import { siteConfig } from "@/data/site";
 import { findClientByEmail, listClients, upsertClient } from "@/lib/clients";
 import { brandedEmail, htmlToText } from "@/lib/email-html";
+import { composeBookingEmail, findBooking } from "@/lib/booking-mail";
 import type {
   MailClientLink,
   MailFolder,
@@ -464,11 +465,25 @@ async function deliverMessage(
     return { sent: false, error: "Email not configured" };
   }
 
-  const branded = brandedEmail({
-    heading: message.subject,
-    greeting: "Hello,",
-    bodyText: message.text,
-  });
+  const bookingId =
+    thread.leadKind === "booking" && thread.leadId?.startsWith("booking:")
+      ? thread.leadId.slice("booking:".length)
+      : "";
+  const booking = bookingId ? await findBooking(bookingId) : null;
+  const letter = booking
+    ? composeBookingEmail(
+        booking,
+        booking.status === "declined" || booking.status === "cancelled" ? "declined" : "reply",
+        message.text
+      )
+    : null;
+  const branded = letter
+    ? { html: letter.html, text: letter.text }
+    : brandedEmail({
+        heading: message.subject,
+        greeting: "Hello,",
+        bodyText: message.text,
+      });
   const headers = threadingHeaders(thread, message);
   if (headers.References) message.references = headers.References;
 
@@ -480,13 +495,24 @@ async function deliverMessage(
     text: branded.text,
     headers,
     idempotencyKey,
-    attachments: message.attachments
-      .filter((file) => file.contentBase64)
-      .map((file) => ({
-        filename: file.filename,
-        content: file.contentBase64 as string,
-        contentType: file.contentType,
-      })),
+    attachments: [
+      ...(letter?.ics
+        ? [
+            {
+              filename: booking?.status === "declined" || booking?.status === "cancelled" ? "beacon-booking-cancel.ics" : "beacon-booking.ics",
+              content: Buffer.from(letter.ics, "utf8"),
+              contentType: `text/calendar; charset=utf-8; method=${booking?.status === "declined" || booking?.status === "cancelled" ? "CANCEL" : "REQUEST"}`,
+            },
+          ]
+        : []),
+      ...message.attachments
+        .filter((file) => file.contentBase64)
+        .map((file) => ({
+          filename: file.filename,
+          content: file.contentBase64 as string,
+          contentType: file.contentType,
+        })),
+    ],
   });
 
   if (!result.sent) {

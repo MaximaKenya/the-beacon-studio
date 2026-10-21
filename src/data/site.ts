@@ -925,6 +925,12 @@ export const siteConfig = {
 
   faq: [
     {
+      id: "faq-miss",
+      question: "What if the first workflow misses the mark?",
+      answer:
+        "We revise it before the next invoice. The free audit is where we write the success criteria, so the miss is measured against something we both agreed.",
+    },
+    {
       id: "faq-risk",
       question: "Do I pay before we agree what success looks like?",
       answer:

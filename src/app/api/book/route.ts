@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { ensureDataFiles, parseRequestJson, readJsonFile, writeJsonFile } from "@/lib/storage";
 import {
   durationForMeeting,
-  generateICS,
   generateTimeSlots,
   isDayAvailable,
   parseDateKey,
@@ -12,6 +11,7 @@ import { isValidEmail, normalizeEmail } from "@/lib/validation";
 import { siteConfig } from "@/data/site";
 import { attributionFromRecord, attributionNote, type LeadAttribution } from "@/lib/attribution";
 import { brandedEmail } from "@/lib/email-html";
+import { sendBookingClientEmail } from "@/lib/booking-mail";
 
 export const runtime = "nodejs";
 
@@ -123,18 +123,7 @@ export async function POST(request: Request) {
       siteConfig.booking.meetingTypes.find((m) => m.label === meetingType);
     const meetingLabel = meeting?.label ?? meetingType;
 
-    const ics = generateICS({
-      date,
-      time,
-      durationMinutes: meeting?.duration ?? siteConfig.booking.slotDuration,
-      title: `${meetingLabel} with ${siteConfig.brand.name}`,
-      description: message || `${meetingLabel} booked via The Beacon Studio.`,
-      organizerEmail: siteConfig.email,
-      attendeeEmail: email,
-      attendeeName: name,
-    });
-
-    const when = `${date} at ${time} (${siteConfig.booking.timezone.replace("_", " ")})`;
+    const when = `${date} at ${time} (Africa/Nairobi, EAT)`;
     const { recordSiteForm } = await import("@/lib/mailbox");
     try {
       await recordSiteForm({
@@ -151,35 +140,32 @@ export async function POST(request: Request) {
     } catch (error) {
       console.error("[book] mailbox", error instanceof Error ? error.message : "mailbox failed");
     }
-    const { sendResendEmail, isResendConfigured } = await import("@/lib/resend");
-    let emailSent = false;
-    if (isResendConfigured()) {
+    const visitorResult = await sendBookingClientEmail(
+      {
+        ...booking,
+        durationMinutes: meeting?.duration ?? siteConfig.booking.slotDuration,
+      },
+      "confirmed",
+      undefined,
+      `booking-confirmed/${booking.id}/0`
+    );
+    const ics = visitorResult.ics;
+    const emailSent = visitorResult.emailed;
+    if (emailSent) {
+      const { sendResendEmail } = await import("@/lib/resend");
       const campaign = attributionNote(attribution);
-      const visitor = brandedEmail({
-        heading: `${meetingLabel} confirmed`,
-        greeting: `Hi ${name},`,
-        bodyText: `You are booked for ${meetingLabel} on ${when}.\n\nA calendar file is attached.\n\n${siteConfig.brand.name} · ${siteConfig.phoneDisplay}`,
+      const studio = brandedEmail({
+        heading: "New booking",
+        greeting: "Hello,",
+        bodyText: `${name} (${email}) booked ${meetingLabel} for ${when}.${message ? `\n\n${message}` : ""}${campaign ? `\n\n${campaign}` : ""}`,
       });
-      const visitorResult = await sendResendEmail({
-        to: email,
-        subject: `Booking confirmed — ${meetingLabel}`,
-        html: visitor.html,
-        text: visitor.text,
-        attachments: [
-          {
-            filename: "beacon-booking.ics",
-            content: Buffer.from(ics, "utf8"),
-            contentType: "text/calendar",
-          },
-        ],
-      });
-      emailSent = visitorResult.sent;
       await sendResendEmail({
         to: siteConfig.email,
         replyTo: email,
         subject: `New booking — ${name} · ${meetingLabel}`,
-        html: `<p>${name} (${email}) booked ${meetingLabel} for ${when}.</p>${message ? `<p>${message}</p>` : ""}${campaign ? `<p>${campaign}</p>` : ""}`,
-        text: `${name} (${email}) booked ${meetingLabel} for ${when}.${campaign ? `\n${campaign}` : ""}`,
+        html: studio.html,
+        text: studio.text,
+        idempotencyKey: `booking-studio/${booking.id}`,
       });
     }
 

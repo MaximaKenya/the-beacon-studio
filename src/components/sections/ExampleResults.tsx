@@ -18,8 +18,10 @@ export function ExampleResults() {
             <li key={example.id} className="sleek-card rounded-3xl p-6">
               <p className="text-xs font-semibold uppercase tracking-wide text-accent">Illustrative · {example.industry}</p>
               <h3 className="mt-2 font-display text-xl font-semibold text-heading">{example.title}</h3>
-              <p className="mt-4 text-sm leading-relaxed text-foreground">{example.before}</p>
-              <p className="mt-3 text-sm leading-relaxed text-muted">{example.after}</p>
+              <p className="mt-4 text-xs font-semibold uppercase tracking-wide text-muted">Before</p>
+              <p className="mt-1 text-sm leading-relaxed text-foreground">{example.before}</p>
+              <p className="mt-3 text-xs font-semibold uppercase tracking-wide text-accent">After</p>
+              <p className="mt-1 text-sm leading-relaxed text-muted">{example.after}</p>
               <p className="mt-4 text-sm text-muted">{example.figure}</p>
             </li>
           ))}

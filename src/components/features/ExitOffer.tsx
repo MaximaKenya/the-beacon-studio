@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { X } from "lucide-react";
 import { siteConfig } from "@/data/site";
+import { whatsappHref, whatsappPrefill } from "@/lib/contact-actions";
 import { useFeatures } from "@/providers/FeatureProvider";
 import { trackEvent } from "@/lib/analytics";
 
@@ -103,6 +104,14 @@ export function ExitOffer() {
         >
           {siteConfig.cta.primary}
         </button>
+        <a
+          href={whatsappHref(whatsappPrefill)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-3 inline-flex h-11 w-full items-center justify-center rounded-2xl bg-surface-elevated/80 text-sm font-semibold text-foreground"
+        >
+          WhatsApp {siteConfig.phoneDisplay}
+        </a>
       </div>
     </div>
   );

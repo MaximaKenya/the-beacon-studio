@@ -7,6 +7,8 @@ import {
   setReviewVisibility,
   type ReviewVisibility,
 } from "@/lib/projects";
+import { findBooking, sendBookingClientEmail } from "@/lib/booking-mail";
+import { brandedEmail } from "@/lib/email-html";
 import { isResendConfigured, sendResendEmail } from "@/lib/resend";
 import { readJsonFile, writeJsonFile } from "@/lib/storage";
 import { normalizeServiceIds, serviceLabels } from "@/lib/intake-services";
@@ -243,13 +245,6 @@ export async function getInboxItem(id: string): Promise<InboxItem | null> {
   return items.find((item) => item.id === id) ?? null;
 }
 
-function escapeHtml(value: string): string {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
-}
-
 async function threadIdFor(item: InboxItem, clientId: string): Promise<string> {
   if (item.kind === "message") return item.sourceId;
   if (item.projectId && !item.projectId.startsWith("client:")) return item.projectId;
@@ -347,12 +342,35 @@ export async function replyToInbox(
   }
 
   const portalUrl = `${siteConfig.seo.siteUrl.replace(/\/$/, "")}/portal/login`;
-  const result = await sendResendEmail({
-    to: item.email,
-    subject: `Reply from ${siteConfig.brand.name}`,
-    text: `Hi ${client.name},\n\n${reply}\n\nYou can also read this in your client portal: ${portalUrl}\nSign in with ${item.email}.\n`,
-    html: `<p>Hi ${escapeHtml(client.name)},</p><p>${escapeHtml(reply).replace(/\n/g, "<br/>")}</p><p>You can also read this in your <a href="${portalUrl}">client portal</a>. Sign in with ${escapeHtml(item.email)}.</p>`,
-  });
+  const result =
+    item.kind === "booking"
+      ? await sendBookingClientEmail(
+          (await findBooking(item.sourceId)) || {
+            id: item.sourceId,
+            name: item.name,
+            email: item.email,
+            date: item.date,
+            time: item.time,
+            meetingType: item.meetingType,
+            rescheduleNote: item.rescheduleNote,
+          },
+          "reply",
+          reply,
+          `inbox-reply/${item.sourceId}/${Buffer.from(reply).toString("base64url").slice(0, 80)}`
+        ).then((sent) => ({ sent: sent.emailed, error: sent.emailed ? undefined : sent.emailNote }))
+      : await (async () => {
+          const letter = brandedEmail({
+            heading: `Reply from ${siteConfig.brand.name}`,
+            greeting: `Hi ${client.name},`,
+            bodyText: `${reply}\n\nYou can also read this in your client portal: ${portalUrl}\nSign in with ${item.email}.`,
+          });
+          return sendResendEmail({
+            to: item.email,
+            subject: `Reply from ${siteConfig.brand.name}`,
+            text: letter.text,
+            html: letter.html,
+          });
+        })();
 
   return {
     emailed: result.sent,

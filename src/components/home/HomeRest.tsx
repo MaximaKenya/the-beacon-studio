@@ -5,6 +5,7 @@ import { Services } from "@/components/sections/Services";
 import { ExampleResults } from "@/components/sections/ExampleResults";
 import { RoiCalculator } from "@/components/sections/RoiCalculator";
 import { HowItWorks } from "@/components/sections/HowItWorks";
+import { PriceEstimate } from "@/components/sections/PriceEstimate";
 import { Pricing } from "@/components/sections/Pricing";
 import { Faq } from "@/components/sections/Faq";
 import { ChecklistBanner } from "@/components/sections/ChecklistBanner";
@@ -23,6 +24,7 @@ export function HomeRest() {
       <ExampleResults />
       <RoiCalculator />
       <HowItWorks />
+      <PriceEstimate />
       <Pricing />
       <Faq />
       <ChecklistBanner />
