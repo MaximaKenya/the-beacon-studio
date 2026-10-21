@@ -9,6 +9,12 @@ import { siteConfig } from "@/data/site";
 import { parseResponseJson } from "@/lib/safe-json";
 import { Suspense } from "react";
 
+async function portalSessionStored(): Promise<boolean> {
+  const session = await fetch("/api/portal/auth", { cache: "no-store" });
+  const data = await parseResponseJson<{ authenticated?: boolean }>(session, {});
+  return Boolean(data.authenticated);
+}
+
 function LoginForm() {
   const router = useRouter();
   const search = useSearchParams();
@@ -28,15 +34,22 @@ function LoginForm() {
       const res = await fetch("/api/portal/auth", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        cache: "no-store",
         body: JSON.stringify({ action: "token", token }),
       });
       const data = await parseResponseJson<{ error?: string }>(res, {});
-      setBusy(false);
-      if (res.ok) {
-        router.replace("/portal");
-      } else {
+      if (!res.ok) {
+        setBusy(false);
         setError(data.error || "Invalid access link.");
+        return;
       }
+      const stored = await portalSessionStored();
+      setBusy(false);
+      if (!stored) {
+        setError("Access link accepted, but the browser did not keep the session. Open the site over HTTPS and try again.");
+        return;
+      }
+      router.replace("/portal");
     })();
   }, [search, router]);
 
@@ -74,12 +87,19 @@ function LoginForm() {
     const res = await fetch("/api/portal/auth", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      cache: "no-store",
       body: JSON.stringify({ action: "verify-code", email, code }),
     });
     const data = await parseResponseJson<{ error?: string }>(res, {});
-    setBusy(false);
     if (!res.ok) {
+      setBusy(false);
       setError(data.error || "Invalid code.");
+      return;
+    }
+    const stored = await portalSessionStored();
+    setBusy(false);
+    if (!stored) {
+      setError("Code accepted, but the browser did not keep the session. Open the site over HTTPS and try again.");
       return;
     }
     router.replace("/portal");

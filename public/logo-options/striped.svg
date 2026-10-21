@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <path id="beam" d="M21.4 8.4 31.4 2 31.8 8.8 22.4 12.4Z" fill="var(--accent, #45baab)"/>
+  <path d="M16 1.6 23.2 8H8.8Z" fill="currentColor"/>
+  <path d="M10.4 8H21.6V12.8H10.4Z" fill="currentColor"/>
+  <path d="M8.4 12.8H23.6V14.8H8.4Z" fill="currentColor"/>
+  <path d="M11.2 14.8H20.8L22.4 28.6H9.6Z" fill="currentColor"/>
+  <path d="M11.04 16.2H20.96L21.43 20.2H10.57Z" fill="var(--accent, #45baab)"/>
+  <path d="M10.3 22.6H21.7L22.17 26.6H9.83Z" fill="var(--accent, #45baab)"/>
+  <circle cx="16" cy="10.4" r="1.85" fill="var(--accent, #45baab)"/>
+</svg>

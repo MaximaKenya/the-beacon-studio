@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <path id="beam" d="M21.6 9.2 30.4 4.2 30.8 8.6 22 12Z" fill="var(--accent, #45baab)"/>
+  <path d="M16 3.2 21.4 8.4V12.2H23V14.2L24.2 26.6H7.8L9 14.2V12.2H10.6V8.4Z" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
+  <circle cx="16" cy="10.3" r="1.45" fill="var(--accent, #45baab)"/>
+</svg>

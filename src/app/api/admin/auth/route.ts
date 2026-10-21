@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { parseRequestJson } from "@/lib/storage";
+import {
+  applySessionCookie,
+  expireSessionCookie,
+  sessionCookieOptionsFromRequest,
+} from "@/lib/session-cookie";
 
 export const runtime = "nodejs";
 
@@ -12,12 +17,14 @@ function sessionToken(password: string): string {
   return Buffer.from(`beacon:${password}`).toString("base64url");
 }
 
+const NO_STORE = { "Cache-Control": "no-store" };
+
 export async function POST(request: Request) {
   const password = process.env.ADMIN_PASSWORD;
   if (!password) {
     return NextResponse.json(
       { error: "ADMIN_PASSWORD is not set on the server." },
-      { status: 503 }
+      { status: 503, headers: NO_STORE }
     );
   }
 
@@ -25,37 +32,35 @@ export async function POST(request: Request) {
     const body = await parseRequestJson(request);
     const pin = typeof body.password === "string" ? body.password : "";
     if (pin !== password) {
-      return NextResponse.json({ error: "Invalid password." }, { status: 401 });
+      return NextResponse.json({ error: "Invalid password." }, { status: 401, headers: NO_STORE });
     }
 
-    const jar = await cookies();
-    jar.set(COOKIE, sessionToken(password), {
-      httpOnly: true,
-      sameSite: "lax",
-      path: "/",
-      maxAge: MAX_AGE,
-      secure: process.env.NODE_ENV === "production",
-    });
-
-    return NextResponse.json({ ok: true });
+    const response = NextResponse.json({ ok: true }, { headers: NO_STORE });
+    applySessionCookie(
+      response,
+      COOKIE,
+      sessionToken(password),
+      sessionCookieOptionsFromRequest(request, MAX_AGE)
+    );
+    return response;
   } catch {
-    return NextResponse.json({ error: "Login failed." }, { status: 500 });
+    return NextResponse.json({ error: "Login failed." }, { status: 500, headers: NO_STORE });
   }
 }
 
-export async function DELETE() {
-  const jar = await cookies();
-  jar.delete(COOKIE);
-  return NextResponse.json({ ok: true });
+export async function DELETE(request: Request) {
+  const response = NextResponse.json({ ok: true }, { headers: NO_STORE });
+  expireSessionCookie(response, COOKIE, sessionCookieOptionsFromRequest(request, 0));
+  return response;
 }
 
 export async function GET() {
   const password = process.env.ADMIN_PASSWORD;
   if (!password) {
-    return NextResponse.json({ authenticated: false, configured: false });
+    return NextResponse.json({ authenticated: false, configured: false }, { headers: NO_STORE });
   }
   const jar = await cookies();
   const token = jar.get(COOKIE)?.value;
   const authenticated = token === sessionToken(password);
-  return NextResponse.json({ authenticated, configured: true });
+  return NextResponse.json({ authenticated, configured: true }, { headers: NO_STORE });
 }
