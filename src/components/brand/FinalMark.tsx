@@ -8,9 +8,9 @@ export const FINAL_MOTION = `
   .final-burst { animation: final-burst 2.6s ease-in-out infinite; }
   .final-wave { animation: final-shimmer 3.8s ease-in-out infinite; }
 }
-@keyframes final-pulse { 0%, 100% { opacity: 0.12; } 50% { opacity: 1; } }
-@keyframes final-burst { 0%, 100% { opacity: 0.65; } 50% { opacity: 1; } }
-@keyframes final-shimmer { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+@keyframes final-pulse { 0%, 100% { opacity: 0.15; } 50% { opacity: 1; } }
+@keyframes final-burst { 0%, 100% { opacity: 0.35; } 50% { opacity: 1; } }
+@keyframes final-shimmer { 0%, 100% { opacity: 0.45; } 50% { opacity: 1; } }
 `;
 
 type MarkProps = {
