@@ -1,6 +1,7 @@
 /**
- * Logo concepts for The Beacon Studio.
- * Default shipped mark is Beacon Dot in BeaconMark.tsx — all four live on /brand.
+ * Earlier logo concepts for The Beacon Studio.
+ * The shipped mark is the lighthouse in BeaconMark.tsx. These four stay on /brand
+ * as directions that were not chosen.
  */
 
 type ConceptProps = {
@@ -12,7 +13,7 @@ type ConceptProps = {
 export const ROUNDED_TILE =
   "M11 4H21A7 7 0 0 1 28 11V21A7 7 0 0 1 21 28H11A7 7 0 0 1 4 21V11A7 7 0 0 1 11 4Z";
 
-/* ─── Beacon Dot (SHIPPED) — custom B + signal disc ─── */
+/* ─── Beacon Dot — custom B + signal disc (not shipped) ─── */
 
 export const BEACON_DOT_STEM = "M10.1 8.1h3.7v15.8H10.1V8.1Z";
 export const BEACON_DOT_LOWER =
@@ -25,7 +26,7 @@ export const BEACON_DOT_DISC_R = 4.45;
 export const BEACON_DOT_DISC_PATH = `M${BEACON_DOT_DISC_CX} ${BEACON_DOT_DISC_CY}m-${BEACON_DOT_DISC_R} 0a${BEACON_DOT_DISC_R} ${BEACON_DOT_DISC_R} 0 1 0 ${BEACON_DOT_DISC_R * 2} 0a${BEACON_DOT_DISC_R} ${BEACON_DOT_DISC_R} 0 1 0 -${BEACON_DOT_DISC_R * 2} 0`;
 export const BEACON_DOT_MONO = `${ROUNDED_TILE}${BEACON_DOT_STEM}${BEACON_DOT_LOWER}${BEACON_DOT_DISC_PATH}${BEACON_DOT_COUNTER}`;
 
-/** Concept A (SHIPPED): Beacon Dot — custom geometric B; upper mass is a solid signal disc. */
+/** Concept A: Beacon Dot — custom geometric B; upper mass is a solid signal disc. */
 export function MarkConceptBeaconDot({ size = 64, className = "" }: ConceptProps) {
   return (
     <svg
@@ -175,7 +176,7 @@ export const MARK_CONCEPTS = [
   {
     id: "beacon-dot",
     name: "Beacon Dot",
-    status: "default" as const,
+    status: "alternate" as const,
     blurb:
       "Custom geometric B with a solid signal disc as the upper mass — lettermark craft that doubles as an app tile. Ownable silhouette, sharp at 16px.",
     Mark: MarkConceptBeaconDot,

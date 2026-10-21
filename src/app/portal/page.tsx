@@ -5,14 +5,12 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   CalendarClock,
-  CheckCircle2,
-  Circle,
   LogOut,
   MessageSquare,
   Star,
 } from "lucide-react";
-import { ProgressPie } from "@/components/portal/ProgressPie";
 import { ChatPanel } from "@/components/portal/ChatPanel";
+import { ClientProjectBoard } from "@/components/portal/ClientProjectBoard";
 import { DocumentActions } from "@/components/documents/DocumentActions";
 import { PayButton } from "@/components/features/PayButton";
 import { PortalAutomations } from "@/components/automations/PortalAutomations";
@@ -23,6 +21,7 @@ import type { QuotationRecord, ReceiptRecord } from "@/lib/documents";
 
 type PortalPayload = {
   project: ProjectRecord;
+  projects?: ProjectRecord[];
   client: { id: string; name: string; email: string; company?: string } | null;
   quotation: QuotationRecord | null;
   receipts: ReceiptRecord[];
@@ -42,6 +41,7 @@ export default function PortalDashboardPage() {
     name: string;
     email: string;
   } | null>(null);
+  const [focusId, setFocusId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     const auth = await fetch("/api/portal/auth");
@@ -50,7 +50,8 @@ export default function PortalDashboardPage() {
       router.replace("/portal/login");
       return;
     }
-    const res = await fetch("/api/portal/project");
+    const query = focusId ? `?projectId=${encodeURIComponent(focusId)}` : "";
+    const res = await fetch(`/api/portal/project${query}`);
     if (res.status === 401) {
       router.replace("/portal/login");
       return;
@@ -78,7 +79,7 @@ export default function PortalDashboardPage() {
     }
     setData(payload);
     setLoading(false);
-  }, [router]);
+  }, [router, focusId]);
 
   useEffect(() => {
     const kick = window.setTimeout(() => {
@@ -167,6 +168,7 @@ export default function PortalDashboardPage() {
   }
 
   const { project, quotation, receipts, nextPaymentDays, unreadMessages, client } = data;
+  const projects = data.projects?.length ? data.projects : [project];
 
   return (
     <div className="space-y-8">
@@ -198,35 +200,11 @@ export default function PortalDashboardPage() {
         </button>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_220px]">
-        <section className="rounded-2xl border border-border bg-surface/60 p-6">
-          <h2 className="font-display text-lg font-semibold text-foreground">
-            Milestones
-          </h2>
-          <ul className="mt-4 space-y-3">
-            {project.milestones.map((m) => (
-              <li
-                key={m.id}
-                className="flex items-start gap-3 rounded-xl border border-border/60 bg-background/40 px-4 py-3"
-              >
-                {m.done ? (
-                  <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-accent" />
-                ) : (
-                  <Circle className="mt-0.5 h-5 w-5 shrink-0 text-muted" />
-                )}
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium text-foreground">{m.title}</p>
-                  {m.note && <p className="text-xs text-muted">{m.note}</p>}
-                </div>
-                <span className="font-mono text-xs text-muted">{m.percent}%</span>
-              </li>
-            ))}
-          </ul>
-        </section>
-        <div className="flex items-center justify-center rounded-2xl border border-border bg-surface/60 p-6">
-          <ProgressPie percent={project.progressPercent} />
-        </div>
-      </div>
+      <ClientProjectBoard
+        projects={projects}
+        selectedId={project.id}
+        onSelect={(id) => setFocusId(id)}
+      />
 
       <section className="rounded-2xl border border-border bg-gradient-to-br from-accent/8 to-surface/50 p-6">
         <div className="flex items-start gap-3">
@@ -313,24 +291,6 @@ export default function PortalDashboardPage() {
 
         <ChatPanel projectId={project.id} viewer="client" />
       </div>
-
-      <section className="rounded-2xl border border-border bg-surface/60 p-6">
-        <h2 className="font-display text-lg font-semibold text-foreground">
-          Project timeline
-        </h2>
-        <ol className="mt-4 space-y-3">
-          {project.updates.map((u) => (
-            <li key={u.id} className="flex gap-3 border-l-2 border-accent/40 pl-4">
-              <div>
-                <p className="text-sm text-foreground">{u.message}</p>
-                <p className="mt-0.5 font-mono text-[10px] text-muted">
-                  {formatNairobi(u.at)} · {u.by}
-                </p>
-              </div>
-            </li>
-          ))}
-        </ol>
-      </section>
 
       <PortalAutomations />
 

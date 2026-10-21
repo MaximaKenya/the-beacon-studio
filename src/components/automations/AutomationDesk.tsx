@@ -3,6 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { templateById } from "@/automations/templates/public";
+import type { SandboxRunView } from "@/lib/automations/types";
+import type { ChannelReadiness } from "@/lib/automations/channels";
 import { formatKes, formatUsd } from "@/lib/fx";
 import { formatNairobi } from "@/lib/time";
 import { parseResponseJson } from "@/lib/safe-json";
@@ -21,6 +23,7 @@ export type DeskInstance = {
   billing: "monthly" | "annual";
   periodEnd?: string;
   demo?: boolean;
+  lastRunView?: SandboxRunView;
   stats: {
     runs: number;
     leads: number;
@@ -62,6 +65,25 @@ export type DeskLead = {
 };
 
 type ActionResult = { ok?: boolean; message?: string; error?: string };
+
+export function ChannelStatus({ channels }: { channels: ChannelReadiness }) {
+  const items = [
+    ["Email", channels.email === "ready" ? "ready" : "not configured"],
+    ["Africa's Talking", channels.sms],
+    ["WhatsApp", channels.whatsapp],
+    ["Marketing", channels.marketing],
+    ["Groq", channels.groq === "ready" ? "ready" : "not configured"],
+  ] as const;
+  return (
+    <ul className="flex flex-wrap gap-2">
+      {items.map(([label, state]) => (
+        <li key={label} className="sleek-card rounded-full px-3 py-1 text-xs text-muted">
+          {label} · {state}
+        </li>
+      ))}
+    </ul>
+  );
+}
 
 export function AutomationDesk({
   instances,
@@ -221,6 +243,11 @@ function InstanceDetail({
             Public page
           </Link>
         )}
+        {templateById(instance.templateId)?.behavior === "sequence" && (
+          <button type="button" disabled={busy} className="admin-btn" onClick={() => onAct("stop")}>
+            Stop follow-ups
+          </button>
+        )}
       </div>
       <p className="text-sm text-muted">
         Billing {instance.billing}
@@ -229,7 +256,7 @@ function InstanceDetail({
       </p>
       <div className="grid gap-4 lg:grid-cols-2">
         <MiniList
-          title="Recent logs"
+          title="Run history"
           empty="No runs yet."
           rows={logs.slice(0, 8).map((log) => ({
             id: log.id,

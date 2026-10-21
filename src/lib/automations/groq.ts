@@ -1,4 +1,5 @@
 import { DEFAULT_GROQ_MODEL, GROQ_FALLBACK_MODEL } from "@/lib/beacon-ai";
+import { traceStep } from "@/lib/automations/trace";
 
 const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
 
@@ -32,10 +33,21 @@ async function complete(model: string, system: string, user: string): Promise<st
 }
 
 export async function groqText(system: string, user: string): Promise<string | null> {
-  if (!groqConfigured()) return null;
+  if (!groqConfigured()) {
+    traceStep({
+      kind: "ai",
+      title: "AI output",
+      detail: "GROQ_API_KEY is not set, so this step used the saved text instead of a model.",
+    });
+    return null;
+  }
   const preferred = process.env.GROQ_MODEL?.trim() || DEFAULT_GROQ_MODEL;
   const first = await complete(preferred, system, user);
-  if (first) return first;
-  if (preferred === GROQ_FALLBACK_MODEL) return null;
-  return complete(GROQ_FALLBACK_MODEL, system, user);
+  const text = first || (preferred === GROQ_FALLBACK_MODEL ? null : await complete(GROQ_FALLBACK_MODEL, system, user));
+  traceStep({
+    kind: "ai",
+    title: "AI output",
+    detail: text || "The model returned nothing, so this step used the saved text.",
+  });
+  return text;
 }

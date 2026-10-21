@@ -1,10 +1,13 @@
 import {
+  BEACON_BAND,
   BEACON_BASE,
-  BEACON_BEAM_LEFT,
-  BEACON_BEAM_RIGHT,
+  BEACON_BEAM,
+  BEACON_BEAM_CORE,
+  BEACON_GALLERY,
   BEACON_LANTERN,
   BEACON_LIGHT,
   BEACON_MONO,
+  BEACON_ROOF,
   BEACON_TOWER,
 } from "@/components/brand/beaconPaths";
 
@@ -15,15 +18,50 @@ type BeaconMarkProps = {
   /** @deprecated Glow is not part of the mark. Kept so older call sites still compile. */
   staticGlow?: boolean;
   /**
-   * color — ink follows currentColor, lamp and beams use the accent.
-   * mono — one ink, lamp punched out. For print and one-color lockups.
+   * color — ink follows currentColor, lamp and beam use the accent.
+   * mono — one ink, lamp and daymark punched out. For print and one-color lockups.
    */
   variant?: "color" | "mono";
 };
 
+type LighthouseMarkProps = {
+  /** Tower ink. Defaults to currentColor so the mark follows light and dark UI. */
+  ink?: string;
+  /** Lamp, daymark, and beam. */
+  accent?: string;
+  variant?: "color" | "mono";
+};
+
+/**
+ * Shapes only, so favicon, OG, and email callers can pass explicit colors.
+ */
+export function LighthouseMark({
+  ink = "currentColor",
+  accent = "var(--accent)",
+  variant = "color",
+}: LighthouseMarkProps) {
+  if (variant === "mono") {
+    return <path fillRule="evenodd" clipRule="evenodd" d={BEACON_MONO} fill={ink} />;
+  }
+
+  return (
+    <g>
+      <path d={BEACON_BEAM} fill={accent} opacity={0.45} />
+      <path d={BEACON_BEAM_CORE} fill={accent} />
+      <path d={BEACON_ROOF} fill={ink} />
+      <path d={BEACON_TOWER} fill={ink} />
+      <path d={BEACON_BASE} fill={ink} />
+      <path d={BEACON_GALLERY} fill={ink} />
+      <path d={BEACON_LANTERN} fill={ink} />
+      <path d={BEACON_BAND} fill={accent} />
+      <circle cx={BEACON_LIGHT.cx} cy={BEACON_LIGHT.cy} r={BEACON_LIGHT.r} fill={accent} />
+    </g>
+  );
+}
+
 /**
  * Lighthouse mark for The Beacon Studio.
- * Solid shapes only, so it stays clear at 16px in light and dark UI.
+ * A tower, a lamp, and one beam. Solid shapes so it stays clear at 16px.
  */
 export function BeaconMark({
   size = 28,
@@ -43,23 +81,7 @@ export function BeaconMark({
       className={`beacon-mark ${className}`}
       aria-hidden
     >
-      {variant === "mono" ? (
-        <path fillRule="evenodd" clipRule="evenodd" d={BEACON_MONO} fill="currentColor" />
-      ) : (
-        <>
-          <path d={BEACON_BEAM_LEFT} fill="var(--accent)" />
-          <path d={BEACON_BEAM_RIGHT} fill="var(--accent)" />
-          <path d={BEACON_TOWER} fill="currentColor" />
-          <path d={BEACON_BASE} fill="currentColor" />
-          <path d={BEACON_LANTERN} fill="currentColor" />
-          <circle
-            cx={BEACON_LIGHT.cx}
-            cy={BEACON_LIGHT.cy}
-            r={BEACON_LIGHT.r}
-            fill="var(--accent)"
-          />
-        </>
-      )}
+      <LighthouseMark variant={variant} />
     </svg>
   );
 }

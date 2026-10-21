@@ -22,6 +22,7 @@ import {
   Boxes,
 } from "lucide-react";
 import { siteConfig } from "@/data/site";
+import { isPlaceholderContact } from "@/lib/launch";
 import { categoryLandings, industryLandings } from "@/data/landings";
 import { useFeatures } from "@/providers/FeatureProvider";
 
@@ -53,6 +54,11 @@ export function CommandPaletteProvider({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [activeIndex, setActiveIndex] = useState(0);
+  const [indexedQuery, setIndexedQuery] = useState("");
+  if (query !== indexedQuery) {
+    setIndexedQuery(query);
+    setActiveIndex(0);
+  }
   const {
     openChat,
     openBooking,
@@ -89,7 +95,7 @@ export function CommandPaletteProvider({ children }: { children: ReactNode }) {
       keywords: section.label.toLowerCase(),
     }));
 
-    const socialItems: CommandItem[] = siteConfig.social.map((link) => ({
+    const socialItems: CommandItem[] = siteConfig.social.filter((link) => !isPlaceholderContact(link.href)).map((link) => ({
       id: `social-${link.name}`,
       label: `Open ${link.name}`,
       group: "Social",
@@ -139,14 +145,34 @@ export function CommandPaletteProvider({ children }: { children: ReactNode }) {
       ...navItems,
       ...pageItems,
       ...productItems,
-      {
-        id: "copy-email",
-        label: "Copy email address",
-        group: "Actions",
-        icon: <Copy className="h-4 w-4" aria-hidden />,
-        action: copyEmail,
-        keywords: "email contact mail",
-      },
+      ...(isPlaceholderContact(siteConfig.email)
+        ? [
+            {
+              id: "copy-phone",
+              label: "Copy phone number",
+              group: "Actions",
+              icon: <Copy className="h-4 w-4" aria-hidden />,
+              action: async () => {
+                try {
+                  await navigator.clipboard.writeText(siteConfig.phone);
+                } catch {
+                  window.location.href = `tel:${siteConfig.phone}`;
+                }
+                setOpen(false);
+              },
+              keywords: "phone call contact",
+            } satisfies CommandItem,
+          ]
+        : [
+            {
+              id: "copy-email",
+              label: "Copy email address",
+              group: "Actions",
+              icon: <Copy className="h-4 w-4" aria-hidden />,
+              action: copyEmail,
+              keywords: "email contact mail",
+            } satisfies CommandItem,
+          ]),
       ...(siteConfig.intake.enabled
         ? [
             {
@@ -232,10 +258,6 @@ export function CommandPaletteProvider({ children }: { children: ReactNode }) {
         item.group.toLowerCase().includes(q)
     );
   }, [items, query]);
-
-  useEffect(() => {
-    setActiveIndex(0);
-  }, [query]);
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {

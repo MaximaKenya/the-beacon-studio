@@ -20,9 +20,10 @@ export default function BrandPage() {
         The Beacon Studio mark
       </h1>
       <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted sm:text-base">
-        The mark is a small lighthouse: a tower, a lamp, and two beams. It uses the text color
-        for the tower and the accent for the light, so the same SVG works on light and dark
-        backgrounds. Solid shapes only, so it stays clear at favicon size.
+        The mark is a standalone lighthouse: a tapered tower, a lamp, a daymark band, and one
+        light beam. It uses the text color for the tower and the accent for the light, so the
+        same SVG works on light and dark backgrounds. Solid shapes only, so it stays clear at
+        favicon size.
       </p>
 
       <section className="mt-12">
@@ -76,10 +77,10 @@ export default function BrandPage() {
       <section className="mt-14">
         <h2 className="font-display text-lg font-semibold text-foreground">Concepts</h2>
         <p className="mt-2 text-sm text-muted">
-          Four directions explored. Beacon Dot ships as the default across the site.
+          Four earlier directions. The lighthouse above is the mark used across the site.
         </p>
         <div className="mt-6 grid gap-5 sm:grid-cols-2">
-          {MARK_CONCEPTS.map(({ id, name, status, blurb, Mark }) => (
+          {MARK_CONCEPTS.map(({ id, name, blurb, Mark }) => (
             <article
               key={id}
               className="rounded-[var(--radius-lg)] border border-border bg-surface p-5"
@@ -87,14 +88,7 @@ export default function BrandPage() {
               <div className="flex h-28 items-center justify-center rounded-[var(--radius-md)] bg-[var(--background)]">
                 <Mark size={64} />
               </div>
-              <div className="mt-4 flex items-center gap-2">
-                <h3 className="font-display text-base font-semibold text-foreground">{name}</h3>
-                {status === "default" && (
-                  <span className="rounded-md bg-accent/15 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-accent">
-                    Default
-                  </span>
-                )}
-              </div>
+              <h3 className="mt-4 font-display text-base font-semibold text-foreground">{name}</h3>
               <p className="mt-1.5 text-xs leading-relaxed text-muted">{blurb}</p>
             </article>
           ))}
@@ -141,14 +135,15 @@ export default function BrandPage() {
           Honest quality note
         </h2>
         <p className="mt-3 text-sm leading-relaxed text-muted">
-          Beacon Dot is a clean, ownable interim — stronger than Lamp Slit / B-Lens / Signal A
-          experiments and safe for decks and UI. It does{" "}
+          The lighthouse is the mark used on the site, in the portals, and in email. The four
+          cards above are earlier directions, including Beacon Dot. This SVG does{" "}
           <strong className="text-foreground">not</strong> beat a skilled human brand designer.
           For a mark you would put next to Linear or Notion without hesitation, commission a
           designer on Fiverr / 99designs / Dribbble for roughly{" "}
           <strong className="text-foreground">$100–300</strong> with this SVG as the brief.
-          Until then, prefer the typography-led wordmark lockup (
-          <code className="text-foreground">beacon-wordmark.svg</code>) on Canva covers.
+          On Canva covers, the wordmark lockup (
+          <code className="text-foreground">beacon-wordmark.svg</code>) carries the name with
+          the lighthouse.
         </p>
       </section>
 

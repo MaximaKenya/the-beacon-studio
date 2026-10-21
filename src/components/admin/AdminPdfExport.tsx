@@ -3,6 +3,17 @@
 import { useRef, useState } from "react";
 import { Download, Loader2, Printer } from "lucide-react";
 import type { AnalyticsSummary } from "@/lib/analytics-store";
+import {
+  BEACON_BAND,
+  BEACON_BASE,
+  BEACON_BEAM,
+  BEACON_BEAM_CORE,
+  BEACON_GALLERY,
+  BEACON_LANTERN,
+  BEACON_LIGHT,
+  BEACON_ROOF,
+  BEACON_TOWER,
+} from "@/components/brand/beaconPaths";
 import { siteConfig } from "@/data/site";
 
 const TZ = "Africa/Nairobi";
@@ -205,22 +216,17 @@ export function AdminPdfExport({ summary }: { summary: AnalyticsSummary }) {
               position: "relative",
             }}
           >
-            {/* Beacon Dot mark */}
+            {/* Lighthouse mark */}
             <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
-              <path
-                d="M11 4H21A7 7 0 0 1 28 11V21A7 7 0 0 1 21 28H11A7 7 0 0 1 4 21V11A7 7 0 0 1 11 4Z"
-                fill="#0f172a"
-              />
-              <path d="M10.1 8.1h3.7v15.8H10.1V8.1Z" fill="#0d9488" />
-              <path
-                d="M13.8 15.45h3.15c3.55 0 5.95 2 5.95 4.75 0 2.95-2.5 5.05-6.35 5.05H13.8V15.45Z"
-                fill="#0d9488"
-              />
-              <path
-                d="M16.55 18.2c1.7 0 2.75.95 2.75 2.25s-1.05 2.25-2.75 2.25H13.8v-4.5h2.75Z"
-                fill="#0f172a"
-              />
-              <circle cx="17.35" cy="11.95" r="4.45" fill="#0d9488" />
+              <path d={BEACON_BEAM} fill="#0d9488" opacity="0.45" />
+              <path d={BEACON_BEAM_CORE} fill="#0d9488" />
+              <path d={BEACON_ROOF} fill="#0f172a" />
+              <path d={BEACON_TOWER} fill="#0f172a" />
+              <path d={BEACON_BASE} fill="#0f172a" />
+              <path d={BEACON_GALLERY} fill="#0f172a" />
+              <path d={BEACON_LANTERN} fill="#0f172a" />
+              <path d={BEACON_BAND} fill="#0d9488" />
+              <circle cx={BEACON_LIGHT.cx} cy={BEACON_LIGHT.cy} r={BEACON_LIGHT.r} fill="#0d9488" />
             </svg>
           </div>
           <div style={{ flex: 1 }}>

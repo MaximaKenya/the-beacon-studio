@@ -3,11 +3,14 @@
 import { useCallback, useEffect, useState } from "react";
 import {
   AutomationDesk,
+  ChannelStatus,
   type DeskCharge,
   type DeskInstance,
   type DeskLead,
   type DeskLog,
 } from "@/components/automations/AutomationDesk";
+import { DemoSandbox } from "@/components/automations/DemoSandbox";
+import type { ChannelReadiness } from "@/lib/automations/channels";
 import { formatKes } from "@/lib/fx";
 import { parseResponseJson } from "@/lib/safe-json";
 
@@ -20,6 +23,7 @@ type ClientView = {
   logs: DeskLog[];
   charges: DeskCharge[];
   leads: DeskLead[];
+  channels?: ChannelReadiness;
 };
 
 type AdminView = {
@@ -29,7 +33,8 @@ type AdminView = {
   paused: number;
   demos: number;
   clients: ClientView[];
-  demosList: DeskInstance[];
+  sandbox?: { instances: DeskInstance[] };
+  channels?: ChannelReadiness;
 };
 
 const empty: AdminView = {
@@ -39,7 +44,7 @@ const empty: AdminView = {
   paused: 0,
   demos: 0,
   clients: [],
-  demosList: [],
+  sandbox: { instances: [] },
 };
 
 export function AdminAutomations() {
@@ -77,6 +82,10 @@ export function AdminAutomations() {
             <Summary label="Paused" value={String(data.paused)} />
             <Summary label="Demos" value={String(data.demos)} />
           </div>
+          {data.channels && <ChannelStatus channels={data.channels} />}
+          {data.sandbox && data.sandbox.instances.length > 0 && (
+            <DemoSandbox instances={data.sandbox.instances} onChanged={() => void load()} />
+          )}
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {data.clients.length === 0 && <p className="text-sm text-muted">No client automations yet.</p>}
             {data.clients.map((client) => (
@@ -85,7 +94,7 @@ export function AdminAutomations() {
                 type="button"
                 aria-pressed={client.email === email}
                 onClick={() => setEmail(client.email)}
-                className={`sleek-card rounded-2xl p-4 text-left ${client.email === email ? "ring-1 ring-accent/40" : ""}`}
+                className={`sleek-card rounded-2xl p-4 text-left ${client.email === email ? "choice-selected" : ""}`}
               >
                 <p className="font-medium text-foreground">{client.businessName || client.name}</p>
                 <p className="mt-1 text-xs text-muted">{client.email}</p>
@@ -105,20 +114,6 @@ export function AdminAutomations() {
               canActivate
               onChanged={() => void load()}
             />
-          )}
-          {data.demosList.length > 0 && (
-            <div>
-              <h3 className="mb-3 text-sm font-medium text-foreground">Demo previews</h3>
-              <AutomationDesk
-                instances={data.demosList}
-                logs={[]}
-                charges={[]}
-                leads={[]}
-                endpoint="/api/admin/automations"
-                canActivate
-                onChanged={() => void load()}
-              />
-            </div>
           )}
         </div>
       )}

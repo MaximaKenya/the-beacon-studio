@@ -36,8 +36,8 @@ const sizeMap = {
 } as const;
 
 /**
- * Beacon Dot mark + Plus Jakarta lockup — “The Beacon” / “Studio”.
- * Accent lives in the mark (signal disc); type stays clean and high-contrast.
+ * Lighthouse mark + lockup — “The Beacon” / “Studio”.
+ * Accent lives in the lamp and beam; type stays clean and high-contrast.
  */
 export function BeaconWordmark({
   size = "md",

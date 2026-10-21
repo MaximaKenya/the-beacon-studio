@@ -7,9 +7,13 @@ import {
   updateProject,
   addProjectUpdate,
   createProjectFromIntake,
+  createClientProject,
+  sanitizeMilestones,
+  isProjectStatus,
+  type ProjectRecord,
   type ProjectStatus,
-  type Milestone,
 } from "@/lib/projects";
+import { normalizeServiceIds } from "@/lib/intake-services";
 import { findClientById, listClients, upsertClient, updateClient } from "@/lib/clients";
 import { createQuotation, createReceiptFromPayment, listQuotations, listReceipts } from "@/lib/documents";
 import { listPayments, updatePaymentById } from "@/lib/payments";
@@ -37,6 +41,7 @@ type IntakeRow = Record<string, unknown> & {
   email?: string;
   company?: string;
   projectType?: string;
+  projectTypes?: unknown;
   budget?: string;
   timeline?: string;
   brief?: string;
@@ -116,11 +121,13 @@ export async function POST(request: Request) {
       name: String(intake.name ?? "Client"),
       company: intake.company ? String(intake.company) : undefined,
     });
+    const services = normalizeServiceIds(intake);
     const project = await createProjectFromIntake({
       clientId: client.id,
       intakeId: String(intake.id),
       name: String(intake.name ?? "Client"),
-      projectType: String(intake.projectType ?? "other"),
+      projectType: services[0] ?? "other",
+      projectTypes: services,
       budget: String(intake.budget ?? "explore"),
       timeline: String(intake.timeline ?? "exploring"),
       brief: String(intake.brief ?? "Converted from intake."),
@@ -163,11 +170,13 @@ export async function POST(request: Request) {
         name: String(intake.name ?? "Client"),
         company: intake.company ? String(intake.company) : undefined,
       });
+      const services = normalizeServiceIds(intake);
       const project = await createProjectFromIntake({
         clientId: client.id,
         intakeId: String(intake.id),
         name: String(intake.name ?? "Client"),
-        projectType: String(intake.projectType ?? "other"),
+        projectType: services[0] ?? "other",
+        projectTypes: services,
         budget: String(intake.budget ?? "explore"),
         timeline: String(intake.timeline ?? "exploring"),
         brief: String(intake.brief ?? "Converted from intake."),
@@ -278,16 +287,56 @@ export async function POST(request: Request) {
   }
 
   // ── Projects (portal sync) ────────────────────────────────
+  if (action === "project.create") {
+    const email = typeof body.email === "string" ? body.email.trim() : "";
+    const name = typeof body.name === "string" ? body.name.trim() : "";
+    const clientId = typeof body.clientId === "string" ? body.clientId.trim() : "";
+    let client = clientId ? await findClientById(clientId) : null;
+    if (!client) {
+      if (!email || !name) {
+        return NextResponse.json({ error: "Choose a client, or enter a name and email." }, { status: 400 });
+      }
+      client = await upsertClient({
+        email,
+        name,
+        company: typeof body.company === "string" ? body.company.trim() : undefined,
+      });
+    }
+    const services = normalizeServiceIds(body);
+    const milestones = Array.isArray(body.milestones) ? sanitizeMilestones(body.milestones) : undefined;
+    const status = typeof body.status === "string" && isProjectStatus(body.status) ? body.status : "active";
+    const project = await createClientProject({
+      clientId: client.id,
+      title: typeof body.title === "string" ? body.title : `${client.name} project`,
+      status,
+      projectType: services[0],
+      projectTypes: services,
+      brief: typeof body.brief === "string" ? body.brief : undefined,
+      milestones,
+      progressPercent: typeof body.progressPercent === "number" ? body.progressPercent : undefined,
+      adminNotes: typeof body.adminNotes === "string" ? body.adminNotes : undefined,
+      startDate: typeof body.startDate === "string" ? body.startDate : undefined,
+      targetDate: typeof body.targetDate === "string" ? body.targetDate : undefined,
+      updateMessage: typeof body.updateMessage === "string" ? body.updateMessage : undefined,
+    });
+    await ensureThread(project.id, client.id);
+    return NextResponse.json({ ok: true, project });
+  }
+
   if (action === "project.update") {
     const id = String(body.id ?? "");
-    const patch: Record<string, unknown> = {};
-    if (typeof body.status === "string") patch.status = body.status as ProjectStatus;
+    const patch: Partial<ProjectRecord> = {};
+    if (typeof body.status === "string" && isProjectStatus(body.status)) patch.status = body.status as ProjectStatus;
+    if (typeof body.title === "string" && body.title.trim()) patch.title = body.title.trim();
+    if (typeof body.brief === "string") patch.brief = body.brief;
     if (typeof body.nextPaymentDate === "string") patch.nextPaymentDate = body.nextPaymentDate;
     if (typeof body.nextPaymentAmount === "number")
       patch.nextPaymentAmount = body.nextPaymentAmount;
     if (typeof body.adminNotes === "string") patch.adminNotes = body.adminNotes;
+    if (typeof body.startDate === "string") patch.startDate = body.startDate;
+    if (typeof body.targetDate === "string") patch.targetDate = body.targetDate;
     if (typeof body.progressPercent === "number") patch.progressPercent = body.progressPercent;
-    if (Array.isArray(body.milestones)) patch.milestones = body.milestones as Milestone[];
+    if (Array.isArray(body.milestones)) patch.milestones = sanitizeMilestones(body.milestones);
     const updated = await updateProject(id, patch);
     if (!updated) return NextResponse.json({ error: "Not found" }, { status: 404 });
     if (typeof body.updateMessage === "string" && body.updateMessage.trim()) {

@@ -4,11 +4,13 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import {
   AutomationDesk,
+  ChannelStatus,
   type DeskCharge,
   type DeskInstance,
   type DeskLead,
   type DeskLog,
 } from "@/components/automations/AutomationDesk";
+import type { ChannelReadiness } from "@/lib/automations/channels";
 import { parseResponseJson } from "@/lib/safe-json";
 
 type Snapshot = {
@@ -16,6 +18,7 @@ type Snapshot = {
   logs: DeskLog[];
   charges: DeskCharge[];
   leads: DeskLead[];
+  channels?: ChannelReadiness;
 };
 
 const empty: Snapshot = { instances: [], logs: [], charges: [], leads: [] };
@@ -50,6 +53,7 @@ export function PortalAutomations() {
           Add from the buffet
         </Link>
       </div>
+      {data?.channels && <ChannelStatus channels={data.channels} />}
       {data ? (
         <AutomationDesk
           instances={data.instances}

@@ -12,54 +12,24 @@ import type {
   MailboxCounts,
 } from "@/lib/mailbox-types";
 import { fromAddress, isMailboxConfigured, sendResendEmail } from "@/lib/resend";
-import { readJsonFile, writeJsonFile } from "@/lib/storage";
+import { readJsonFile } from "@/lib/storage";
+import { normalizeServiceIds, serviceLabels } from "@/lib/intake-services";
 import { isValidEmail, normalizeEmail } from "@/lib/validation";
+import { sanitizeEmailHtml } from "@/lib/html-sanitize";
+import { describeInboundMail } from "@/lib/mail-ai";
+import {
+  hasResendMessage,
+  loadMailbox,
+  saveMailbox,
+  type PersistedAttachment as StoredAttachment,
+  type PersistedMailbox as MailboxDoc,
+  type PersistedMessage as StoredMessage,
+  type PersistedThread as StoredThread,
+} from "@/lib/mail-db";
 
-const FILE = "mailbox.json";
 const MAX_ATTACHMENT_BYTES = 1_500_000;
 const MAX_ATTACHMENTS = 3;
 const MAX_TEXT = 100_000;
-
-type StoredAttachment = {
-  id: string;
-  filename: string;
-  contentType: string;
-  size: number;
-  contentBase64?: string;
-};
-
-type StoredMessage = {
-  id: string;
-  direction: "in" | "out" | "draft";
-  from: string;
-  to: string[];
-  cc: string[];
-  subject: string;
-  text: string;
-  createdAt: string;
-  resendId?: string;
-  messageId?: string;
-  inReplyTo?: string;
-  attachments: StoredAttachment[];
-};
-
-type StoredThread = {
-  id: string;
-  subject: string;
-  folder: MailFolder;
-  unread: boolean;
-  participants: string[];
-  preview: string;
-  createdAt: string;
-  updatedAt: string;
-  clientId?: string;
-  clientName?: string;
-  leadId?: string;
-  leadKind?: string;
-  messages: StoredMessage[];
-};
-
-type MailboxDoc = { threads: StoredThread[] };
 
 export type OutboundAttachment = {
   filename: string;
@@ -92,6 +62,7 @@ type IntakeRow = {
   email?: string;
   brief?: string;
   projectType?: string;
+  projectTypes?: string[];
 };
 type BookingRow = {
   id?: string;
@@ -103,18 +74,18 @@ type BookingRow = {
   time?: string;
 };
 
-function emptyDoc(): MailboxDoc {
-  return { threads: [] };
-}
-
 async function readDoc(): Promise<MailboxDoc> {
-  const doc = await readJsonFile<MailboxDoc>(FILE, emptyDoc());
-  if (!doc || !Array.isArray(doc.threads)) return emptyDoc();
+  const doc = await loadMailbox();
+  for (const thread of doc.threads) {
+    if (thread.folder !== "inbox" && thread.folder !== "sent" && thread.folder !== "drafts" && thread.folder !== "archive") {
+      thread.folder = "inbox";
+    }
+  }
   return doc;
 }
 
 async function writeDoc(doc: MailboxDoc): Promise<void> {
-  await writeJsonFile(FILE, doc);
+  await saveMailbox(doc);
 }
 
 export function extractEmail(value: string): string {
@@ -147,7 +118,13 @@ function messageDomain(): string {
   return domain || "localhost";
 }
 
+function asFolder(value: string): MailFolder {
+  if (value === "inbox" || value === "sent" || value === "drafts" || value === "archive") return value;
+  return "inbox";
+}
+
 function viewMessage(message: StoredMessage): MailMessageView {
+  const html = message.html ? sanitizeEmailHtml(message.html) : "";
   return {
     id: message.id,
     direction: message.direction,
@@ -156,6 +133,7 @@ function viewMessage(message: StoredMessage): MailMessageView {
     cc: message.cc,
     subject: message.subject,
     text: message.text,
+    ...(html ? { html } : {}),
     createdAt: message.createdAt,
     attachments: message.attachments.map((file) => ({
       id: file.id,
@@ -171,7 +149,7 @@ function summarize(thread: StoredThread): MailThreadSummary {
   return {
     id: thread.id,
     subject: thread.subject,
-    folder: thread.folder,
+    folder: asFolder(thread.folder),
     unread: thread.unread,
     participants: thread.participants,
     preview: thread.preview,
@@ -179,6 +157,9 @@ function summarize(thread: StoredThread): MailThreadSummary {
     ...(thread.clientName ? { clientName: thread.clientName } : {}),
     ...(thread.leadId ? { leadId: thread.leadId } : {}),
     ...(thread.leadKind ? { leadKind: thread.leadKind } : {}),
+    ...(thread.summary ? { summary: thread.summary } : {}),
+    ...(thread.suggestedReply ? { suggestedReply: thread.suggestedReply } : {}),
+    ...(thread.tags?.length ? { tags: thread.tags } : {}),
     messageCount: thread.messages.length,
   };
 }
@@ -208,7 +189,9 @@ function matchesQuery(thread: StoredThread, query: string): boolean {
   const hay = [
     thread.subject,
     thread.preview,
+    thread.summary,
     thread.clientName,
+    ...(thread.tags || []),
     ...thread.participants,
     ...thread.messages.map((m) => `${m.from} ${m.subject} ${m.text}`),
   ]
@@ -338,7 +321,7 @@ async function linksFor(thread: StoredThread): Promise<{ client: MailClientLink 
       kind: "intake",
       name: row.name || email,
       email,
-      summary: (row.brief || row.projectType || "Intake").slice(0, 180),
+      summary: (row.brief || serviceLabels(normalizeServiceIds(row)) || "Intake").slice(0, 180),
     });
   }
   for (const row of bookings) {
@@ -486,13 +469,8 @@ async function deliverMessage(
     greeting: "Hello,",
     bodyText: message.text,
   });
-  const domain = messageDomain();
-  const messageId = `<${message.id}@${domain}>`;
-  const headers: Record<string, string> = { "Message-ID": messageId };
-  if (message.inReplyTo) {
-    headers["In-Reply-To"] = message.inReplyTo;
-    headers.References = message.inReplyTo;
-  }
+  const headers = threadingHeaders(thread, message);
+  if (headers.References) message.references = headers.References;
 
   const result = await sendResendEmail({
     to: message.to,
@@ -517,10 +495,27 @@ async function deliverMessage(
   }
   message.direction = "out";
   message.resendId = result.id;
-  message.messageId = messageId;
+  message.messageId = headers["Message-ID"];
   message.from = fromHeaderFallback();
   if (thread.folder === "drafts") thread.folder = "sent";
   return { sent: true };
+}
+
+export function threadingHeaders(
+  thread: { messages: { id: string; messageId?: string; references?: string }[] },
+  message: { id: string; inReplyTo?: string }
+): Record<string, string> {
+  const headers: Record<string, string> = { "Message-ID": `<${message.id}@${messageDomain()}>` };
+  if (!message.inReplyTo) return headers;
+  const prior = thread.messages.flatMap((item) => {
+    if (item.id === message.id) return [];
+    const chain = item.references ? item.references.split(/\s+/) : [];
+    return item.messageId ? [...chain, item.messageId] : chain;
+  });
+  const references = [...new Set([...prior, message.inReplyTo].map((item) => item.trim()).filter(Boolean))];
+  headers["In-Reply-To"] = message.inReplyTo;
+  headers.References = references.join(" ");
+  return headers;
 }
 
 function fromHeaderFallback(): string {
@@ -729,6 +724,11 @@ export async function ingestInboundEmail(input: {
   headers?: Record<string, string> | null;
   attachments?: { id?: string; filename?: string | null; contentType?: string; size?: number; contentBase64?: string }[];
 }): Promise<{ duplicate: boolean; threadId: string }> {
+  if (await hasResendMessage(input.emailId)) {
+    const existing = await readDoc();
+    const thread = existing.threads.find((row) => row.messages.some((message) => message.resendId === input.emailId));
+    return { duplicate: true, threadId: thread?.id || "" };
+  }
   const doc = await readDoc();
   if (doc.threads.some((thread) => thread.messages.some((message) => message.resendId === input.emailId))) {
     const existing = doc.threads.find((thread) => thread.messages.some((message) => message.resendId === input.emailId));
@@ -755,7 +755,10 @@ export async function ingestInboundEmail(input: {
       return sameSubject && known && Boolean(input.subject);
     });
 
-  const text = clip(input.text?.trim() || (input.html ? htmlToText(input.html) : "") || "(no message body)");
+  const html = input.html ? sanitizeEmailHtml(input.html) : "";
+  const text = clip(input.text?.trim() || (html ? htmlToText(html) : "") || "(no message body)");
+  const rfcMessageId = headerValue(input.headers, "message-id") || input.messageId || "";
+  const inboundReferences = headerValue(input.headers, "references");
   const now = new Date().toISOString();
   const attachments: StoredAttachment[] = [];
   for (const file of input.attachments ?? []) {
@@ -788,10 +791,12 @@ export async function ingestInboundEmail(input: {
     cc: input.cc ?? [],
     subject: input.subject || "(no subject)",
     text,
+    ...(html ? { html } : {}),
     createdAt: now,
     resendId: input.emailId,
-    ...(input.messageId ? { messageId: input.messageId } : {}),
+    ...(rfcMessageId ? { messageId: rfcMessageId } : {}),
     ...(references[0] ? { inReplyTo: references[0] } : {}),
+    ...(inboundReferences ? { references: inboundReferences } : {}),
     attachments,
   };
 
@@ -823,7 +828,29 @@ export async function ingestInboundEmail(input: {
       thread.clientName = client.name;
     }
   }
-  await writeDoc(doc);
+  const insight = await describeInboundMail({ from: message.from, subject: message.subject, text });
+  if (insight) {
+    if (insight.summary) thread.summary = insight.summary;
+    if (insight.suggestedReply) thread.suggestedReply = insight.suggestedReply;
+    thread.tags = insight.tags;
+  }
+  const linked = await linksFor(thread);
+  const lead = linked.leads[0];
+  if (lead) {
+    thread.leadId = lead.id;
+    thread.leadKind = lead.kind;
+  } else if (insight?.isLead) {
+    thread.tags = [...new Set([...(thread.tags || []), "lead"])];
+  }
+  try {
+    await writeDoc(doc);
+  } catch (error) {
+    const messageText = error instanceof Error ? error.message : "";
+    if (/mail_messages_resend_id_idx|duplicate key/i.test(messageText)) {
+      return { duplicate: true, threadId: thread.id };
+    }
+    throw error;
+  }
   return { duplicate: false, threadId: thread.id };
 }
 

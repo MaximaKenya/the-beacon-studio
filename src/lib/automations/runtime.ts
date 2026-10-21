@@ -4,7 +4,8 @@ import { templateById } from "@/automations/templates/public";
 import { parseTemplateConfig } from "@/automations/templates/schema";
 import { upcomingSlots } from "@/automations/slots";
 import { upsertClient } from "@/lib/clients";
-import { deliver } from "@/lib/automations/channels";
+import { channelReadiness, deliver } from "@/lib/automations/channels";
+import { SANDBOX_EMAIL } from "@/lib/automations/setup-guides";
 import { markChargePaid, recordReview, runEngine } from "@/lib/automations/engine";
 import { addLog, instancesForEmail, loadAutomations, saveAutomations } from "@/lib/automations/store";
 import type { AutomationDoc, AutomationInstance } from "@/lib/automations/types";
@@ -78,7 +79,7 @@ export async function runDueJobs(origin: string): Promise<{ ran: number }> {
     if (job.kind === "appointment-reminder") {
       const booking = doc.bookings.find((item) => item.id === job.bookingId && item.status === "confirmed");
       if (booking) {
-        await deliver({
+        const sent = await deliver({
           instance,
           email: booking.email,
           phone: booking.phone,
@@ -87,7 +88,7 @@ export async function runDueJobs(origin: string): Promise<{ ran: number }> {
         });
         instance.stats.messages += 1;
         instance.stats.reminders += 1;
-        addLog(doc, instance.id, `Appointment reminder sent to ${booking.name}.`);
+        addLog(doc, instance.id, `Appointment reminder for ${booking.name}. ${sent.note}`);
       }
       job.status = "done";
       ran += 1;
@@ -119,7 +120,6 @@ type CheckoutInput = {
   templateIds: string[];
   configs: Record<string, unknown>;
   billing: BillingInterval;
-  includeSetup: boolean;
   ownerName: string;
   ownerEmail: string;
   businessName: string;
@@ -136,7 +136,7 @@ export async function startBundleCheckout(input: CheckoutInput): Promise<
   if (!input.ownerName.trim() || !input.businessName.trim()) {
     return { ok: false, status: 400, message: "Add your name and the business name." };
   }
-  const quote = quoteBundle(input.templateIds, { billing: input.billing, includeSetup: input.includeSetup });
+  const quote = quoteBundle(input.templateIds, { billing: input.billing });
   if (!quote || quote.count === 0) return { ok: false, status: 400, message: "Pick at least one automation." };
 
   const configs = new Map<string, Record<string, unknown>>();
@@ -286,9 +286,10 @@ export async function adminSnapshot() {
     active: active.length,
     pending: live.filter((item) => item.status === "pending_payment").length,
     paused: live.filter((item) => item.status === "paused").length,
-    demos: doc.instances.filter((item) => item.demo).length,
+    demos: doc.instances.filter((item) => item.ownerEmail === SANDBOX_EMAIL).length,
+    channels: channelReadiness(),
     clients,
-    demosList: snapshotFor(doc, doc.instances.filter((item) => item.demo)).instances,
+    sandbox: snapshotFor(doc, doc.instances.filter((item) => item.ownerEmail === SANDBOX_EMAIL)),
   };
 }
 
@@ -309,7 +310,25 @@ function snapshotFor(doc: AutomationDoc, instances: AutomationInstance[]) {
     leads: doc.leads.filter((lead) => ids.has(lead.instanceId)).slice(-40).reverse(),
     bookings: doc.bookings.filter((booking) => ids.has(booking.instanceId)),
     reviews: doc.reviews.filter((review) => ids.has(review.instanceId)),
+    channels: channelReadiness(),
   };
+}
+
+export async function stopFollowUps(id: string, email?: string) {
+  const doc = await loadAutomations();
+  const instance = doc.instances.find((item) => item.id === id);
+  if (!instance) return { ok: false, message: "Not found." };
+  if (email && instance.ownerEmail !== normalizeEmail(email)) return { ok: false, message: "Not your automation." };
+  let stopped = 0;
+  for (const job of doc.jobs) {
+    if (job.instanceId === id && job.status === "due" && (job.kind === "sequence" || job.kind === "date-reminder" || job.kind === "custom-reminder")) {
+      job.status = "cancelled";
+      stopped += 1;
+    }
+  }
+  addLog(doc, id, stopped ? `Stopped ${stopped} scheduled message${stopped === 1 ? "" : "s"}.` : "No scheduled messages were waiting.");
+  await saveAutomations(doc);
+  return { ok: true, message: stopped ? "Follow-ups stopped." : "Nothing was scheduled." };
 }
 
 export async function setInstanceStatus(id: string, status: "active" | "paused" | "pending_payment", origin: string) {
@@ -365,6 +384,7 @@ export async function bookingView(slug: string) {
 }
 
 export async function bookSlot(slug: string, input: { start: string; name: string; email?: string; phone?: string; note?: string }, origin: string) {
+  void origin;
   const doc = await loadAutomations();
   const instance = doc.instances.find((item) => item.slug === slug && item.status === "active");
   if (!instance) return { ok: false, message: "Booking is not open." };

@@ -1,3 +1,14 @@
+import {
+  BEACON_BAND,
+  BEACON_BASE,
+  BEACON_BEAM,
+  BEACON_BEAM_CORE,
+  BEACON_GALLERY,
+  BEACON_LANTERN,
+  BEACON_LIGHT,
+  BEACON_ROOF,
+  BEACON_TOWER,
+} from "@/components/brand/beaconPaths";
 import { siteConfig } from "@/data/site";
 
 export function escapeHtml(value: string): string {
@@ -9,7 +20,7 @@ export function escapeHtml(value: string): string {
     .replace(/'/g, "&#39;");
 }
 
-/** Plain text for display. Inbound HTML is never rendered. */
+/** Plain text extracted from HTML. The admin thread view renders sanitized HTML separately. */
 export function htmlToText(html: string): string {
   return html
     .replace(/<style[\s\S]*?<\/style>/gi, " ")
@@ -34,6 +45,21 @@ export function textToHtml(text: string): string {
   return escapeHtml(text).replace(/\n/g, "<br/>");
 }
 
+/** Inline lighthouse for clients that render SVG. Tower is white on the teal header. */
+function emailMarkSvg(): string {
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 32 32" role="img" aria-label="The Beacon Studio" style="display:block;">
+    <path d="${BEACON_BEAM}" fill="#d8fff6" opacity="0.55"/>
+    <path d="${BEACON_BEAM_CORE}" fill="#ffffff"/>
+    <path d="${BEACON_ROOF}" fill="#ffffff"/>
+    <path d="${BEACON_TOWER}" fill="#ffffff"/>
+    <path d="${BEACON_BASE}" fill="#ffffff"/>
+    <path d="${BEACON_GALLERY}" fill="#ffffff"/>
+    <path d="${BEACON_LANTERN}" fill="#ffffff"/>
+    <path d="${BEACON_BAND}" fill="#d8fff6"/>
+    <circle cx="${BEACON_LIGHT.cx}" cy="${BEACON_LIGHT.cy}" r="${BEACON_LIGHT.r}" fill="#d8fff6"/>
+  </svg>`;
+}
+
 export function brandedEmail(opts: { heading: string; greeting: string; bodyText: string }): {
   html: string;
   text: string;
@@ -50,7 +76,8 @@ export function brandedEmail(opts: { heading: string; greeting: string; bodyText
     <tr><td align="center">
       <table role="presentation" width="100%" style="max-width:560px;background:#ffffff;border-radius:18px;overflow:hidden;">
         <tr><td style="background:#0c6e64;padding:22px 28px;">
-          <p style="margin:0;font-family:ui-monospace,monospace;font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:#d7f3ee;">${escapeHtml(name)}</p>
+          ${emailMarkSvg()}
+          <p style="margin:10px 0 0;font-family:ui-monospace,monospace;font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:#d7f3ee;">${escapeHtml(name)}</p>
           <h1 style="margin:8px 0 0;font-size:22px;line-height:1.3;font-weight:600;color:#ffffff;">${escapeHtml(opts.heading)}</h1>
         </td></tr>
         <tr><td style="padding:28px;font-size:16px;line-height:1.6;color:#1b2a33;">

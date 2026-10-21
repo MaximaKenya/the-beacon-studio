@@ -31,20 +31,22 @@ export async function GET(request: Request) {
     });
   }
 
+  const owned = session ? await findProjectsByClient(session.clientId) : [];
   let project = projectId ? await findProjectById(projectId) : null;
 
   if (!project && session) {
-    const projects = await findProjectsByClient(session.clientId);
-    project = projects[0] ?? null;
+    project = owned[0] ?? null;
   }
 
   if (!project) {
-    return NextResponse.json({ error: "Project not found." }, { status: 404 });
+    return NextResponse.json({ error: "Project not found.", projects: [] }, { status: 404 });
   }
 
   if (!admin && session && project.clientId !== session.clientId) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
+
+  const projects = admin ? await findProjectsByClient(project.clientId) : owned;
 
   const client = await findClientById(project.clientId);
   const quotation = await findQuotationByProject(project.id);
@@ -59,6 +61,7 @@ export async function GET(request: Request) {
 
   return NextResponse.json({
     project,
+    projects,
     client: client
       ? { id: client.id, name: client.name, email: client.email, company: client.company }
       : null,

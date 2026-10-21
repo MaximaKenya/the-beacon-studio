@@ -8,12 +8,14 @@ import { createQuotation } from "@/lib/documents";
 import { createAccessToken } from "@/lib/portal-auth";
 import { ensureThread } from "@/lib/messages";
 import { attributionFromRecord, attributionNote, type LeadAttribution } from "@/lib/attribution";
+import { isKnownService, normalizeServiceIds, serviceLabels } from "@/lib/intake-services";
 
 export const runtime = "nodejs";
 
 export type IntakeEntry = LeadAttribution & {
   id: string;
   projectType: string;
+  projectTypes: string[];
   budget: string;
   timeline: string;
   brief: string;
@@ -41,7 +43,8 @@ export async function POST(request: Request) {
     }
 
     const body = await parseRequestJson(request);
-    const projectType = typeof body.projectType === "string" ? body.projectType.trim() : "";
+    const projectTypes = normalizeServiceIds(body);
+    const projectType = projectTypes[0] ?? "";
     const budget = typeof body.budget === "string" ? body.budget.trim() : "";
     const timeline = typeof body.timeline === "string" ? body.timeline.trim() : "";
     const brief = typeof body.brief === "string" ? body.brief.trim() : "";
@@ -55,7 +58,7 @@ export async function POST(request: Request) {
     const attribution = attributionFromRecord(body);
     const campaign = attributionNote(attribution);
 
-    const validType = siteConfig.intake.projectTypes.some((t) => t.id === projectType);
+    const validType = projectTypes.length > 0 && projectTypes.every((id) => isKnownService(id));
     const validBudget = siteConfig.intake.budgets.some((b) => b.id === budget);
     const validTimeline = siteConfig.intake.timelines.some((t) => t.id === timeline);
 
@@ -80,6 +83,7 @@ export async function POST(request: Request) {
     const entry: IntakeEntry = {
       id: `intake-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
       projectType,
+      projectTypes,
       budget,
       timeline,
       brief,
@@ -107,6 +111,7 @@ export async function POST(request: Request) {
       intakeId: entry.id,
       name,
       projectType,
+      projectTypes,
       budget,
       timeline,
       brief,
@@ -126,7 +131,7 @@ export async function POST(request: Request) {
     intakes.push(entry);
     await writeJsonFile("intakes.json", intakes);
 
-    const typeLabel = siteConfig.intake.projectTypes.find((item) => item.id === projectType)?.label ?? projectType;
+    const typeLabel = serviceLabels(projectTypes) || projectType;
     try {
       const { recordSiteForm } = await import("@/lib/mailbox");
       await recordSiteForm({

@@ -21,6 +21,7 @@ import { DocumentActions } from "@/components/documents/DocumentActions";
 import { ChatPanel } from "@/components/portal/ChatPanel";
 import type { QuotationRecord } from "@/lib/documents";
 import { parseResponseJson } from "@/lib/safe-json";
+import { normalizeServiceIds, serviceLabels } from "@/lib/intake-services";
 
 type Booking = {
   id?: string;
@@ -46,6 +47,7 @@ type Intake = {
   name?: string;
   email?: string;
   projectType?: string;
+  projectTypes?: string[];
   budget?: string;
   timeline?: string;
   brief?: string;
@@ -431,7 +433,7 @@ export function AdminOpsHub({
                   >
                     <p className="font-medium text-foreground">{i.name ?? "Guest"}</p>
                     <p className="text-xs text-muted">
-                      {i.email} · {i.projectType} · {i.budget}
+                      {i.email} · {serviceLabels(normalizeServiceIds(i)) || i.projectType} · {i.budget}
                     </p>
                     <p className="mt-1 font-mono text-[10px] text-muted">
                       {when(i.submittedAt ?? i.createdAt)}
@@ -791,7 +793,7 @@ export function AdminOpsHub({
                   {drawer.item.email}
                 </p>
                 <p className="text-muted">
-                  {drawer.item.projectType} · {drawer.item.budget} · {drawer.item.timeline}
+                  {serviceLabels(normalizeServiceIds(drawer.item)) || drawer.item.projectType} · {drawer.item.budget} · {drawer.item.timeline}
                 </p>
                 <p className="whitespace-pre-wrap text-foreground">{drawer.item.brief}</p>
                 <label className="block text-xs text-muted">Admin notes</label>

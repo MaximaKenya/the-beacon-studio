@@ -7,6 +7,7 @@ import { SectionHeading } from "@/components/ui/SectionHeading";
 import { ContactForm } from "@/components/ui/ContactForm";
 import { useFeatures } from "@/providers/FeatureProvider";
 import { mailtoHref, phoneHref, trackCallClick, trackEmailClick } from "@/lib/contact-actions";
+import { isPlaceholderContact } from "@/lib/launch";
 
 export function Contact() {
   const { openBooking } = useFeatures();
@@ -18,14 +19,14 @@ export function Contact() {
           <SectionHeading
             label="Contact"
             title="Say hello"
-            description="Email, call, or book a time. We reply within one to two business days (EAT)."
+            description="Call or book a time. We reply within one business day (EAT)."
           />
         </ScrollReveal>
 
         <div className="grid gap-12 lg:grid-cols-[1fr_1.2fr] lg:gap-16">
           <ScrollReveal delay={0.1} variant="slide-right">
             <div className="space-y-8">
-              <div>
+              {!isPlaceholderContact(siteConfig.email) && (
                 <div>
                   <h3 className="font-display font-semibold text-foreground">Email</h3>
                   <a
@@ -36,7 +37,7 @@ export function Contact() {
                     {siteConfig.email}
                   </a>
                 </div>
-              </div>
+              )}
 
               <div>
                 <div>
@@ -68,14 +69,16 @@ export function Contact() {
                   <Phone className="h-4 w-4" />
                   Call now
                 </a>
-                <a
-                  href={mailtoHref("Hello Beacon")}
-                  onClick={() => trackEmailClick("contact_cta")}
-                  className="inline-flex h-11 items-center gap-2 rounded-2xl bg-surface-elevated/80 px-5 text-sm font-semibold text-foreground"
-                >
-                  <Mail className="h-4 w-4 text-accent" />
-                  Email
-                </a>
+                {!isPlaceholderContact(siteConfig.email) && (
+                  <a
+                    href={mailtoHref("Hello Beacon")}
+                    onClick={() => trackEmailClick("contact_cta")}
+                    className="inline-flex h-11 items-center gap-2 rounded-2xl bg-surface-elevated/80 px-5 text-sm font-semibold text-foreground"
+                  >
+                    <Mail className="h-4 w-4 text-accent" />
+                    Email
+                  </a>
+                )}
                 <button
                   type="button"
                   onClick={() => openBooking()}
@@ -85,10 +88,11 @@ export function Contact() {
                 </button>
               </div>
 
+              {siteConfig.social.some((s) => s.icon !== "email" && !isPlaceholderContact(s.href)) && (
               <p className="text-sm leading-relaxed text-muted">
                 Prefer social? Find {siteConfig.founder.shortName} on{" "}
                 {siteConfig.social
-                  .filter((s) => s.icon !== "email")
+                  .filter((s) => s.icon !== "email" && !isPlaceholderContact(s.href))
                   .map((s, i, arr) => (
                     <span key={s.name}>
                       <a
@@ -104,6 +108,7 @@ export function Contact() {
                   ))}
                 .
               </p>
+              )}
             </div>
           </ScrollReveal>
 

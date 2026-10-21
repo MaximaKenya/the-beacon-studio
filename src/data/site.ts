@@ -302,7 +302,7 @@ const products: Product[] = [
     name: "ConfiRent",
     tagline: "Property management with confidence",
     description:
-      "Find, rent, buy, and manage property in Kenya from one place. Landlords collect rent by M-Pesa or card with nothing taken off the top, and people looking for a home see listings from verified listers.",
+      "Find, rent, buy, and manage property in Kenya. Landlords collect rent by M-Pesa or card. ConfiRent takes 0% of rent.",
     tags: ["Property", "M-Pesa", "Kenya"],
     status: "live" as ProductStatus,
     statusLabel: "Live · soft launch",
@@ -310,10 +310,10 @@ const products: Product[] = [
     audience:
       "People looking for a home, landlords, agents and agencies, developers, and short-stay guests.",
     features: [
-      "Rent goes by M-Pesa or card straight to the landlord's account. ConfiRent takes 0% of rent.",
-      "Each payment is matched to the tenancy, so you can see who has paid, who owes, and pull statements and receipts.",
-      "Listers are checked with an ID, a selfie, and a KRA PIN, then reviewed by an admin.",
-      "Message one-to-one for free on every plan, and ask the assistant about rent, plans, and listings.",
+      "Rent goes by M-Pesa or card to the landlord. ConfiRent takes 0%.",
+      "See who has paid, who owes, and pull statements.",
+      "Listers are checked with an ID, a selfie, and a KRA PIN.",
+      "Free one-to-one messaging, plus an assistant for rent and listings.",
     ],
     keyFeatures: [
       "Rent is collected by M-Pesa (STK prompt) or card and paid straight to the landlord's payout account. ConfiRent takes 0% of rent.",
@@ -334,7 +334,7 @@ const products: Product[] = [
     name: "CadenceApp",
     tagline: "The unified operations platform for customer teams",
     description:
-      "Replace a dialer, debtor spreadsheets, WhatsApp, email, and a separate CRM with one workspace. Call, chase payments, message customers, and let AI handle repetitive replies from the same place.",
+      "One workspace for calling, collections, messages, and AI replies. Replaces a separate dialer, spreadsheet, WhatsApp, email, and CRM.",
     tags: ["Collections", "Calling", "Messaging"],
     status: "beta" as ProductStatus,
     statusLabel: "Beta / early access",
@@ -342,10 +342,10 @@ const products: Product[] = [
     audience:
       "Customer teams that currently split work across a dialer, spreadsheets, WhatsApp, email, and a CRM.",
     features: [
-      "Dial manually, in power mode, or on auto, on office lines, cloud voice, or the agent's mobile, including Kenyan numbers.",
-      "Returned calls go to the account owner, an inbound team, or any free agent, with the account open. Missed calls become callbacks.",
-      "Keep a full debtor profile, track promises to pay, and set payment plans or settlement offers, with a suggested next step.",
-      "AI replies to email and WhatsApp, answers pricing questions, and builds reports from your own knowledge base, with a spending cap.",
+      "Manual, power, or auto dialing, including Kenyan numbers.",
+      "Returned calls open the right account. Missed calls become callbacks.",
+      "Debtor profiles, promises to pay, and payment plans.",
+      "AI replies on email and WhatsApp, with a spending cap.",
     ],
     keyFeatures: [
       "Dialer with manual, power, and auto modes. It works with office PBX or GSM lines, cloud voice, or the agent's mobile, and handles Kenyan number formats.",
@@ -439,8 +439,8 @@ export const siteConfig = {
   tagline: "Products and custom software.",
   bio: `I'm Max, founder of The Beacon Studio. I build software from Nairobi for people anywhere.`,
 
-  /** TODO(go-live): replace email, LinkedIn, and Twitter before public launch */
-  email: "hello@example.com",
+  /** LinkedIn and Twitter are still placeholders and stay off the public pages. */
+  email: "hello@thebeaconstudio.co.ke",
   /** Kenya E.164. tel: links and https://wa.me/254706397373 */
   phone: "+254706397373",
   /** Display form for UI */
@@ -461,21 +461,21 @@ export const siteConfig = {
   ] satisfies PersonalityTrait[],
 
   meetMeVideo: {
-    url: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+    url: "",
     poster: "/images/video/meet-me-poster.jpg",
     title: "Meet the founder",
-    caption: "A quick hello from Max — swap this embed URL in site.ts with your real intro video.",
+    caption: "Founder video is not published yet.",
   } satisfies MeetMeVideo,
 
   heroVideo: "" as string,
 
   seo: {
-    siteUrl: "https://the-beacon-studio-0def818a6eaf.herokuapp.com",
+    siteUrl: "https://thebeaconstudio.co.ke",
     ogImage: "/opengraph-image",
     twitterHandle: "@yourusername",
     title: "The Beacon Studio — Products and custom software",
     description:
-      "Nairobi software studio. ConfiRent helps you find, rent, buy, and manage property in Kenya. CadenceApp is one workspace for customer teams. LookFinesse and ConfiLearn are coming soon. We also do AI automation, custom software, and outsourced IT.",
+      "Nairobi studio for AI automation, custom software, and managed IT. ConfiRent is live. CadenceApp is in early access.",
     keywords: [
       "The Beacon Studio",
       "Beacon",
@@ -532,7 +532,7 @@ export const siteConfig = {
     },
     {
       name: "Email",
-      href: "mailto:hello@example.com",
+      href: "mailto:hello@thebeaconstudio.co.ke",
       icon: "email" as const,
     },
   ] satisfies SocialLink[],
@@ -747,7 +747,7 @@ export const siteConfig = {
   },
 
   pricingDisclaimer:
-    "Ready-made automations are monthly, from KES 2,500 to KES 6,500 each (about $19–$50), with a bundle discount at 3, 5, and 8 or more, and a further discount if you pay annually. Setup fees are optional and listed per automation. Pilot is a one-off custom workflow from $1,350. A retainer is from $450 a month. Multi-workflow is from $4,500, quoted after discovery. Custom software and outsourced IT are quoted after a short call or a free assessment. A custom-build deposit paid online is 30% via Paystack (M-Pesa or card) or an invoice. A ready-made bundle is one Paystack checkout or one invoice for the whole selection.",
+    "Ready-made automations are KES 2,500–6,500 a month (about $19–$50). Save 10% at 3, 15% at 5, and 22% at 8 or more. Annual billing takes another 15% off. Setup fees are included. A Pilot starts at $1,350. Multi-workflow starts at $4,500 after discovery. A retainer starts at $450 a month. Custom software and IT are quoted after a free call. Online custom deposits are 30%.",
 
   /**
    * Ready-made automation prices. The buffet, checkout, and Beacon AI read this list.
@@ -774,7 +774,7 @@ export const siteConfig = {
     templates: [
       { id: "lead-reply", name: "Lead auto-reply & qualifier", category: "Sales", outcome: "Reply to a new lead and tell you if they are a fit.", summary: "Web form or WhatsApp webhook. Groq qualifies the message, replies, saves the lead, and emails you.", priceKes: 4500, priceUsd: 35, setupFeeKes: 0, setupFeeUsd: 0 },
       { id: "abandoned-quote", name: "Abandoned-quote follow-up", category: "Sales", outcome: "Nudge quotes that went quiet.", summary: "A short follow-up sequence for quotes that were not accepted.", priceKes: 3500, priceUsd: 27, setupFeeKes: 0, setupFeeUsd: 0 },
-      { id: "lead-nurture", name: "Lead nurture drip", category: "Sales", outcome: "A paced sequence until a lead is ready.", summary: "Scheduled notes to new leads, then it stops when you mark them won or lost.", priceKes: 4500, priceUsd: 35, setupFeeKes: 0, setupFeeUsd: 0 },
+      { id: "lead-nurture", name: "Lead nurture drip", category: "Sales", outcome: "A paced sequence until a lead is ready.", summary: "Scheduled notes to new leads. Stop follow-ups from the portal when they are done.", priceKes: 4500, priceUsd: 35, setupFeeKes: 0, setupFeeUsd: 0 },
       { id: "daily-sales", name: "Daily sales summary", category: "Sales", outcome: "Yesterday's sales in your inbox each morning.", summary: "A daily email of the leads, payments, and notes your automations recorded.", priceKes: 2500, priceUsd: 19, setupFeeKes: 0, setupFeeUsd: 0 },
       { id: "social-drafts", name: "Social post drafts", category: "Sales", outcome: "Draft posts ready for you to publish.", summary: "Groq drafts the week's posts from your topics. Nothing is published for you.", priceKes: 3500, priceUsd: 27, setupFeeKes: 0, setupFeeUsd: 0 },
       { id: "invoice-reminders", name: "Invoice & payment reminders", category: "Finance", outcome: "Chase invoices and stop when they are paid.", summary: "Customer list, due dates, Paystack payment links, email or WhatsApp reminders, and a stop when Paystack confirms payment.", priceKes: 6500, priceUsd: 50, setupFeeKes: 5000, setupFeeUsd: 38 },
@@ -811,13 +811,13 @@ export const siteConfig = {
   automationPricing: {
     buildTitle: "Ready-made — monthly",
     buildBody:
-      "Tick the automations you need. Each one is KES 2,500–6,500 a month (about $19–$50). A bundle discount applies at 3 or more (10%), 5 or more (15%), and 8 or more (22%). Paying for the year takes a further 15% off the monthly total. Setup fees are optional and shown on the automations that have one.",
+      "Tick the automations you need. Each one is KES 2,500–6,500 a month (about $19–$50). A bundle discount applies at 3 or more (10%), 5 or more (15%), and 8 or more (22%). Paying for the year takes a further 15% off the monthly total. Setup fees are included in the total on every automation that has one.",
     careTitle: "Custom build",
     careBody:
       "Pilot is a one-off build of one workflow from $1,350, usually in 2–3 weeks. Multi-workflow is from $4,500 and is quoted after discovery. A retainer from $450 a month covers monitoring, fixes, and improvements after a custom build is live.",
     flexibilityTitle: "Flexible for small teams",
     flexibilityIntro:
-      "The free 20-minute audit comes first. Ready-made automations are paid as one Paystack checkout (M-Pesa or card) or one invoice for the whole bundle. A custom Pilot paid online takes a 30% deposit. On the audit, a smaller organisation can ask to use one of these instead. We confirm it in writing before you pay.",
+      "Start with a free 20-minute audit. Pay a ready-made bundle in one Paystack checkout or one invoice. A custom Pilot paid online takes a 30% deposit. Smaller teams can ask for one of these on the call. We confirm it in writing before you pay.",
     flexibility: [
       {
         id: "split",
@@ -946,7 +946,7 @@ export const siteConfig = {
       id: "faq-2",
       question: "How much does automation cost?",
       answer:
-        "Ready-made automations are KES 2,500–6,500 a month each (about $19–$50). Three or more take 10% off, five or more 15%, and eight or more 22%. Paying annually takes another 15% off. Setup fees are optional. A custom Pilot is one workflow from $1,350, usually 2–3 weeks. Several custom workflows start from $4,500 after discovery. A retainer for monitoring, fixes, and improvements starts at $450 a month. The 20-minute audit is free. Smaller teams can ask for a 50/50 split, three monthly M-Pesa instalments on a Pilot, an NGO, school, or SACCO discount, or pay-after-results on a first custom workflow.",
+        "KES 2,500–6,500 a month each (about $19–$50). Bundles save 10%, 15%, or 22%. Annual billing saves another 15%. Setup fees are included. A Pilot starts at $1,350. Multi-workflow starts at $4,500. A retainer starts at $450 a month. The audit is free. Smaller teams can ask about a 50/50 split, three M-Pesa instalments, a discount, or pay-after-results.",
     },
     {
       id: "faq-3",
@@ -963,13 +963,13 @@ export const siteConfig = {
       id: "faq-7",
       question: "What is ConfiRent?",
       answer:
-        "ConfiRent is a Kenyan platform to find, rent, buy, and manage property. It is in soft launch at confirent.co.ke. Landlords collect rent by M-Pesa or card, and ConfiRent takes 0% of rent. Listings come from listers checked with an ID, a selfie, and a KRA PIN. Messaging is free on every plan. Landlords start free; paid plans from KES 2,999/month. Agents free for 3 listings. Featured listings from KES 300/week.",
+        "A Kenyan platform to find, rent, buy, and manage property. Soft launch at confirent.co.ke. Rent by M-Pesa or card, and ConfiRent takes 0%. Listers are ID-checked. Landlords start free; paid plans from KES 2,999/month.",
     },
     {
       id: "faq-8",
       question: "What is CadenceApp?",
       answer:
-        "CadenceApp is in early access at cadenceapp.co.ke. It replaces a separate dialer, debtor spreadsheets, WhatsApp, email, and CRM with one workspace for calling, collections, messages, and AI replies on email and WhatsApp. Per-seat pricing, pay only for the modules you use. 14-day free trial.",
+        "Early access at cadenceapp.co.ke. One workspace for calling, collections, messages, and AI replies. Per-seat pricing. 14-day free trial.",
     },
     {
       id: "faq-5",
@@ -981,7 +981,7 @@ export const siteConfig = {
       id: "faq-audit-page",
       question: "How do I book the free 20-minute audit?",
       answer:
-        "Open /book and pick a weekday slot between 09:00 and 17:00 East Africa Time. The audit is free. The slot is saved. A confirmation email with a calendar file is sent when email delivery is configured.",
+        "Open /book and pick a weekday slot, 09:00–17:00 East Africa Time. The audit is free. A confirmation email goes out when email delivery is configured.",
     },
     {
       id: "faq-checklist",
@@ -1128,7 +1128,7 @@ export const siteConfig = {
       { id: "exploring", label: "Just exploring" },
     ] satisfies IntakeTimeline[],
     stepHelp: {
-      type: "Pick the closest match — no jargon required. Schools, churches, shops, and NGOs welcome.",
+      type: "Select every service you need. You can choose more than one. Schools, churches, shops, and NGOs welcome.",
       budget: "A rough range helps us scope honestly. “Not sure yet” is a perfectly fine answer.",
       timeline: "When do you hope to see something live? Exploring is okay — we’ll still reply.",
       brief: "In plain English: who is it for, what should it do, and what does success look like?",

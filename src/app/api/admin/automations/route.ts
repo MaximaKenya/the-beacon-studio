@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
-import { addInstanceNote, adminSnapshot, saveInstanceConfig, setInstanceStatus } from "@/lib/automations/runtime";
+import { resetDemoSandbox, runSandboxNow } from "@/lib/automations/sandbox";
+import { addInstanceNote, adminSnapshot, saveInstanceConfig, setInstanceStatus, stopFollowUps } from "@/lib/automations/runtime";
 import { parseRequestJson } from "@/lib/storage";
 
 export const runtime = "nodejs";
@@ -30,5 +31,8 @@ export async function POST(request: Request) {
   }
   if (action === "config") return NextResponse.json(await saveInstanceConfig(id, body.config));
   if (action === "note") return NextResponse.json(await addInstanceNote(id, String(body.text || ""), "studio"));
+  if (action === "stop") return NextResponse.json(await stopFollowUps(id));
+  if (action === "run") return NextResponse.json(await runSandboxNow(id, body.sendToMe === true));
+  if (action === "reset-demo") return NextResponse.json(await resetDemoSandbox());
   return NextResponse.json({ error: "Unknown action." }, { status: 400 });
 }

@@ -3,6 +3,7 @@ import { readJsonFile, writeJsonFile } from "@/lib/storage";
 import { addDaysIso, fileDateStamp, slugifyFilename } from "@/lib/time";
 import { getDepositPercent, type PaymentRecord } from "@/lib/payments";
 import { siteConfig } from "@/data/site";
+import { normalizeServiceIds, serviceLabels } from "@/lib/intake-services";
 import type { ProjectRecord } from "@/lib/projects";
 import type { ClientRecord } from "@/lib/clients";
 
@@ -126,13 +127,13 @@ export async function createQuotation(input: {
     clientEmail: client.email,
     clientCompany: client.company,
     scopeSummary: project.brief,
-    projectTypeLabel: typeLabel(project.projectType),
+    projectTypeLabel: serviceLabels(normalizeServiceIds(project)) || typeLabel(project.projectType),
     budgetLabel: budgetLabel(project.budget),
     timelineLabel: timelineLabel(project.timeline),
     lineItems: quoteOnly
       ? [
           {
-            label: typeLabel(project.projectType),
+            label: serviceLabels(normalizeServiceIds(project)) || typeLabel(project.projectType),
             detail: "Quoted after a free assessment. No price until we look at the setup.",
           },
         ]

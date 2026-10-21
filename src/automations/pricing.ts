@@ -46,7 +46,7 @@ function applyPercent(amount: number, percent: number): number {
 /** Server and the buffet use this so the charged total matches the calculator. */
 export function quoteBundle(
   ids: string[],
-  options: { billing: BillingInterval; includeSetup: boolean }
+  options: { billing: BillingInterval }
 ): BundleQuote | null {
   const unique = [...new Set(ids)];
   const items: QuoteLine[] = [];
@@ -58,8 +58,8 @@ export function quoteBundle(
       name: item.name,
       monthlyKes: item.priceKes,
       monthlyUsd: item.priceUsd,
-      setupKes: options.includeSetup ? item.setupFeeKes : 0,
-      setupUsd: options.includeSetup ? item.setupFeeUsd : 0,
+      setupKes: item.setupFeeKes,
+      setupUsd: item.setupFeeUsd,
     });
   }
 

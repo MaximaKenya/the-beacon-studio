@@ -15,7 +15,6 @@ export async function POST(request: Request) {
       templateIds,
       configs,
       billing,
-      includeSetup: body.includeSetup === true,
       ownerName: typeof body.ownerName === "string" ? body.ownerName : "",
       ownerEmail: typeof body.ownerEmail === "string" ? body.ownerEmail : "",
       businessName: typeof body.businessName === "string" ? body.businessName : "",

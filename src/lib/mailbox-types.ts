@@ -16,6 +16,7 @@ export type MailMessageView = {
   cc: string[];
   subject: string;
   text: string;
+  html?: string;
   createdAt: string;
   attachments: MailAttachmentView[];
 };
@@ -45,6 +46,9 @@ export type MailThreadSummary = {
   clientName?: string;
   leadId?: string;
   leadKind?: string;
+  summary?: string;
+  suggestedReply?: string;
+  tags?: string[];
   messageCount: number;
 };
 
