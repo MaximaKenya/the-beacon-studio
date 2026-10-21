@@ -95,6 +95,22 @@ export async function POST(request: Request) {
     bookings.unshift(booking);
     await writeJsonFile("bookings.json", bookings);
 
+    try {
+      const { captureLead } = await import("@/lib/leads");
+      await captureLead({
+        kind: "booking",
+        sourceId: booking.id,
+        source: source || "booking",
+        channel: "booking",
+        name,
+        email,
+        phone,
+        message: [meetingType, date, time, message].filter(Boolean).join("\n"),
+      });
+    } catch (error) {
+      console.error("[book] lead", error instanceof Error ? error.message : "lead failed");
+    }
+
     const { upsertClient } = await import("@/lib/clients");
     await upsertClient({
       email,

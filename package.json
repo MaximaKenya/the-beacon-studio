@@ -11,6 +11,7 @@
     "heroku-postbuild": "npm run build",
     "start": "next start",
     "lint": "eslint",
+    "test": "tsx --test src/lib/lead-extract.test.ts src/lib/leads.test.ts",
     "db:migrate-files": "tsx scripts/migrate-files.ts",
     "automations:run": "tsx scripts/run-each-automation.ts"
   },

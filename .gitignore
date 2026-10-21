@@ -38,6 +38,7 @@ yarn-error.log*
 # subscriber & booking data (local dev)
 data/bookings.json
 data/subscribers.json
+data/leads.json
 
 # vercel
 .vercel

@@ -2,6 +2,9 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Loader2, Send } from "lucide-react";
+import { AdminToast, useAdminToast } from "@/components/admin/AdminToast";
+import { BookingPopup } from "@/components/admin/BookingPopup";
+import { LeadEmailButton, LeadPhoneLinks } from "@/components/admin/LeadContactLinks";
 import { formatNairobi } from "@/lib/time";
 import { parseResponseJson } from "@/lib/safe-json";
 import type { InboxItem, InboxKind } from "@/lib/inbox";
@@ -74,6 +77,8 @@ export function AdminInbox() {
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(true);
   const [mailThreadId, setMailThreadId] = useState<string | null>(null);
+  const [bookingOpen, setBookingOpen] = useState(false);
+  const { toast, flash } = useAdminToast();
 
   const visible = useMemo(
     () => (filter === "all" ? items : items.filter((item) => item.kind === filter)),
@@ -89,13 +94,14 @@ export function AdminInbox() {
     setLoading(false);
     const id = keepId ?? selectedId;
     if (id && next.some((item) => item.id === id)) {
-      await openItem(id, false);
+      await openItem(id, false, { popup: false });
     }
   }
 
-  async function openItem(id: string, clearNote = true) {
+  async function openItem(id: string, clearNote = true, opts?: { popup?: boolean }) {
     setSelectedId(id);
     setMailThreadId(null);
+    if (opts?.popup !== false) setBookingOpen(id.startsWith("booking:"));
     if (clearNote) {
       setNote(null);
       setError(null);
@@ -158,11 +164,67 @@ export function AdminInbox() {
       );
       if (!res.ok) throw new Error(data.error || "Could not send reply.");
       setReply("");
-      setNote(data.note || "Saved.");
+      const saved = data.note || "Reply saved.";
+      setNote(saved);
+      flash(saved);
       if (data.thread) setThread(data.thread);
       await loadList(selected.id);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not send reply.");
+      const message = err instanceof Error ? err.message : "Could not send reply.";
+      setError(message);
+      flash(message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function bookingAction(payload: Record<string, unknown>, success: string): Promise<boolean> {
+    if (!selected || selected.kind !== "booking") return false;
+    setBusy(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/admin/ops", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...payload, id: selected.sourceId }),
+      });
+      const data = await parseResponseJson<{
+        error?: string;
+        emailNote?: string;
+        booking?: {
+          status?: string;
+          date?: string;
+          time?: string;
+          rescheduleNote?: string;
+          convertedToLead?: boolean;
+        };
+      }>(res, {});
+      if (!res.ok) throw new Error(data.error || "Could not update the booking.");
+      const booking = data.booking;
+      if (booking) {
+        setItems((current) =>
+          current.map((item) =>
+            item.id === selected.id
+              ? {
+                  ...item,
+                  status: booking.status || item.status,
+                  date: booking.date || item.date,
+                  time: booking.time || item.time,
+                  rescheduleNote: booking.rescheduleNote ?? item.rescheduleNote,
+                  convertedToLead: booking.convertedToLead ?? item.convertedToLead,
+                }
+              : item
+          )
+        );
+      }
+      flash(data.emailNote ? `${success}. ${data.emailNote}` : `${success}.`);
+      await loadList(selected.id);
+      return true;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Could not update the booking.";
+      setError(message);
+      flash(message);
+      return false;
     } finally {
       setBusy(false);
     }
@@ -185,10 +247,14 @@ export function AdminInbox() {
       });
       const data = await parseResponseJson<{ error?: string }>(res, {});
       if (!res.ok) throw new Error(data.error || "Could not update review.");
-      setNote(visibility === "approved" ? "Review is public." : "Review is hidden.");
+      const saved = visibility === "approved" ? "Review is public." : "Review is hidden.";
+      setNote(saved);
+      flash(saved);
       await loadList(selected.id);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not update review.");
+      const message = err instanceof Error ? err.message : "Could not update review.";
+      setError(message);
+      flash(message);
     } finally {
       setBusy(false);
     }
@@ -196,6 +262,45 @@ export function AdminInbox() {
 
   return (
     <section id="inbox" className="admin-panel admin-section p-5 sm:p-6">
+      <AdminToast message={toast} />
+      {bookingOpen && selected?.kind === "booking" && (
+        <BookingPopup
+          key={selected.id}
+          item={selected}
+          busy={busy}
+          reply={reply}
+          onReplyChange={setReply}
+          onConfirm={() => void bookingAction({ action: "booking.update", status: "confirmed" }, "Booking confirmed")}
+          onDecline={() => void bookingAction({ action: "booking.update", status: "declined" }, "Booking declined")}
+          onReschedule={(input) =>
+            void bookingAction(
+              {
+                action: "booking.update",
+                status: "reschedule",
+                rescheduleNote: input.note,
+                adminNotes: input.note,
+                ...(input.date ? { date: input.date } : {}),
+                ...(input.time ? { time: input.time } : {}),
+              },
+              "Reschedule saved"
+            )
+          }
+          onReply={() => {
+            if (!reply.trim()) {
+              flash("Write a reply first.");
+              return;
+            }
+            void sendReply();
+          }}
+          onConvert={() => void bookingAction({ action: "booking.convert" }, "Lead saved")}
+          onClose={() => {
+            void bookingAction({ action: "booking.update", close: true }, "Booking closed").then((ok) => {
+              if (ok) setBookingOpen(false);
+            });
+          }}
+          onDismiss={() => setBookingOpen(false)}
+        />
+      )}
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="admin-kicker">Messages</p>
@@ -317,9 +422,23 @@ export function AdminInbox() {
                   {selected.name}
                 </h3>
                 <p className="text-sm text-muted">
-                  {selected.email}
-                  {selected.phone !== "—" ? ` · ${selected.phone}` : ""}
+                  <LeadEmailButton email={selected.email} subject={`Re: ${selected.name}`} />
+                  {selected.phone !== "—" ? (
+                    <>
+                      {" "}
+                      · <LeadPhoneLinks phone={selected.phone} />
+                    </>
+                  ) : null}
                 </p>
+                {selected.kind === "booking" && !bookingOpen && (
+                  <button
+                    type="button"
+                    className="mt-3 text-sm font-semibold text-accent"
+                    onClick={() => setBookingOpen(true)}
+                  >
+                    Open booking
+                  </button>
+                )}
                 <p className="mt-3 whitespace-pre-wrap text-sm text-foreground">{selected.message}</p>
                 {mailThreadId && (
                   <button

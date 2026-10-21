@@ -28,6 +28,24 @@ export function formatNairobiDate(d: Date | string = new Date()): string {
   });
 }
 
+/** YYYY-MM-DD in Africa/Nairobi. Date inputs and lead filters use this. */
+export function nairobiDateKey(d: Date | string = new Date()): string {
+  const date = typeof d === "string" ? new Date(d) : d;
+  if (Number.isNaN(date.getTime())) return "";
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: NAIROBI_TZ,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(date);
+  const get = (type: string) => parts.find((part) => part.type === type)?.value ?? "";
+  const year = get("year");
+  const month = get("month");
+  const day = get("day");
+  if (!year || !month || !day) return "";
+  return `${year}-${month}-${day}`;
+}
+
 /** Compact stamp for filenames: YYYYMMDD */
 export function fileDateStamp(d: Date | string = new Date()): string {
   const date = typeof d === "string" ? new Date(d) : d;

@@ -90,6 +90,13 @@ export async function saveBeaconLeadFromMessages(
         message,
       });
     }
+    await rememberBeaconLead({
+      sourceId: existing.id,
+      name: existing.name,
+      email: existing.email,
+      phone: existing.phone || "",
+      message,
+    });
     return "updated";
   }
 
@@ -117,6 +124,13 @@ export async function saveBeaconLeadFromMessages(
 
   all.unshift(entry);
   await writeJsonFile("contacts.json", all);
+  await rememberBeaconLead({
+    sourceId: entry.id,
+    name,
+    email: entry.email,
+    phone: entry.phone || "",
+    message,
+  });
   await notifyStudio({
     name,
     email: emailOk ? extracted.email : "",
@@ -124,6 +138,32 @@ export async function saveBeaconLeadFromMessages(
     message,
   });
   return "created";
+}
+
+async function rememberBeaconLead(input: {
+  sourceId: string;
+  name: string;
+  email: string;
+  phone: string;
+  message: string;
+}): Promise<void> {
+  try {
+    const { captureLead } = await import("@/lib/leads");
+    await captureLead(
+      {
+        kind: "contact",
+        sourceId: input.sourceId,
+        source: "beacon-ai",
+        name: input.name,
+        email: input.email,
+        phone: input.phone,
+        message: input.message,
+      },
+      { ai: false }
+    );
+  } catch (error) {
+    console.error("[beacon-ai] lead", error instanceof Error ? error.message : "lead failed");
+  }
 }
 
 async function notifyStudio(input: {

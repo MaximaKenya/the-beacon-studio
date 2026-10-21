@@ -69,6 +69,22 @@ export async function POST(request: Request) {
     all.unshift(entry);
     await writeJsonFile("contacts.json", all);
 
+    try {
+      const { captureLead } = await import("@/lib/leads");
+      await captureLead({
+        kind: "contact",
+        sourceId: entry.id,
+        source: entry.source || "contact-form",
+        name,
+        email,
+        phone,
+        services: topic ? [topic] : [],
+        message,
+      });
+    } catch (error) {
+      console.error("[contact] lead", error instanceof Error ? error.message : "lead failed");
+    }
+
     const { sendResendEmail, isResendConfigured } = await import("@/lib/resend");
     const { siteConfig } = await import("@/data/site");
     const { recordSiteForm } = await import("@/lib/mailbox");
