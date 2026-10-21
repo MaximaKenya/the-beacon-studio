@@ -110,7 +110,7 @@ export default function AdminPage() {
 
   async function checkAuth() {
     try {
-      const res = await fetch("/api/admin/auth");
+      const res = await fetch("/api/admin/auth", { cache: "no-store" });
       const data = await parseResponseJson<{ authenticated?: boolean }>(res, {});
       setAuth(data.authenticated ? "in" : "out");
     } catch {
@@ -121,8 +121,8 @@ export default function AdminPage() {
   async function loadStats() {
     setLoadingStats(true);
     try {
-      const res = await fetch("/api/admin/stats");
-      if (!res.ok) {
+      const res = await fetch("/api/admin/stats", { cache: "no-store" });
+      if (res.status === 401) {
         setAuth("out");
         return;
       }
@@ -215,6 +215,7 @@ export default function AdminPage() {
     const res = await fetch("/api/admin/auth", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      cache: "no-store",
       body: JSON.stringify({ password }),
     });
     const data = await parseResponseJson<{ error?: string }>(res, {});
@@ -223,11 +224,18 @@ export default function AdminPage() {
       return;
     }
     setPassword("");
+    const session = await fetch("/api/admin/auth", { cache: "no-store" });
+    const sessionData = await parseResponseJson<{ authenticated?: boolean }>(session, {});
+    if (!sessionData.authenticated) {
+      setError("Password accepted, but the browser did not keep the session. Open the site over HTTPS and try again.");
+      setAuth("out");
+      return;
+    }
     setAuth("in");
   }
 
   async function logout() {
-    await fetch("/api/admin/auth", { method: "DELETE" });
+    await fetch("/api/admin/auth", { method: "DELETE", cache: "no-store" });
     setAuth("out");
     setSummary(null);
   }

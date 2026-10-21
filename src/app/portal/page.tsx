@@ -44,7 +44,7 @@ export default function PortalDashboardPage() {
   const [focusId, setFocusId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
-    const auth = await fetch("/api/portal/auth");
+    const auth = await fetch("/api/portal/auth", { cache: "no-store" });
     const authData = await parseResponseJson<{ authenticated?: boolean }>(auth, {});
     if (!authData.authenticated) {
       router.replace("/portal/login");
@@ -65,7 +65,7 @@ export default function PortalDashboardPage() {
       nextPaymentDays: null,
     });
     if (!res.ok || !payload.project) {
-      const sessionRes = await fetch("/api/portal/auth");
+      const sessionRes = await fetch("/api/portal/auth", { cache: "no-store" });
       const session = await parseResponseJson<{
         authenticated?: boolean;
         client?: { id: string; name: string; email: string };
@@ -96,6 +96,7 @@ export default function PortalDashboardPage() {
     await fetch("/api/portal/auth", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      cache: "no-store",
       body: JSON.stringify({ action: "logout" }),
     });
     router.replace("/portal/login");
