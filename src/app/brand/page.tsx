@@ -80,7 +80,7 @@ export default function BrandPage() {
           Four earlier directions. The lighthouse above is the mark used across the site.
         </p>
         <div className="mt-6 grid gap-5 sm:grid-cols-2">
-          {MARK_CONCEPTS.map(({ id, name, status, blurb, Mark }) => (
+          {MARK_CONCEPTS.map(({ id, name, blurb, Mark }) => (
             <article
               key={id}
               className="rounded-[var(--radius-lg)] border border-border bg-surface p-5"
@@ -88,14 +88,7 @@ export default function BrandPage() {
               <div className="flex h-28 items-center justify-center rounded-[var(--radius-md)] bg-[var(--background)]">
                 <Mark size={64} />
               </div>
-              <div className="mt-4 flex items-center gap-2">
-                <h3 className="font-display text-base font-semibold text-foreground">{name}</h3>
-                {status === "default" && (
-                  <span className="rounded-md bg-accent/15 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-accent">
-                    Default
-                  </span>
-                )}
-              </div>
+              <h3 className="mt-4 font-display text-base font-semibold text-foreground">{name}</h3>
               <p className="mt-1.5 text-xs leading-relaxed text-muted">{blurb}</p>
             </article>
           ))}
