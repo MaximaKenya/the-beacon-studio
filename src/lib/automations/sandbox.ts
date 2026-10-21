@@ -41,8 +41,8 @@ function kenyanConfig(id: string, base: Record<string, unknown>): Record<string,
   const brian = person("Brian Mwangi", "brian.mwangi@example.com", "254723000088");
   const patches: Record<string, Record<string, unknown>> = {
     "lead-reply": {
-      greeting: "Warm and short. Jamii Traders is a hardware shop in Industrial Area, Nairobi.",
-      qualifyNotes: "A good lead names the goods they need, a Nairobi location, and a phone number.",
+      greeting: "Thanks for writing to Jamii Traders. We have your message and will call you about the order.",
+      qualifyNotes: "Warm and short. Jamii Traders is a hardware shop in Industrial Area, Nairobi. A good lead names the goods they need, a Nairobi location, and a phone number.",
     },
     "abandoned-quote": {
       steps: "Still thinking about the quote from Jamii Traders?\nWe can hold the cement price until Friday.\nLast note from us on this quote.",
