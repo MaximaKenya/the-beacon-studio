@@ -14,6 +14,7 @@ import {
   type BookedSlot,
 } from "@/lib/booking-utils";
 import { rememberBookingDraft } from "@/lib/booking-draft-client";
+import { BookingDepositOffer } from "@/components/booking/BookingDepositOffer";
 import { VisitorTimeZone } from "@/components/booking/VisitorTimeZone";
 
 const AUDIT_ID = "automation-audit";
@@ -29,7 +30,7 @@ export function AuditBooking() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
-  const [done, setDone] = useState<{ when: string; emailSent: boolean } | null>(null);
+  const [done, setDone] = useState<{ id: string; when: string; emailSent: boolean } | null>(null);
 
   useEffect(() => {
     const handle = window.setTimeout(() => {
@@ -93,12 +94,13 @@ export function AuditBooking() {
           ...readStoredAttribution(),
         }),
       });
-      const data = (await res.json()) as { error?: string; emailSent?: boolean };
+      const data = (await res.json()) as { error?: string; emailSent?: boolean; booking?: { id?: string } };
       if (!res.ok) {
         setError(data.error || "That slot is no longer open.");
         return;
       }
       setDone({
+        id: data.booking?.id || "",
         when: `${formatDateDisplay(date)} at ${formatTimeDisplay(time)}`,
         emailSent: Boolean(data.emailSent),
       });
@@ -121,6 +123,7 @@ export function AuditBooking() {
             ? "A confirmation email with a calendar file is on its way."
             : "The slot is saved. A confirmation email is sent when email delivery is configured."}
         </p>
+        {done.id ? <BookingDepositOffer bookingId={done.id} email={email} /> : null}
       </div>
     );
   }

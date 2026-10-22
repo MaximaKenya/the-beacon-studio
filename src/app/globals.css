@@ -995,12 +995,28 @@ h4 {
   animation: page-enter 0.45s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+@keyframes lighthouse-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+.lighthouse-float {
+  animation: lighthouse-float 1.4s ease-in-out infinite;
+  filter: drop-shadow(0 12px 22px color-mix(in srgb, var(--accent) 38%, transparent));
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
   }
 
   .page-enter,
+  .lighthouse-float,
   .hero-flow-wash,
   .hero-flow-spine::after,
   .hero-flow-chip,

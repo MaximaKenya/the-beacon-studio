@@ -7,10 +7,11 @@ import { durationForMeeting } from "@/lib/booking-utils";
 
 export const dynamic = "force-dynamic";
 
-type Params = { params: Promise<{ id: string }> };
+type Params = { params: Promise<{ id: string }>; searchParams: Promise<{ deposit?: string }> };
 
-export default async function BookingRequestPage({ params }: Params) {
+export default async function BookingRequestPage({ params, searchParams }: Params) {
   const { id } = await params;
+  const { deposit } = await searchParams;
   const booking = await findBooking(id);
   if (!booking?.date || !booking.time) notFound();
   const label = meetingLabelFor(booking.meetingType);
@@ -25,6 +26,12 @@ export default async function BookingRequestPage({ params }: Params) {
       <p className="text-sm font-medium text-accent">{siteConfig.brand.name}</p>
       <h1 className="mt-3 font-display text-4xl font-semibold tracking-tight text-heading">{label}</h1>
       <p className="mt-3 text-muted">{when}</p>
+      {deposit === "paid" && (
+        <p className="mt-4 text-sm text-foreground">Deposit received. The call is still on the calendar.</p>
+      )}
+      {deposit === "pending" && (
+        <p className="mt-4 text-sm text-muted">The deposit was not confirmed. The call is still booked.</p>
+      )}
       <div className="sleek-card mt-8 rounded-3xl p-6">
         <dl className="space-y-4 text-sm">
           <div>

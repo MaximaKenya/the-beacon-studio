@@ -28,6 +28,7 @@ import {
   type BookedSlot,
 } from "@/lib/booking-utils";
 import { rememberBookingDraft } from "@/lib/booking-draft-client";
+import { BookingDepositOffer } from "@/components/booking/BookingDepositOffer";
 import { VisitorTimeZone } from "@/components/booking/VisitorTimeZone";
 import { trackEvent } from "@/lib/analytics";
 import { readStoredAttribution } from "@/lib/attribution-client";
@@ -281,6 +282,7 @@ export function BookingModal() {
                   <p className="mt-1 text-xs text-muted">
                     Confirmation sent to {result.booking.email}
                   </p>
+                  <BookingDepositOffer bookingId={result.booking.id} email={result.booking.email} />
                   <button
                     type="button"
                     onClick={downloadICS}

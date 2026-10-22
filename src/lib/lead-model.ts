@@ -86,6 +86,8 @@ export function channelLabel(channel: string): string {
   const known = LEAD_CHANNELS.find((item) => item.id === channel);
   if (known) return known.label;
   if (channel === "beacon-ai") return "Beacon AI";
+  if (channel === "sms") return "SMS";
+  if (channel === "whatsapp") return "WhatsApp";
   if (channel === "lead-magnet") return "Checklist";
   if (channel === "newsletter") return "Newsletter";
   if (channel === "invoice-request") return "Invoice request";
@@ -115,7 +117,9 @@ export function categoryLabel(id: string): string {
 export function leadCategoryLabel(lead: Pick<StudioLead, "services" | "category">): string {
   const labels = lead.services.map(categoryLabel).filter((label) => label && label !== "—");
   const unique = [...new Set(labels)];
-  if (unique.length) return unique.join(", ");
+  const fromServices = unique.join(", ");
+  if (lead.category && lead.category.length > fromServices.length) return lead.category;
+  if (unique.length) return fromServices;
   return lead.category || "—";
 }
 

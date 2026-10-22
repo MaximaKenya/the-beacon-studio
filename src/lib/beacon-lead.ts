@@ -1,10 +1,7 @@
 import { randomUUID } from "crypto";
 import { siteConfig } from "@/data/site";
-import {
-  beaconLeadNote,
-  extractBeaconLead,
-  type BeaconChatMessage,
-} from "@/lib/beacon-ai";
+import { extractBeaconLead, type BeaconChatMessage } from "@/lib/beacon-ai";
+import { conversationTranscript, leadCategory, qualifyFromMessages } from "@/lib/assistant-guide";
 import { upsertClient } from "@/lib/clients";
 import { isResendConfigured, sendResendEmail } from "@/lib/resend";
 import { readJsonFile, writeJsonFile } from "@/lib/storage";
@@ -56,8 +53,9 @@ export async function saveBeaconLeadFromMessages(
   const phoneOk = phoneDigits.length >= 9 && phoneDigits.length <= 15;
   if (!emailOk && !phoneOk) return "skipped";
 
-  const name = extracted.name || "Beacon AI visitor";
-  const message = beaconLeadNote(messages);
+  const qualification = qualifyFromMessages(messages);
+  const name = extracted.name || qualification.name || "Beacon AI visitor";
+  const message = conversationTranscript(messages, qualification);
   const all = await readJsonFile<ContactRow[]>("contacts.json", []);
   const existing = all.find((row) => {
     if (row.source !== "beacon-ai") return false;
@@ -96,6 +94,8 @@ export async function saveBeaconLeadFromMessages(
       email: existing.email,
       phone: existing.phone || "",
       message,
+      category: leadCategory(qualifyFromMessages(messages)),
+      budget: qualifyFromMessages(messages).budget,
     });
     return "updated";
   }
@@ -130,6 +130,8 @@ export async function saveBeaconLeadFromMessages(
     email: entry.email,
     phone: entry.phone || "",
     message,
+    category: leadCategory(qualification),
+    budget: qualification.budget,
   });
   await notifyStudio({
     name,
@@ -146,6 +148,8 @@ async function rememberBeaconLead(input: {
   email: string;
   phone: string;
   message: string;
+  category?: string;
+  budget?: string;
 }): Promise<void> {
   try {
     const { captureLead } = await import("@/lib/leads");
@@ -154,10 +158,13 @@ async function rememberBeaconLead(input: {
         kind: "contact",
         sourceId: input.sourceId,
         source: "beacon-ai",
+        channel: "beacon-ai",
         name: input.name,
         email: input.email,
         phone: input.phone,
         message: input.message,
+        ...(input.category ? { category: input.category } : {}),
+        ...(input.budget ? { budget: input.budget } : {}),
       },
       { ai: false }
     );

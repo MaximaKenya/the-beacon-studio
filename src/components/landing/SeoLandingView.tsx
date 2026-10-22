@@ -7,6 +7,8 @@ import {
   templatesForLanding,
   type SeoLanding,
 } from "@/data/landings";
+import { studiesForIndustry } from "@/data/work";
+import { BreadcrumbJsonLd } from "@/components/seo/BreadcrumbJsonLd";
 import { FaqJsonLd } from "@/components/seo/FaqJsonLd";
 import { JsonLd } from "@/components/seo/OrganizationJsonLd";
 import { absoluteUrl } from "@/lib/seo";
@@ -56,6 +58,12 @@ export function LandingJsonLd({ page }: { page: SeoLanding }) {
         }}
       />
       <FaqJsonLd items={page.faqs} />
+      <BreadcrumbJsonLd
+        items={[
+          { name: "Home", path: "/" },
+          { name: page.eyebrow, path: page.path },
+        ]}
+      />
     </>
   );
 }
@@ -66,6 +74,7 @@ export function SeoLandingView({ page }: { page: SeoLanding }) {
   const others = (page.kind === "industry" ? industryLandings : categoryLandings).filter(
     (item) => item.slug !== page.slug
   );
+  const studies = page.kind === "industry" ? studiesForIndustry(page.slug) : [];
 
   return (
     <article className="mx-auto max-w-6xl px-6 pb-24 pt-28 lg:px-8">
@@ -203,6 +212,24 @@ export function SeoLandingView({ page }: { page: SeoLanding }) {
           ))}
         </div>
       </section>
+
+      {studies.length > 0 && (
+        <section className="mt-14" aria-labelledby="work-heading">
+          <h2 id="work-heading" className="font-display text-2xl font-semibold text-heading">
+            Studio work
+          </h2>
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">{studies[0]?.note}</p>
+          <ul className="mt-4 flex flex-wrap gap-3">
+            {studies.map(({ study }) => (
+              <li key={study.slug}>
+                <Link href={study.path} className="text-sm font-semibold text-accent">
+                  {study.title}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <nav className="mt-14" aria-label="Related pages">
         <h2 className="font-display text-xl font-semibold text-heading">

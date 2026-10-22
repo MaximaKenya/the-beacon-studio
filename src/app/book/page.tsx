@@ -1,3 +1,4 @@
+import { BreadcrumbJsonLd } from "@/components/seo/BreadcrumbJsonLd";
 import { FaqJsonLd } from "@/components/seo/FaqJsonLd";
 import { AuditBooking } from "@/components/booking/AuditBooking";
 import { siteConfig } from "@/data/site";
@@ -34,6 +35,12 @@ export default function BookPage() {
   return (
     <div className="mx-auto max-w-3xl px-6 pb-24 pt-28 lg:px-8">
       <FaqJsonLd items={faqs} />
+      <BreadcrumbJsonLd
+        items={[
+          { name: "Home", path: "/" },
+          { name: "Book a call", path: "/book" },
+        ]}
+      />
       <p className="text-sm font-medium text-accent">{siteConfig.brand.name} · {siteConfig.location}</p>
       <h1 className="mt-3 font-display text-4xl font-semibold tracking-tight text-heading">
         Book a free 20-minute audit

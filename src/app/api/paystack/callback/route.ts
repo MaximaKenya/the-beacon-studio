@@ -13,6 +13,11 @@ export async function GET(request: Request) {
     try {
       const payment = await verifyPaystackReference(reference);
       paid = payment?.status === "success";
+      if (payment?.bookingId) {
+        return NextResponse.redirect(
+          `${url.origin}/bookings/${payment.bookingId}?deposit=${paid ? "paid" : "pending"}`
+        );
+      }
       if (payment?.automationInstanceIds?.length) {
         if (paid) await fulfillAutomationPayment(payment, url.origin);
         const email = payment.payerEmail ? `&email=${encodeURIComponent(payment.payerEmail)}` : "";

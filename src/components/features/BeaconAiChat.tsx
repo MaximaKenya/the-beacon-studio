@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { usePathname } from "next/navigation";
 import { Send, X } from "lucide-react";
 import { BeaconMark } from "@/components/brand/BeaconMark";
+import { LighthouseSpinner } from "@/components/brand/LighthouseSpinner";
 import { ChatMessageContent } from "@/components/features/ChatMessageContent";
 import { useFeatures } from "@/providers/FeatureProvider";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
@@ -16,13 +17,16 @@ import { beaconAiUnavailableText, BEACON_AI_MAX_MESSAGE_CHARS } from "@/lib/beac
 type Message = { role: "user" | "assistant"; content: string };
 
 const GREETING =
-  "Hi, I'm Beacon AI. Ask about automation, products, or IT. I can book you a free 20-minute audit, or take your name and email.";
+  "Hi, I'm Beacon AI. Tell me what you need, your budget, and when you want it. I can quote from our price list and book a free 20-minute audit.";
 
 const SUGGESTIONS = [
-  "How much does automation cost?",
-  "Which products are live?",
-  "What does managed IT include?",
+  "I need reminders for a clinic",
+  "How much does a Pilot cost?",
+  "Book a call this month",
 ];
+
+type ChatSlot = { date: string; time: string; label: string };
+type ChatContact = { name?: string; email?: string; phone?: string };
 
 type StreamEvent = {
   delta?: string;
@@ -30,18 +34,22 @@ type StreamEvent = {
   fallback?: boolean;
   leadSaved?: boolean;
   error?: string;
+  slots?: ChatSlot[];
+  contact?: ChatContact;
 };
 
 async function readBeaconStream(
   response: Response,
   onDelta: (delta: string) => void
-): Promise<{ leadSaved: boolean; sawDelta: boolean }> {
-  if (!response.body) return { leadSaved: false, sawDelta: false };
+): Promise<{ leadSaved: boolean; sawDelta: boolean; slots: ChatSlot[]; contact?: ChatContact }> {
+  if (!response.body) return { leadSaved: false, sawDelta: false, slots: [] };
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
   let buffer = "";
   let leadSaved = false;
   let sawDelta = false;
+  let slots: ChatSlot[] = [];
+  let contact: ChatContact | undefined;
 
   const consume = (block: string) => {
     const line = block
@@ -57,6 +65,8 @@ async function readBeaconStream(
       onDelta(event.delta);
     }
     if (event.leadSaved) leadSaved = true;
+    if (Array.isArray(event.slots)) slots = event.slots;
+    if (event.contact) contact = event.contact;
   };
 
   while (true) {
@@ -68,7 +78,7 @@ async function readBeaconStream(
     for (const part of parts) consume(part);
   }
   if (buffer.trim()) consume(buffer);
-  return { leadSaved, sawDelta };
+  return { leadSaved, sawDelta, slots, contact };
 }
 
 export function BeaconAiChat() {
@@ -87,6 +97,8 @@ export function BeaconAiChat() {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [formError, setFormError] = useState("");
+  const [slots, setSlots] = useState<ChatSlot[]>([]);
+  const [pendingSlot, setPendingSlot] = useState<ChatSlot | null>(null);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth" });
@@ -147,6 +159,12 @@ export function BeaconAiChat() {
 
       const result = await readBeaconStream(response, appendDelta);
       if (result.leadSaved) setDetailsSaved(true);
+      if (result.slots.length) setSlots(result.slots);
+      if (result.contact) {
+        if (result.contact.name) setName((current) => current || result.contact?.name || "");
+        if (result.contact.email) setEmail((current) => current || result.contact?.email || "");
+        if (result.contact.phone) setPhone((current) => current || result.contact?.phone || "");
+      }
       if (!result.sawDelta) {
         appendDelta(beaconAiUnavailableText(result.leadSaved));
       }
@@ -177,7 +195,60 @@ export function BeaconAiChat() {
       nextPhone ? `Phone: ${nextPhone}` : "",
     ].filter(Boolean);
     setShowDetails(false);
+    if (pendingSlot && nextName && nextEmail) {
+      void bookSlot(pendingSlot, nextName, nextEmail, nextPhone);
+      setPendingSlot(null);
+      return;
+    }
     void sendMessage(`${parts.join(". ")}. Please follow up.`);
+  }
+
+  async function bookSlot(slot: ChatSlot, nextName = name.trim(), nextEmail = email.trim(), nextPhone = phone.trim()) {
+    if (!nextName || !nextEmail) {
+      setPendingSlot(slot);
+      setName(nextName);
+      setEmail(nextEmail);
+      setPhone(nextPhone);
+      setShowDetails(true);
+      setFormError("Add your name and email to book this slot.");
+      return;
+    }
+    setPending(true);
+    setFormError("");
+    try {
+      const response = await fetch("/api/book", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          date: slot.date,
+          time: slot.time,
+          name: nextName,
+          email: nextEmail,
+          ...(nextPhone ? { phone: nextPhone } : {}),
+          meetingType: "automation-audit",
+          source: "beacon-ai",
+          message: "Booked from Beacon AI.",
+          ...readStoredAttribution(),
+        }),
+      });
+      const data = (await response.json()) as { error?: string };
+      const note = response.ok
+        ? `Booked. Free 20-minute audit on ${slot.label}. A confirmation follows when email is configured.`
+        : data.error || "That slot is no longer open. Pick another one.";
+      setMessages((prev) => [...prev, { role: "assistant", content: note }]);
+      if (response.ok) {
+        setSlots((current) => current.filter((item) => item.date !== slot.date || item.time !== slot.time));
+        setDetailsSaved(true);
+        trackEvent("booking_confirmed", { source: "beacon-ai", date: slot.date, time: slot.time });
+      }
+    } catch {
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: "I could not save that slot. Use the booking button and we will hold a time for you." },
+      ]);
+    } finally {
+      setPending(false);
+    }
   }
 
   function openChat() {
@@ -231,10 +302,8 @@ export function BeaconAiChat() {
                 if (message.role === "assistant" && !message.content && pending) {
                   return (
                     <div key={index} className="flex justify-start" aria-label="Beacon AI is replying">
-                      <div className="flex gap-1 rounded-2xl bg-surface-elevated px-4 py-3">
-                        <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted [animation-delay:0ms]" />
-                        <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted [animation-delay:150ms]" />
-                        <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted [animation-delay:300ms]" />
+                      <div className="rounded-2xl bg-surface-elevated px-3 py-2">
+                        <LighthouseSpinner size={28} label="Thinking" />
                       </div>
                     </div>
                   );
@@ -284,6 +353,21 @@ export function BeaconAiChat() {
             )}
 
             <div className="space-y-2 px-3 pb-3">
+              {slots.length > 0 && (
+                <div className="flex flex-wrap gap-1.5">
+                  {slots.map((slot) => (
+                    <button
+                      key={`${slot.date}-${slot.time}`}
+                      type="button"
+                      disabled={pending}
+                      onClick={() => void bookSlot(slot)}
+                      className="rounded-full bg-surface-elevated px-2.5 py-1 text-[11px] text-foreground hover:text-accent disabled:opacity-50"
+                    >
+                      {slot.label}
+                    </button>
+                  ))}
+                </div>
+              )}
               <button
                 type="button"
                 onClick={() => {
