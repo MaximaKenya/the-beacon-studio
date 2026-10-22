@@ -83,6 +83,14 @@ export function ProductSuite() {
                       >
                         Details
                       </Link>
+                    ) : null}
+                    {product.id === "confirent" || product.id === "cadenceapp" ? (
+                      <Link
+                        href={`/work/${product.id}`}
+                        className="inline-flex h-11 items-center rounded-2xl bg-surface-elevated/80 px-4 text-sm font-medium text-foreground"
+                      >
+                        Case study
+                      </Link>
                     ) : (
                       <a
                         href="#contact"

@@ -635,7 +635,7 @@ export async function sendMailbox(input: ComposeInput): Promise<{ thread: MailTh
 }
 
 export async function recordSiteForm(input: {
-  kind: "contact" | "intake" | "booking" | "subscribe" | "invoice";
+  kind: "contact" | "intake" | "booking" | "subscribe" | "invoice" | "sms" | "whatsapp";
   sourceId: string;
   name: string;
   email?: string;

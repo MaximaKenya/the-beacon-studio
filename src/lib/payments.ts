@@ -29,6 +29,8 @@ export type PaymentRecord = {
   automationInstanceIds?: string[];
   /** Customer invoice / rent charge settled by this Paystack event. */
   automationChargeId?: string;
+  /** Studio booking this deposit reserves. */
+  bookingId?: string;
   /** Stripe session id, Paystack reference, or M-Pesa CheckoutRequestID */
   checkoutRequestID?: string;
   merchantRequestID?: string;

@@ -22,8 +22,11 @@ export function beaconPaymentIdFromReference(reference: string): string {
   return reference.startsWith("BS-") ? reference.slice(3) : reference;
 }
 
-export function beaconPaystackMetadata(extra: Record<string, unknown> = {}): Record<string, unknown> {
-  return { ...extra, app: BEACON_PAYSTACK_APP };
+export function beaconPaystackMetadata(
+  extra: Record<string, unknown> = {},
+  app: string = BEACON_PAYSTACK_APP
+): Record<string, unknown> {
+  return { ...extra, app };
 }
 
 export function readPaystackMetadata(metadata: unknown): Record<string, unknown> {
@@ -64,6 +67,9 @@ export async function initializePaystackCheckout(input: {
   email: string;
   name?: string;
   projectId?: string;
+  bookingId?: string;
+  /** Company router app id. Booking deposits use `beacon`. Other checkouts stay `beacon-studio`. */
+  app?: string;
   callbackUrl: string;
 }): Promise<InitializeResult> {
   const secret = paystackSecret();
@@ -101,6 +107,7 @@ export async function initializePaystackCheckout(input: {
     currency,
     depositPercent: input.mode === "deposit" ? computed.depositPercent : 100,
     ...(input.projectId ? { projectId: input.projectId } : {}),
+    ...(input.bookingId ? { bookingId: input.bookingId } : {}),
     ...(input.name ? { payerName: input.name } : {}),
     payerEmail: input.email,
     raw: { usd: computed.amountMajor, kes, rate, amountMinor },
@@ -122,16 +129,20 @@ export async function initializePaystackCheckout(input: {
       reference,
       callback_url: input.callbackUrl,
       channels: currency === "KES" ? ["card", "mobile_money"] : ["card"],
-      metadata: beaconPaystackMetadata({
-        paymentId: payment.id,
-        tierId: computed.tier.id,
-        mode: input.mode,
-        usd: computed.amountMajor,
-        kes,
-        ...(input.name ? { payerName: input.name } : {}),
-        ...(input.projectId ? { projectId: input.projectId } : {}),
-        studio: siteConfig.brand.name,
-      }),
+      metadata: beaconPaystackMetadata(
+        {
+          paymentId: payment.id,
+          tierId: computed.tier.id,
+          mode: input.mode,
+          usd: computed.amountMajor,
+          kes,
+          ...(input.name ? { payerName: input.name } : {}),
+          ...(input.projectId ? { projectId: input.projectId } : {}),
+          ...(input.bookingId ? { bookingId: input.bookingId } : {}),
+          studio: siteConfig.brand.name,
+        },
+        input.app
+      ),
     }),
   });
 
@@ -222,6 +233,7 @@ export async function applyPaystackData(data: VerifyData): Promise<PaymentRecord
     receipt: data.id ? String(data.id) : undefined,
     resultCode: data.status,
     ...(data.customer?.email ? { payerEmail: data.customer.email } : {}),
+    ...(typeof metadata.bookingId === "string" ? { bookingId: metadata.bookingId } : {}),
     raw: {
       channel: data.channel,
       amount: data.amount,

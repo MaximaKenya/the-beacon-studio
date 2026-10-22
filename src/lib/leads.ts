@@ -121,10 +121,10 @@ export function findMatchingLead(leads: StudioLead[], draft: { email?: string; p
 function appendMessage(current: string, incoming: string): string {
   const next = incoming.trim();
   if (!next) return current;
-  if (!current.trim()) return next.slice(0, 4000);
+  if (!current.trim()) return next.slice(0, 8000);
   const compact = (value: string) => value.replace(/\s+/g, " ").trim();
   if (compact(current).includes(compact(next))) return current;
-  return `${current}\n---\n${next}`.slice(0, 4000);
+  return `${current}\n---\n${next}`.slice(0, 8000);
 }
 
 export function mergeLead(existing: StudioLead, draft: ReturnType<typeof composeDraft>): { lead: StudioLead; changed: boolean } {
@@ -155,7 +155,9 @@ export function mergeLead(existing: StudioLead, draft: ReturnType<typeof compose
       changed = true;
     }
   }
-  const category = lead.services.map(categoryLabel).filter(Boolean).join(", ");
+  const fromServices = lead.services.map(categoryLabel).filter(Boolean).join(", ");
+  const explicit = (draft.category || "").trim();
+  const category = explicit.length > fromServices.length ? explicit : fromServices;
   if (category && category !== lead.category) {
     lead.category = category;
     changed = true;
@@ -204,7 +206,7 @@ function draftToLead(draft: ReturnType<typeof composeDraft>): StudioLead | null 
     sources: [channel],
     status: draft.status && isLeadStatus(draft.status) ? draft.status : "new",
     score: 0,
-    message: (draft.message || "").slice(0, 4000),
+    message: (draft.message || "").slice(0, 8000),
     kind: draft.kind,
     sourceId: draft.sourceId || "",
     refs: refFor(draft.kind, draft.sourceId || "") ? [refFor(draft.kind, draft.sourceId || "")] : [],

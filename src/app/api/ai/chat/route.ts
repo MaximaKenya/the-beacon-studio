@@ -3,18 +3,22 @@ import {
   beaconAiUnavailableText,
   beaconModelMessages,
   buildBeaconAiSystemPrompt,
-  DEFAULT_GROQ_MODEL,
-  GROQ_FALLBACK_MODEL,
   sanitizeBeaconMessages,
   type BeaconChatMessage,
 } from "@/lib/beacon-ai";
 import { saveBeaconLeadFromMessages } from "@/lib/beacon-lead";
 import { attributionFromRecord } from "@/lib/attribution";
+import {
+  qualificationBrief,
+  scriptedAssistantReply,
+  upcomingAuditSlots,
+  type OfferedSlot,
+} from "@/lib/assistant-guide";
+import { readJsonFile } from "@/lib/storage";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
 const WINDOW_MS = 10 * 60 * 1000;
 const MAX_REQUESTS = 15;
 const buckets = new Map<string, number[]>();
@@ -25,6 +29,8 @@ type SsePayload = {
   fallback?: boolean;
   leadSaved?: boolean;
   error?: string;
+  slots?: OfferedSlot[];
+  contact?: { name: string; email: string; phone: string };
 };
 
 function clientIp(request: Request): string {
@@ -81,41 +87,20 @@ function sseResponse(sendAll: (send: (payload: SsePayload) => void) => Promise<v
   });
 }
 
-function groqModel(): { model: string; explicit: boolean } {
-  const configured = process.env.GROQ_MODEL?.trim();
-  if (configured) return { model: configured, explicit: true };
-  return { model: DEFAULT_GROQ_MODEL, explicit: false };
+async function loadSlots(): Promise<OfferedSlot[]> {
+  const bookings = await readJsonFile<Array<{ date?: string; time?: string; durationMinutes?: number }>>("bookings.json", []);
+  return upcomingAuditSlots(
+    bookings
+      .filter((row) => row.date && row.time)
+      .map((row) => ({
+        date: row.date || "",
+        time: row.time || "",
+        ...(row.durationMinutes ? { durationMinutes: row.durationMinutes } : {}),
+      }))
+  );
 }
 
-async function openGroq(
-  model: string,
-  messages: BeaconChatMessage[],
-  signal: AbortSignal
-): Promise<Response> {
-  const maxTokens = model === GROQ_FALLBACK_MODEL ? 2048 : 700;
-  return fetch(GROQ_URL, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model,
-      messages: [{ role: "system", content: buildBeaconAiSystemPrompt() }, ...messages],
-      temperature: 0.4,
-      max_tokens: maxTokens,
-      stream: true,
-    }),
-    signal,
-  });
-}
-
-function modelRejected(status: number, body: string): boolean {
-  if (status !== 400 && status !== 404) return false;
-  return /model|decommission|not found|does not exist|access/i.test(body);
-}
-
-async function streamGroq(
+async function streamOpenAI(
   response: Response,
   send: (payload: SsePayload) => void
 ): Promise<boolean> {
@@ -124,10 +109,9 @@ async function streamGroq(
   const decoder = new TextDecoder();
   let buffer = "";
   let sent = false;
-
-  const take = async (): Promise<boolean> => {
+  while (true) {
     const { done, value } = await reader.read();
-    if (done) return false;
+    if (done) break;
     buffer += decoder.decode(value, { stream: true });
     const lines = buffer.split("\n");
     buffer = lines.pop() ?? "";
@@ -137,25 +121,35 @@ async function streamGroq(
       const data = trimmed.slice(5).trim();
       if (!data || data === "[DONE]") continue;
       try {
-        const parsed = JSON.parse(data) as {
-          choices?: Array<{ delta?: { content?: string } }>;
-        };
+        const parsed = JSON.parse(data) as { choices?: Array<{ delta?: { content?: string } }> };
         const delta = parsed.choices?.[0]?.delta?.content;
         if (typeof delta === "string" && delta) {
           sent = true;
           send({ delta });
         }
       } catch {
-        // Ignore keep-alives and partial JSON.
+        // Ignore keep-alives.
       }
     }
-    return true;
-  };
-
-  while (await take()) {
-    // Drain the Groq event stream.
   }
   return sent;
+}
+
+function sendScript(send: (payload: SsePayload) => void, messages: BeaconChatMessage[], slots: OfferedSlot[], leadSaved: boolean) {
+  const reply = scriptedAssistantReply(messages, slots);
+  send({
+    delta: reply.text,
+    fallback: true,
+    slots: reply.offerSlots ? slots : [],
+    contact: reply.contact,
+  });
+  send({
+    done: true,
+    fallback: true,
+    leadSaved,
+    slots: reply.offerSlots ? slots : [],
+    contact: reply.contact,
+  });
 }
 
 export async function POST(request: Request) {
@@ -192,57 +186,55 @@ export async function POST(request: Request) {
       console.error("Beacon AI lead save failed", error);
     }
 
-    const apiKey = process.env.GROQ_API_KEY?.trim();
+    const slots = await loadSlots().catch(() => [] as OfferedSlot[]);
+    const apiKey = process.env.OPENAI_API_KEY?.trim();
     if (!apiKey) {
-      send({ delta: beaconAiUnavailableText(leadSaved), fallback: true });
-      send({ done: true, fallback: true, leadSaved });
+      sendScript(send, transcript, slots, leadSaved);
       return;
     }
 
-    const { model, explicit } = groqModel();
-    const history = beaconModelMessages(transcript);
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 45_000);
-
-    const fail = () => {
-      send({ delta: beaconAiUnavailableText(leadSaved), fallback: true });
-      send({ done: true, fallback: true, leadSaved });
-    };
-
+    const timeout = setTimeout(() => controller.abort(), 20_000);
     try {
-      let groq = await openGroq(model, history, controller.signal);
-      if (!groq.ok) {
-        const errText = await groq.text();
-        console.error("Groq chat failed", groq.status, errText.slice(0, 400));
-        if (!explicit && model !== GROQ_FALLBACK_MODEL && modelRejected(groq.status, errText)) {
-          groq = await openGroq(GROQ_FALLBACK_MODEL, history, controller.signal);
-          if (!groq.ok) {
-            const retryText = await groq.text();
-            console.error("Groq fallback model failed", groq.status, retryText.slice(0, 400));
-            fail();
-            return;
-          }
-        } else {
-          fail();
-          return;
-        }
-      }
-
-      if (!groq.body) {
-        fail();
+      const response = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: process.env.OPENAI_MODEL?.trim() || "gpt-4o-mini",
+          messages: [
+            { role: "system", content: `${buildBeaconAiSystemPrompt()}\n\n${qualificationBrief(transcript, slots)}` },
+            ...beaconModelMessages(transcript),
+          ],
+          temperature: 0.4,
+          max_tokens: 400,
+          stream: true,
+        }),
+        signal: controller.signal,
+      });
+      if (!response.ok || !response.body) {
+        console.error("OpenAI chat failed", response.status);
+        sendScript(send, transcript, slots, leadSaved);
         return;
       }
-
-      const sent = await streamGroq(groq, send);
+      const sent = await streamOpenAI(response, send);
       if (!sent) {
-        fail();
+        sendScript(send, transcript, slots, leadSaved);
         return;
       }
-      send({ done: true, fallback: false, leadSaved });
+      const guide = scriptedAssistantReply(transcript, slots);
+      send({
+        done: true,
+        fallback: false,
+        leadSaved,
+        slots: guide.offerSlots ? slots : [],
+        contact: guide.contact,
+      });
     } catch (error) {
-      console.error("Groq chat error", error);
-      send({ delta: beaconAiUnavailableText(leadSaved), fallback: true });
-      send({ done: true, fallback: true, leadSaved });
+      console.error("OpenAI chat error", error);
+      sendScript(send, transcript, slots, leadSaved);
     } finally {
       clearTimeout(timeout);
     }

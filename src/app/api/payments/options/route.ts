@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { siteConfig } from "@/data/site";
 import { usdToKesRate } from "@/lib/fx";
 import { getMpesaConfig } from "@/lib/mpesa";
+import { bookingDepositOffer } from "@/lib/booking-deposit";
 import { isPaystackConfigured, isStripeConfigured } from "@/lib/paystack";
 
 export const runtime = "nodejs";
@@ -17,5 +18,6 @@ export async function GET() {
     usdKesRate: usdToKesRate(),
     depositPercent,
     currency: siteConfig.payments.currency,
+    bookingDeposit: bookingDepositOffer(),
   });
 }

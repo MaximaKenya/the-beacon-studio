@@ -157,6 +157,18 @@ export async function POST(request: Request) {
     );
     const ics = visitorResult.ics;
     const emailSent = visitorResult.emailed;
+    try {
+      const { notifyBooking } = await import("@/lib/notify");
+      await notifyBooking({
+        ...(phone ? { phone } : {}),
+        name,
+        when,
+        kind: "confirmed",
+      });
+    } catch (error) {
+      console.error("[book] notify", error instanceof Error ? error.message : "notify failed");
+    }
+
     if (emailSent) {
       const { sendResendEmail } = await import("@/lib/resend");
       const campaign = attributionNote(attribution);

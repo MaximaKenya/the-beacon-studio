@@ -25,6 +25,7 @@ export function paystackForwardUrl(slug: string): string {
 
 function byApp(app: string): PaystackRoute | undefined {
   const normalized = app.trim().toLowerCase();
+  if (normalized === "beacon" || normalized === "beacon-studio") return ROUTES[0];
   return ROUTES.find((route) => route.app === normalized);
 }
 

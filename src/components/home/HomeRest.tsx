@@ -1,6 +1,7 @@
 "use client";
 
 import { ProductSuite } from "@/components/sections/ProductSuite";
+import { SelectedWork } from "@/components/sections/SelectedWork";
 import { Services } from "@/components/sections/Services";
 import { ExampleResults } from "@/components/sections/ExampleResults";
 import { RoiCalculator } from "@/components/sections/RoiCalculator";
@@ -21,6 +22,7 @@ export function HomeRest() {
   return (
     <>
       <ProductSuite />
+      <SelectedWork />
       <Services />
       <ExampleResults />
       <RoiCalculator />

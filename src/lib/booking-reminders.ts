@@ -1,4 +1,5 @@
 import { BOOKING_FILE, readBookings, sendBookingClientEmail, type BookingMailKind, type ClientBooking } from "@/lib/booking-mail";
+import { notifyBooking } from "@/lib/notify";
 import { nairobiStart } from "@/lib/booking-calendar";
 import { durationForMeeting } from "@/lib/booking-utils";
 import { mutateJsonFile } from "@/lib/storage";
@@ -66,7 +67,13 @@ export async function runBookingReminders(now = new Date()): Promise<{ sent: num
     });
     if (!claimed) continue;
     const result = await sendBookingClientEmail(booking, kind, undefined, `booking-${kind}/${id}`);
-    if (!result.emailed) continue;
+    const notice = await notifyBooking({
+      ...(booking.phone ? { phone: booking.phone } : {}),
+      name: booking.name || "there",
+      when: `${booking.date} ${booking.time} (Africa/Nairobi)`,
+      kind,
+    });
+    if (!result.emailed && !notice.delivered) continue;
     await mutateJsonFile<ClientBooking[]>(BOOKING_FILE, [], (current) => {
       const row = current.find((item) => item.id === id);
       if (row) markSent(row, kind, stamp);

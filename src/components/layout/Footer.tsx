@@ -134,6 +134,8 @@ export function Footer() {
               {[
                 { href: "/automations", label: "Automations" },
                 { href: "/automation", label: "AI Automation" },
+                { href: "/work/confirent", label: "ConfiRent" },
+                { href: "/work/cadenceapp", label: "CadenceApp" },
                 { href: pathname === "/" ? "#services" : "/#services", label: "Services" },
                 { href: pathname === "/" ? "#pricing" : "/#pricing", label: "Pricing" },
                 { href: pathname === "/" ? "#contact" : "/#contact", label: "Contact" },

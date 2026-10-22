@@ -1,5 +1,6 @@
 import { after, NextResponse } from "next/server";
 import { fulfillAutomationPayment } from "@/lib/automations/runtime";
+import { markBookingDeposit } from "@/lib/booking-deposit";
 import { applyPaystackData, paystackSecret, verifyPaystackReference, verifyPaystackSignature } from "@/lib/paystack";
 import { forwardPaystackEvent, routePaystackEvent } from "@/lib/paystack-router";
 
@@ -57,7 +58,12 @@ export async function POST(request: Request) {
     try {
       const verified = await verifyPaystackReference(event.data.reference);
       const payment = verified || (event.data.status === "success" ? await applyPaystackData(event.data) : null);
-      if (payment) await fulfillAutomationPayment(payment, origin);
+      if (payment) {
+        await fulfillAutomationPayment(payment, origin);
+        if (payment.status === "success" && payment.bookingId) {
+          await markBookingDeposit(payment.bookingId, payment.checkoutRequestID || event.data.reference);
+        }
+      }
     } catch (error) {
       console.error("[paystack/router] local apply failed", error instanceof Error ? error.message : "apply failed");
       return NextResponse.json({ error: "Could not record payment" }, { status: 500 });

@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { siteConfig } from "@/data/site";
 import { ProductDetail } from "@/components/products/ProductDetail";
+import { BreadcrumbJsonLd } from "@/components/seo/BreadcrumbJsonLd";
 import { JsonLd } from "@/components/seo/OrganizationJsonLd";
 import { absoluteUrl, pageMetadata } from "@/lib/seo";
 
@@ -38,6 +39,12 @@ export default async function ProductPage({ params }: Props) {
 
   return (
     <>
+      <BreadcrumbJsonLd
+        items={[
+          { name: "Home", path: "/" },
+          { name: product.name, path: `/products/${product.id}` },
+        ]}
+      />
       <JsonLd
         data={{
           "@context": "https://schema.org",
