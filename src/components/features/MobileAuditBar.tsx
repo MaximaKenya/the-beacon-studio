@@ -19,7 +19,11 @@ export function MobileAuditBar() {
   }
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-[120] px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-2 md:hidden">
+    <div
+      data-cta=""
+      data-cta-fixed=""
+      className="fixed inset-x-0 bottom-0 z-[120] px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-2 md:hidden"
+    >
       <div className="sleek-card flex items-center gap-2 rounded-2xl p-2">
         <button
           type="button"

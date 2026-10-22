@@ -18,7 +18,7 @@ export function FinalCta() {
           The audit is free and takes about 20 minutes. We agree clear success criteria before you
           pay a deposit.
         </p>
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-3" data-cta="">
           <MagneticButton
             onClick={() => {
               trackEvent("cta_click", { type: "book", source: "final_cta" });

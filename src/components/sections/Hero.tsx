@@ -43,7 +43,7 @@ export function Hero() {
           <p className="mt-5 max-w-xl text-base leading-relaxed text-muted sm:text-lg">
             {siteConfig.heroSubhead}
           </p>
-          <div className="mt-8 flex flex-wrap items-center gap-3">
+          <div className="mt-8 flex flex-wrap items-center gap-3" data-cta="">
             <MagneticButton
               onClick={bookAudit}
               className="inline-flex h-12 items-center gap-2 rounded-2xl bg-accent px-5 text-sm font-semibold text-background shadow-[0_12px_32px_color-mix(in_srgb,var(--accent)_35%,transparent)]"

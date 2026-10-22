@@ -3,10 +3,12 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { usePathname } from "next/navigation";
-import { Send, X } from "lucide-react";
-import { BeaconMark } from "@/components/brand/BeaconMark";
+import { Send } from "lucide-react";
 import { LighthouseSpinner } from "@/components/brand/LighthouseSpinner";
+import { AssistantFabButton, AssistantPanelHeader } from "@/components/features/AssistantBrand";
+import { showsPublicAssistant } from "@/components/features/assistant-fab";
 import { ChatMessageContent } from "@/components/features/ChatMessageContent";
+import { useAssistantFabLayout, useAssistantPanelLayout } from "@/components/features/useAssistantChrome";
 import { useFeatures } from "@/providers/FeatureProvider";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
@@ -86,6 +88,8 @@ export function BeaconAiChat() {
   const { openBooking } = useFeatures();
   const reducedMotion = useReducedMotion();
   const [open, setOpen] = useState(false);
+  const fabLayout = useAssistantFabLayout(showsPublicAssistant(pathname) && !open);
+  const panelStyle = useAssistantPanelLayout(open && showsPublicAssistant(pathname));
   const trapRef = useFocusTrap(open);
   const endRef = useRef<HTMLDivElement>(null);
   const [messages, setMessages] = useState<Message[]>([{ role: "assistant", content: GREETING }]);
@@ -272,30 +276,14 @@ export function BeaconAiChat() {
             ref={trapRef}
             {...panelMotion}
             transition={{ duration: reducedMotion ? 0 : 0.28, ease: [0.22, 1, 0.36, 1] }}
-            className="sleek-card fixed bottom-[12.25rem] left-4 z-[160] flex max-h-[min(32rem,calc(100dvh-18rem))] w-[min(24rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-3xl md:bottom-[10.5rem] md:max-h-[min(34rem,calc(100dvh-16rem))]"
+            data-assistant-panel=""
+            className="sleek-card fixed z-[119] flex flex-col overflow-hidden rounded-3xl"
+            style={panelStyle}
             role="dialog"
-            aria-label="Beacon AI chat"
+            aria-label="The Beacon Studio AI assistant"
             aria-modal="true"
           >
-            <div className="flex items-center justify-between gap-3 bg-surface/40 px-4 py-3">
-              <div className="flex items-center gap-2.5">
-                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-accent text-background">
-                  <BeaconMark size={18} variant="mono" className="text-background" />
-                </span>
-                <div>
-                  <p className="text-sm font-semibold text-heading">Beacon AI</p>
-                  <p className="text-[11px] text-muted">Automation, products, and IT</p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setOpen(false)}
-                className="rounded-xl p-1.5 text-muted hover:bg-surface hover:text-heading"
-                aria-label="Close Beacon AI"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
+            <AssistantPanelHeader onClose={() => setOpen(false)} />
 
             <div className="flex-1 space-y-3 overflow-y-auto px-4 py-3" role="log" aria-live="polite">
               {messages.map((message, index) => {
@@ -463,19 +451,18 @@ export function BeaconAiChat() {
         )}
       </AnimatePresence>
 
-      <button
-        type="button"
-        onClick={() => (open ? setOpen(false) : openChat())}
-        className="fixed bottom-32 left-4 z-[132] inline-flex h-14 w-14 items-center justify-center rounded-full bg-accent text-background shadow-[0_12px_30px_color-mix(in_srgb,var(--accent)_35%,transparent)] md:bottom-[5.75rem]"
-        aria-label={open ? "Close Beacon AI chat" : "Open Beacon AI chat"}
-        aria-expanded={open}
-      >
-        {open ? (
-          <X className="h-6 w-6" aria-hidden />
-        ) : (
-          <BeaconMark size={28} variant="mono" className="text-background" />
-        )}
-      </button>
+      {fabLayout && (
+        <div
+          className="fixed z-[118]"
+          style={{
+            top: fabLayout.y,
+            left: fabLayout.side === "left" ? fabLayout.x : "auto",
+            right: fabLayout.side === "right" ? fabLayout.rightInset : "auto",
+          }}
+        >
+          <AssistantFabButton mode={fabLayout.mode} onClick={openChat} />
+        </div>
+      )}
     </>
   );
 }
