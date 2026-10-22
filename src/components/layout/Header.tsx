@@ -208,6 +208,7 @@ export function Header() {
                 trackEvent("cta_click", { type: "book", source: "header" });
                 openBooking("automation-audit");
               }}
+              data-cta=""
               className="inline-flex h-9 items-center whitespace-nowrap rounded-full bg-accent px-3.5 text-xs font-semibold text-background shadow-[0_8px_22px_color-mix(in_srgb,var(--accent)_35%,transparent)] transition-colors hover:bg-accent-hover lg:text-[13px]"
             >
               Free audit
@@ -280,6 +281,7 @@ export function Header() {
               </button>
               <button
                 type="button"
+                data-cta=""
                 className="inline-flex whitespace-nowrap rounded-full bg-accent px-3 py-2 text-sm font-semibold text-background"
                 onClick={() => {
                   setMobileOpen(false);

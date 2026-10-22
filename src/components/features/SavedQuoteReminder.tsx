@@ -104,7 +104,9 @@ export function SavedQuoteReminder() {
 
   return (
     <div
-      className="fixed bottom-24 right-4 z-[145] max-w-xs rounded-2xl border border-border bg-background/95 p-4 shadow-lg backdrop-blur-md sm:right-6"
+      data-cta=""
+      data-cta-fixed=""
+      className="fixed bottom-24 right-4 z-[145] max-w-xs rounded-2xl bg-background/95 p-4 shadow-lg backdrop-blur-md sm:right-6"
       role="status"
       aria-live="polite"
     >

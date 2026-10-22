@@ -1010,6 +1010,21 @@ h4 {
   filter: drop-shadow(0 12px 22px color-mix(in srgb, var(--accent) 38%, transparent));
 }
 
+/* First view on a phone: the lighthouse grows into the studio name. */
+@keyframes assistant-fab-expand {
+  from {
+    width: 52px;
+  }
+  to {
+    width: 204px;
+  }
+}
+
+.assistant-fab-expand {
+  overflow: hidden;
+  animation: assistant-fab-expand 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
@@ -1017,6 +1032,7 @@ h4 {
 
   .page-enter,
   .lighthouse-float,
+  .assistant-fab-expand,
   .hero-flow-wash,
   .hero-flow-spine::after,
   .hero-flow-chip,

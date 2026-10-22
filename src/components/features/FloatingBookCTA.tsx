@@ -27,6 +27,8 @@ export function FloatingBookCTA() {
   return (
     <FabPulse
       color="accent"
+      data-cta=""
+      data-cta-fixed=""
       className={`fixed bottom-6 right-4 z-[125] ${chatOpen ? "pointer-events-none opacity-0" : ""}`}
     >
       <button

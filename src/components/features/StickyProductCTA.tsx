@@ -14,7 +14,11 @@ export function StickyProductCTA({ product }: { product: Product }) {
   const isOpen = Boolean(product.liveUrl);
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-[140] border-t border-border/70 bg-background/90 px-4 py-3 backdrop-blur-xl supports-[backdrop-filter]:bg-background/75">
+    <div
+      data-cta=""
+      data-cta-fixed=""
+      className="fixed inset-x-0 bottom-0 z-[140] bg-background/90 px-4 py-3 backdrop-blur-xl supports-[backdrop-filter]:bg-background/75"
+    >
       <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3">
         <div className="min-w-0">
           <p className="truncate font-display text-sm font-semibold text-foreground">
