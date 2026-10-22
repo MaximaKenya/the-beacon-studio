@@ -192,4 +192,13 @@ describe("assistant wiring", () => {
     assert.match(mark, /\/brand\/beacon-mark\.svg/);
     assert.doesNotMatch(readFileSync("src/components/features/AssistantBrand.tsx", "utf8"), /variant="mono"/);
   });
+
+  it("lets the booking button stay fixed so the pill can clear it", () => {
+    const pulse = readFileSync("src/components/ui/AnimatedIcon.tsx", "utf8");
+    assert.match(pulse, /\\bfixed\\b/);
+    assert.doesNotMatch(pulse, /className=\{`relative \$\{className\}`\}/);
+    const book = readFileSync("src/components/features/FloatingBookCTA.tsx", "utf8");
+    assert.match(book, /data-cta-fixed/);
+    assert.match(book, /fixed bottom-6 right-4/);
+  });
 });

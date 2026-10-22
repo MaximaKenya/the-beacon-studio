@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import type { LucideIcon } from "lucide-react";
-import type { CSSProperties, ReactNode } from "react";
+import type { CSSProperties, HTMLAttributes, ReactNode } from "react";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 export const ICON_SIZES = {
@@ -120,7 +120,7 @@ type FabPulseProps = {
   className?: string;
   color?: "accent" | "warm" | "violet";
   style?: CSSProperties;
-};
+} & Omit<HTMLAttributes<HTMLDivElement>, "color" | "style" | "className" | "children">;
 
 const pulseColors = {
   accent: "border-accent/25",
@@ -133,11 +133,14 @@ export function FabPulse({
   className = "",
   color = "accent",
   style,
+  ...rest
 }: FabPulseProps) {
   const reducedMotion = useReducedMotion();
+  // A fixed launcher must stay fixed. `relative` is only the pulse anchor.
+  const anchor = /\bfixed\b|\babsolute\b|\bsticky\b/.test(className) ? "" : "relative";
 
   return (
-    <div className={`relative ${className}`} style={style}>
+    <div className={`${anchor} ${className}`} style={style} {...rest}>
       {!reducedMotion && (
         <span
           className={`fab-pulse-ring pointer-events-none absolute -inset-0.5 rounded-full border ${pulseColors[color]}`}
