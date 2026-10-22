@@ -4,13 +4,12 @@ import { useEffect, useId, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { Calendar, MessageCircle, MessageSquare, Phone } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { BeaconMark } from "@/components/brand/BeaconMark";
+import { FinalMark } from "@/components/brand/FinalMark";
 import { siteConfig } from "@/data/site";
 import { useFeatures } from "@/providers/FeatureProvider";
 import { trackEvent } from "@/lib/analytics";
 import { phoneHref, trackCallClick, whatsappHref, whatsappPrefill } from "@/lib/contact-actions";
 import {
-  ASSISTANT_COMPACT_LABEL,
   CLUSTER_ACTION_LABELS,
   clusterActions,
   clusterPlacement,
@@ -200,12 +199,9 @@ export function ActionCluster() {
         onClick={() => setMenuOpen((current) => !current)}
       >
         <span className="flex h-10 w-10 items-center justify-center">
-          <BeaconMark size={26} variant="mono" className="text-accent" />
+          <FinalMark size={38} />
         </span>
-        <span className="text-sm font-semibold tracking-tight text-heading xl:hidden">
-          {ASSISTANT_COMPACT_LABEL}
-        </span>
-        <span className="hidden text-sm font-semibold tracking-tight text-heading xl:inline">{name}</span>
+        <span className="whitespace-nowrap text-sm font-semibold tracking-tight text-heading">{name}</span>
       </button>
 
       {menuOpen && (
