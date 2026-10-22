@@ -7,21 +7,21 @@ export default function PortalLayout({ children }: { children: ReactNode }) {
   return (
     <div className="portal-shell min-h-screen">
       <header className="sticky top-0 z-40 bg-background/85 shadow-[0_10px_30px_rgba(8,4,20,0.12)] backdrop-blur-md">
-        <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-5 lg:px-8">
-          <Link href="/" className="transition-opacity hover:opacity-90" aria-label="Home">
+        <div className="mx-auto flex h-14 max-w-5xl flex-nowrap items-center justify-between gap-2 px-3 sm:px-5 lg:px-8">
+          <Link href="/" className="shrink-0 transition-opacity hover:opacity-90" aria-label="Home">
             <BeaconWordmark size="sm" variant="compact" />
           </Link>
-          <div className="flex items-center gap-4">
-            <span className="hidden font-mono text-[10px] uppercase tracking-widest text-muted sm:inline">
+          <div className="flex shrink-0 items-center gap-2.5 sm:gap-4">
+            <span className="hidden whitespace-nowrap font-mono text-[10px] uppercase tracking-widest text-muted sm:inline">
               Client portal
             </span>
             <Link
               href="/portal/login"
-              className="text-xs font-medium text-accent hover:underline"
+              className="whitespace-nowrap text-xs font-medium text-accent hover:underline"
             >
               Account
             </Link>
-            <Link href="/" className="text-xs text-muted hover:text-foreground">
+            <Link href="/" className="whitespace-nowrap text-xs text-muted hover:text-foreground">
               {siteConfig.brand.shortName} site
             </Link>
           </div>

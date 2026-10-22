@@ -76,7 +76,7 @@ export function Header() {
           : "bg-transparent"
       }`}
     >
-      <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-3 px-4 sm:px-6 lg:h-16 lg:px-8">
+      <div className="mx-auto flex h-14 max-w-6xl flex-nowrap items-center justify-between gap-2 px-3 sm:gap-3 sm:px-6 lg:h-16 lg:px-8">
         <a
           href={pathname === "/" ? "#hero" : "/"}
           className="shrink-0 transition-opacity hover:opacity-90"
@@ -156,7 +156,7 @@ export function Header() {
           )}
         </nav>
 
-        <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+        <div className="flex shrink-0 items-center gap-1 sm:gap-2">
           <a
             href={phoneHref()}
             onClick={() => trackCallClick("header")}
@@ -216,7 +216,7 @@ export function Header() {
 
           <button
             type="button"
-            className="rounded-lg p-2 text-muted transition-colors hover:text-foreground lg:hidden"
+            className="shrink-0 rounded-lg p-1.5 text-muted transition-colors hover:text-foreground sm:p-2 lg:hidden"
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-expanded={mobileOpen}
             aria-label={mobileOpen ? "Close menu" : "Open menu"}
