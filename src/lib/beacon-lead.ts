@@ -54,7 +54,7 @@ export async function saveBeaconLeadFromMessages(
   if (!emailOk && !phoneOk) return "skipped";
 
   const qualification = qualifyFromMessages(messages);
-  const name = extracted.name || qualification.name || "Beacon AI visitor";
+  const name = extracted.name || qualification.name || `${siteConfig.assistant.name} visitor`;
   const message = conversationTranscript(messages, qualification);
   const all = await readJsonFile<ContactRow[]>("contacts.json", []);
   const existing = all.find((row) => {
@@ -183,7 +183,7 @@ async function notifyStudio(input: {
   const who = [input.email, input.phone].filter(Boolean).join(" · ") || "no contact on file";
   await sendResendEmail({
     to: siteConfig.email,
-    subject: `Beacon AI lead — ${input.name}`,
+    subject: `${siteConfig.assistant.name} lead — ${input.name}`,
     ...(input.email ? { replyTo: input.email } : {}),
     html: `<p><strong>${escapeHtml(input.name)}</strong> (${escapeHtml(who)})</p><p>Source: beacon-ai</p><p>${escapeHtml(input.message).replace(/\n/g, "<br/>")}</p>`,
     text: `${input.name} (${who})\nSource: beacon-ai\n\n${input.message}`,

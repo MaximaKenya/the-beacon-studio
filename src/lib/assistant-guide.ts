@@ -210,7 +210,7 @@ export function upcomingAuditSlots(booked: BookedSlot[], limit = 4): OfferedSlot
 
 export function conversationTranscript(messages: BeaconChatMessage[], qualification = qualifyFromMessages(messages)): string {
   const lines = [
-    "Beacon AI chat",
+    `${siteConfig.assistant.name} chat`,
     qualification && leadCategory(qualification) ? `Category: ${leadCategory(qualification)}` : "",
     qualification?.budget ? `Budget: ${qualification.budget}` : "",
     qualification?.timeline ? `Timeline: ${qualification.timeline}` : "",

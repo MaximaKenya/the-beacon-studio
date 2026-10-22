@@ -9,7 +9,7 @@ export function FinalCta() {
   const { openBooking } = useFeatures();
 
   return (
-    <section className="px-6 py-8 lg:px-8" aria-label="Book an audit">
+    <section className="px-6 py-8 lg:px-8" aria-label="Book an audit" data-clear-cluster="">
       <div className="sleek-card mx-auto max-w-6xl rounded-3xl px-6 py-12 text-center sm:px-12 sm:py-16">
         <h2 className="mx-auto max-w-2xl font-display text-3xl font-semibold tracking-tight text-heading sm:text-4xl">
           Tell us the repetitive work. We will map one workflow.

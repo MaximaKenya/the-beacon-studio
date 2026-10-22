@@ -29,7 +29,7 @@ export function Footer() {
     return null;
   }
   return (
-    <footer className="bg-surface/30">
+    <footer className="bg-surface/30" data-clear-cluster="">
       <div className="mx-auto max-w-6xl px-6 py-12 lg:px-8 lg:py-14">
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-8">
           <div>

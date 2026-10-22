@@ -1244,7 +1244,7 @@ export const siteConfig = {
   },
 
   /**
-   * AI Automation — homepage section, /automation, pricing group, and Glow.
+   * AI Automation — homepage section, /automation, pricing group, and the studio assistant.
    * One workflow first; multi-workflow is quoted after discovery.
    */
   automation: {
@@ -1301,9 +1301,9 @@ export const siteConfig = {
 
   assistant: {
     enabled: true,
-    name: "Glow",
+    name: "The Beacon Studio AI",
     greeting:
-      "Hi, I'm Glow. Ask about our products, automation, IT, pricing, or how to start.",
+      "Hi, I'm The Beacon Studio AI. Tell me what you need, your budget, and when you want it. I can quote from our price list and book a free 20-minute audit.",
     suggestedQuestions: [
       "What is ConfiRent?",
       "What is CadenceApp?",

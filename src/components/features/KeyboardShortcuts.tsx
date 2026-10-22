@@ -26,14 +26,16 @@ export function KeyboardShortcuts() {
   const [showHint, setShowHint] = useState(false);
 
   useEffect(() => {
-    if (localStorage.getItem(HINT_KEY) !== "true") {
-      setShowHint(true);
-      const timer = setTimeout(() => {
-        localStorage.setItem(HINT_KEY, "true");
-        setShowHint(false);
-      }, 8000);
-      return () => clearTimeout(timer);
-    }
+    if (localStorage.getItem(HINT_KEY) === "true") return;
+    const show = window.setTimeout(() => setShowHint(true), 0);
+    const hide = window.setTimeout(() => {
+      localStorage.setItem(HINT_KEY, "true");
+      setShowHint(false);
+    }, 8000);
+    return () => {
+      window.clearTimeout(show);
+      window.clearTimeout(hide);
+    };
   }, []);
 
   useEffect(() => {
@@ -114,7 +116,7 @@ export function KeyboardShortcuts() {
   return (
     <>
       {showHintVisible && (
-        <p className="pointer-events-none fixed bottom-6 left-1/2 z-[130] -translate-x-1/2 rounded-full border border-border bg-surface/80 px-3 py-1.5 font-mono text-[10px] text-muted backdrop-blur-sm sm:text-xs">
+        <p className="action-pill pointer-events-none fixed left-1/2 top-[4.5rem] z-[130] -translate-x-1/2 rounded-full px-3 py-1.5 font-mono text-[10px] text-muted sm:text-xs">
           Press <kbd className="text-accent">?</kbd> for shortcuts
         </p>
       )}

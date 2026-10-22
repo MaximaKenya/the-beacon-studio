@@ -72,7 +72,7 @@ export function BuffetBuilder({ templates }: { templates: PricedTemplate[] }) {
 
   return (
     <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
-      <div>
+      <div className="min-w-0 max-lg:pr-[6.75rem]">
         {step === "pick" ? (
           <>
             <div className="flex flex-col gap-3 sm:flex-row">
@@ -150,8 +150,8 @@ export function BuffetBuilder({ templates }: { templates: PricedTemplate[] }) {
           </div>
         )}
       </div>
-      <aside className="sticky bottom-3 z-30 self-start lg:top-24 lg:bottom-auto">
-        <div className="sleek-card max-h-[min(58vh,28rem)] overflow-y-auto overscroll-contain rounded-3xl p-5 lg:max-h-[min(calc(100vh-7.5rem),40rem)]">
+      <aside className="sticky bottom-[max(5.25rem,calc(4.75rem+env(safe-area-inset-bottom)))] z-30 self-start lg:top-24 lg:bottom-auto">
+        <div className="sleek-card max-h-[min(58vh,28rem)] overflow-y-auto overscroll-contain rounded-3xl p-5 lg:max-h-[min(calc(100dvh-12.5rem),40rem)]">
           <h2 className="font-display text-lg font-semibold text-foreground">Your bundle</h2>
           {!quote || quote.count === 0 ? (
             <p className="mt-2 text-sm text-muted">Tick the automations you need. The total updates as you go.</p>

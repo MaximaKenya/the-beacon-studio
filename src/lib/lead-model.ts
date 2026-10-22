@@ -85,7 +85,7 @@ export function channelFor(source: string, kind: string): string {
 export function channelLabel(channel: string): string {
   const known = LEAD_CHANNELS.find((item) => item.id === channel);
   if (known) return known.label;
-  if (channel === "beacon-ai") return "Beacon AI";
+  if (channel === "beacon-ai") return "The Beacon Studio AI";
   if (channel === "sms") return "SMS";
   if (channel === "whatsapp") return "WhatsApp";
   if (channel === "lead-magnet") return "Checklist";

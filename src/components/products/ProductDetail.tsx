@@ -22,7 +22,7 @@ export function ProductDetail({
   const isOpen = Boolean(product.liveUrl);
 
   return (
-    <div className="relative px-6 pb-28 pt-28 lg:px-8 lg:pt-32">
+    <div className="relative px-6 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-28 lg:px-8 lg:pt-32">
       <div className="mx-auto max-w-5xl">
         <Link
           href="/#products"

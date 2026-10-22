@@ -9,18 +9,11 @@ const NewsletterPopup = dynamic(() =>
 const BookingModal = dynamic(() =>
   import("@/components/features/BookingModal").then((mod) => mod.BookingModal)
 );
-const ChatWidget = dynamic(() => import("@/components/features/ChatWidget").then((mod) => mod.ChatWidget));
-const FloatingBookCTA = dynamic(() =>
-  import("@/components/features/FloatingBookCTA").then((mod) => mod.FloatingBookCTA)
-);
-const WhatsAppButton = dynamic(() =>
-  import("@/components/features/WhatsAppButton").then((mod) => mod.WhatsAppButton)
-);
 const BeaconAiChat = dynamic(() =>
   import("@/components/features/BeaconAiChat").then((mod) => mod.BeaconAiChat)
 );
-const MobileAuditBar = dynamic(() =>
-  import("@/components/features/MobileAuditBar").then((mod) => mod.MobileAuditBar)
+const ActionCluster = dynamic(() =>
+  import("@/components/features/ActionCluster").then((mod) => mod.ActionCluster)
 );
 const ExitOffer = dynamic(() => import("@/components/features/ExitOffer").then((mod) => mod.ExitOffer));
 const KeyboardShortcuts = dynamic(() =>
@@ -50,17 +43,14 @@ export function DeferredOverlays({ hideMarketing }: { hideMarketing: boolean }) 
 
   return (
     <>
-      <ChatWidget />
       {!hidden && (
         <>
           <NewsletterPopup />
           <BookingModal />
           <ProductDrawer />
           <ProjectIntakeWizard />
-          <FloatingBookCTA />
-          <WhatsAppButton />
           <BeaconAiChat />
-          <MobileAuditBar />
+          <ActionCluster />
           <ExitOffer />
           <TerminalEasterEgg />
           <KeyboardShortcuts />

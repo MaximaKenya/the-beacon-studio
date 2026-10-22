@@ -29,8 +29,8 @@ function assertClear(box: Box, obstacles: Box[], gap = ASSISTANT_FAB_GAP) {
 
 describe("assistant brand", () => {
   it("uses the studio name and a small AI assistant subtitle", () => {
-    assert.equal(ASSISTANT_BRAND_NAME, "The Beacon Studio");
-    assert.equal(ASSISTANT_BRAND_NAME, siteConfig.brand.name);
+    assert.equal(ASSISTANT_BRAND_NAME, "The Beacon Studio AI");
+    assert.equal(ASSISTANT_BRAND_NAME, siteConfig.assistant.name);
     assert.equal(ASSISTANT_SUBTITLE, "AI assistant");
 
     const header = renderToString(createElement(AssistantPanelHeader, { onClose() {} }));
@@ -173,32 +173,29 @@ describe("assistant placement", () => {
 });
 
 describe("assistant wiring", () => {
-  it("brands both chat surfaces with the static mark and keeps the public FAB singular", () => {
+  it("keeps the branded panel and leaves launching to the action cluster", () => {
     const beacon = readFileSync("src/components/features/BeaconAiChat.tsx", "utf8");
-    const glow = readFileSync("src/components/features/ChatWidget.tsx", "utf8");
+    const overlays = readFileSync("src/components/features/DeferredOverlays.tsx", "utf8");
+    const cluster = readFileSync("src/components/features/ActionCluster.tsx", "utf8");
     const mark = readFileSync("src/components/brand/BeaconMark.tsx", "utf8");
 
-    for (const source of [beacon, glow]) {
-      assert.match(source, /AssistantPanelHeader/);
-      assert.match(source, /data-assistant-panel/);
-      assert.doesNotMatch(source, /icon=\{Bot\}/);
-      assert.doesNotMatch(source, /variant="mono"/);
-      assert.doesNotMatch(source, /FinalMark/);
-    }
+    assert.match(beacon, /AssistantPanelHeader/);
+    assert.match(beacon, /data-assistant-panel/);
+    assert.match(beacon, /bookSlot/);
+    assert.doesNotMatch(beacon, /AssistantFabButton/);
+    assert.doesNotMatch(beacon, /useAssistantFabLayout/);
+    assert.doesNotMatch(beacon, /data-assistant-fab/);
+    assert.doesNotMatch(beacon, /icon=\{Bot\}/);
+    assert.doesNotMatch(beacon, /variant="mono"/);
+    assert.doesNotMatch(beacon, /FinalMark/);
 
-    assert.match(beacon, /AssistantFabButton/);
-    assert.match(beacon, /useAssistantFabLayout\(showsPublicAssistant\(pathname\) && !open\)/);
-    assert.match(glow, /useAssistantFabLayout\(!showsPublicAssistant\(pathname\) && !chatOpen\)/);
+    assert.match(overlays, /ActionCluster/);
+    assert.match(overlays, /BeaconAiChat/);
+    for (const gone of ["ChatWidget", "WhatsAppButton", "FloatingBookCTA", "MobileAuditBar", "AssistantFabButton"]) {
+      assert.doesNotMatch(overlays, new RegExp(gone));
+    }
+    assert.doesNotMatch(cluster, /data-assistant-fab/);
     assert.match(mark, /\/brand\/beacon-mark\.svg/);
     assert.doesNotMatch(readFileSync("src/components/features/AssistantBrand.tsx", "utf8"), /variant="mono"/);
-  });
-
-  it("lets the booking button stay fixed so the pill can clear it", () => {
-    const pulse = readFileSync("src/components/ui/AnimatedIcon.tsx", "utf8");
-    assert.match(pulse, /\\bfixed\\b/);
-    assert.doesNotMatch(pulse, /className=\{`relative \$\{className\}`\}/);
-    const book = readFileSync("src/components/features/FloatingBookCTA.tsx", "utf8");
-    assert.match(book, /data-cta-fixed/);
-    assert.match(book, /fixed bottom-6 right-4/);
   });
 });

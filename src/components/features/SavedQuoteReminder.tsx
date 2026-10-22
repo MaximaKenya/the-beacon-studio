@@ -50,6 +50,7 @@ export function SavedQuoteReminder() {
   const [saved, setSaved] = useState<Saved | null>(null);
   const [visible, setVisible] = useState(false);
   const [downloading, setDownloading] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -69,7 +70,16 @@ export function SavedQuoteReminder() {
     return () => window.clearTimeout(t);
   }, []);
 
-  const overlayOpen = intakeOpen || bookingOpen || newsletterOpen || chatOpen;
+  useEffect(() => {
+    const root = document.documentElement;
+    const sync = () => setMenuOpen(root.hasAttribute("data-action-menu"));
+    sync();
+    const observer = new MutationObserver(sync);
+    observer.observe(root, { attributes: true, attributeFilter: ["data-action-menu"] });
+    return () => observer.disconnect();
+  }, []);
+
+  const overlayOpen = intakeOpen || bookingOpen || newsletterOpen || chatOpen || menuOpen;
   const hideOnRoute =
     pathname?.startsWith("/admin") ||
     pathname?.startsWith("/dashboard") ||
@@ -104,9 +114,12 @@ export function SavedQuoteReminder() {
 
   return (
     <div
-      data-cta=""
-      data-cta-fixed=""
-      className="fixed bottom-24 right-4 z-[145] max-w-xs rounded-2xl bg-background/95 p-4 shadow-lg backdrop-blur-md sm:right-6"
+      className="action-pill fixed z-[136] rounded-2xl p-4"
+      style={{
+        left: "max(1rem, env(safe-area-inset-left))",
+        bottom: "calc(var(--page-bottom-bar, 0px) + max(1rem, env(safe-area-inset-bottom)))",
+        width: "min(20rem, calc(100vw - 6.5rem))",
+      }}
       role="status"
       aria-live="polite"
     >
@@ -125,7 +138,7 @@ export function SavedQuoteReminder() {
             {greeting}our quote is waiting
           </p>
           <p className="mt-0.5 text-xs text-muted">
-            Resume the portal, grab the PDF, or continue intake — whenever you're ready.
+            Resume the portal, grab the PDF, or continue intake — whenever you are ready.
           </p>
           <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1.5">
             {saved.portalPath && (
