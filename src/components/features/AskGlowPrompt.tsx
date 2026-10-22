@@ -19,7 +19,7 @@ export function AskGlowPrompt({
     <div className="rounded-2xl border border-border bg-surface/50 p-5">
       <div className="flex items-center gap-2">
         <Sparkles className="h-4 w-4 text-accent" aria-hidden />
-        <p className="font-display text-sm font-semibold text-foreground">Ask Glow</p>
+        <p className="font-display text-sm font-semibold text-foreground">The Beacon Studio AI</p>
       </div>
       <p className="mt-1 text-xs text-muted">Quick product questions — answered on-site.</p>
       <ul className="mt-4 space-y-2">

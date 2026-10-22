@@ -11,7 +11,7 @@ const ACTIONS = [
 ] as const;
 
 const FLOW_LABEL =
-  "Workflow: a lead, message, or invoice arrives. Beacon AI classifies it and extracts the details. Actions then run: the CRM is updated, a reply is drafted, WhatsApp or email is sent, and a report is generated. Example outcome: hours saved.";
+  "Workflow: a lead, message, or invoice arrives. The Beacon Studio AI classifies it and extracts the details. Actions then run: the CRM is updated, a reply is drafted, WhatsApp or email is sent, and a report is generated. Example outcome: hours saved.";
 
 export function HeroAutomationFlow() {
   return (
@@ -40,7 +40,7 @@ export function HeroAutomationFlow() {
                 <BeaconMark size={22} variant="mono" className="text-background" />
               </span>
               <div>
-                <p className="font-display text-base font-semibold text-heading">Beacon AI</p>
+                <p className="font-display text-base font-semibold text-heading">The Beacon Studio AI</p>
                 <p className="mt-1 text-sm leading-relaxed text-muted">
                   Classifies the message and extracts the details.
                 </p>

@@ -7,7 +7,7 @@
  * launcher paints underneath them.
  */
 
-export const ASSISTANT_BRAND_NAME = "The Beacon Studio";
+export const ASSISTANT_BRAND_NAME = "The Beacon Studio AI";
 export const ASSISTANT_SUBTITLE = "AI assistant";
 export const ASSISTANT_DIALOG_LABEL = "The Beacon Studio AI assistant";
 export const ASSISTANT_FAB_SEEN_KEY = "beacon-assistant-fab-named";

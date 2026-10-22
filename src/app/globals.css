@@ -663,6 +663,7 @@ h4 {
   .text-shimmer,
   .fab-pulse-ring,
   .fab-orbit,
+  .action-menu-in,
   .mesh-grid,
   .float-gentle,
   .product-screen-track,
@@ -711,6 +712,53 @@ h4 {
     inset 0 1px 0 rgba(255, 255, 255, 0.95),
     0 18px 40px rgba(27, 42, 51, 0.08),
     0 2px 8px rgba(27, 42, 51, 0.04);
+}
+
+/* One frosted pill for the action cluster. Same sizes and shadow language in both themes, no stroke. */
+.action-pill {
+  border: 0;
+  background: color-mix(in srgb, var(--glass) 90%, transparent);
+  color: var(--heading);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--heading) 16%, transparent),
+    0 12px 28px rgba(8, 4, 20, 0.28);
+}
+
+[data-theme="dark"] .action-pill {
+  background: color-mix(in srgb, var(--glass) 92%, transparent);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--heading) 16%, transparent),
+    0 12px 28px rgba(8, 4, 20, 0.32);
+}
+
+[data-theme="light"] .action-pill {
+  background: color-mix(in srgb, white 88%, var(--glass));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.96),
+    0 12px 28px rgba(27, 42, 51, 0.12);
+}
+
+.action-pill:hover {
+  background: color-mix(in srgb, var(--accent) 16%, var(--glass));
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .action-menu-in {
+    animation: action-menu-in 0.22s ease;
+  }
+}
+
+@keyframes action-menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 .sleek-card-popular {

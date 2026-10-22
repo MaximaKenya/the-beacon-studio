@@ -106,6 +106,12 @@ export function HomeSplash() {
 
   useEffect(() => {
     if (!visible) return;
+    document.documentElement.setAttribute("data-home-splash-open", "");
+    return () => document.documentElement.removeAttribute("data-home-splash-open");
+  }, [visible]);
+
+  useEffect(() => {
+    if (!visible) return;
     const splash = document.querySelector("[data-home-splash]");
     const locked: HTMLElement[] = [];
     for (const child of Array.from(document.body.children)) {

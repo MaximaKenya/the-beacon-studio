@@ -25,7 +25,7 @@ export function AssistantPanelHeader({ onClose }: { onClose: () => void }) {
         type="button"
         onClick={onClose}
         className="rounded-xl p-1.5 text-muted hover:bg-surface hover:text-heading"
-        aria-label="Close chat"
+        aria-label={`Close ${ASSISTANT_BRAND_NAME}`}
       >
         <X className="h-4 w-4" />
       </button>

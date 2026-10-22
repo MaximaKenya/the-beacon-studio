@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import { Bell, Calendar, Mail } from "lucide-react";
 import type { Product } from "@/data/site";
 import { useFeatures } from "@/providers/FeatureProvider";
@@ -12,12 +13,34 @@ import { mailtoHref, trackEmailClick } from "@/lib/contact-actions";
 export function StickyProductCTA({ product }: { product: Product }) {
   const { openNewsletter, openBooking } = useFeatures();
   const isOpen = Boolean(product.liveUrl);
+  const barRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = barRef.current;
+    if (!el) return;
+    const root = document.documentElement;
+    const publish = () => {
+      root.style.setProperty("--page-bottom-bar", `${el.offsetHeight}px`);
+      root.setAttribute("data-bottom-bar", "");
+    };
+    publish();
+    const observer = new ResizeObserver(publish);
+    observer.observe(el);
+    return () => {
+      observer.disconnect();
+      root.style.removeProperty("--page-bottom-bar");
+      root.removeAttribute("data-bottom-bar");
+    };
+  }, []);
 
   return (
     <div
+      ref={barRef}
       data-cta=""
       data-cta-fixed=""
-      className="fixed inset-x-0 bottom-0 z-[140] bg-background/90 px-4 py-3 backdrop-blur-xl supports-[backdrop-filter]:bg-background/75"
+      data-bottom-bar=""
+      className="fixed inset-x-0 bottom-0 z-[140] bg-background/90 px-4 pt-3 backdrop-blur-xl supports-[backdrop-filter]:bg-background/75"
+      style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
     >
       <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3">
         <div className="min-w-0">
@@ -48,7 +71,7 @@ export function StickyProductCTA({ product }: { product: Product }) {
               }}
               className="inline-flex h-10 items-center gap-1.5 whitespace-nowrap rounded-xl bg-accent px-4 text-sm font-semibold text-background hover:bg-accent-hover"
             >
-              <Bell className="h-3.5 w-3.5" aria-hidden />
+              <Bell className="h-5 w-5" strokeWidth={1.75} aria-hidden />
               Get notified
             </button>
           )}
@@ -60,7 +83,7 @@ export function StickyProductCTA({ product }: { product: Product }) {
             }}
             className="inline-flex h-10 items-center gap-1.5 whitespace-nowrap rounded-xl border border-border bg-surface px-3 text-sm font-medium text-foreground hover:border-accent/40"
           >
-            <Calendar className="h-3.5 w-3.5 text-accent" aria-hidden />
+            <Calendar className="h-5 w-5 text-accent" strokeWidth={1.75} aria-hidden />
             Book
           </button>
           <a
@@ -68,7 +91,7 @@ export function StickyProductCTA({ product }: { product: Product }) {
             onClick={() => trackEmailClick(`product_sticky_${product.id}`)}
             className="inline-flex h-10 items-center gap-1.5 whitespace-nowrap rounded-xl border border-border bg-surface px-3 text-sm font-medium text-foreground hover:border-accent/40"
           >
-            <Mail className="h-3.5 w-3.5 text-accent" aria-hidden />
+            <Mail className="h-5 w-5 text-accent" strokeWidth={1.75} aria-hidden />
             Email
           </a>
         </div>

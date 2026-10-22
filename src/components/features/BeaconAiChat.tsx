@@ -5,10 +5,11 @@ import { AnimatePresence, motion } from "framer-motion";
 import { usePathname } from "next/navigation";
 import { Send } from "lucide-react";
 import { LighthouseSpinner } from "@/components/brand/LighthouseSpinner";
-import { AssistantFabButton, AssistantPanelHeader } from "@/components/features/AssistantBrand";
+import { AssistantPanelHeader } from "@/components/features/AssistantBrand";
 import { showsPublicAssistant } from "@/components/features/assistant-fab";
 import { ChatMessageContent } from "@/components/features/ChatMessageContent";
-import { useAssistantFabLayout, useAssistantPanelLayout } from "@/components/features/useAssistantChrome";
+import { useAssistantPanelLayout } from "@/components/features/useAssistantChrome";
+import { siteConfig } from "@/data/site";
 import { useFeatures } from "@/providers/FeatureProvider";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
@@ -18,8 +19,7 @@ import { beaconAiUnavailableText, BEACON_AI_MAX_MESSAGE_CHARS } from "@/lib/beac
 
 type Message = { role: "user" | "assistant"; content: string };
 
-const GREETING =
-  "Hi, I'm Beacon AI. Tell me what you need, your budget, and when you want it. I can quote from our price list and book a free 20-minute audit.";
+const GREETING = siteConfig.assistant.greeting;
 
 const SUGGESTIONS = [
   "I need reminders for a clinic",
@@ -85,13 +85,13 @@ async function readBeaconStream(
 
 export function BeaconAiChat() {
   const pathname = usePathname();
-  const { openBooking } = useFeatures();
+  const { openBooking, chatOpen, closeChat, chatInitialMessage } = useFeatures();
   const reducedMotion = useReducedMotion();
-  const [open, setOpen] = useState(false);
-  const fabLayout = useAssistantFabLayout(showsPublicAssistant(pathname) && !open);
-  const panelStyle = useAssistantPanelLayout(open && showsPublicAssistant(pathname));
-  const trapRef = useFocusTrap(open);
+  const assistantName = siteConfig.assistant.name;
+  const panelStyle = useAssistantPanelLayout(chatOpen && showsPublicAssistant(pathname));
+  const trapRef = useFocusTrap(chatOpen);
   const endRef = useRef<HTMLDivElement>(null);
+  const trackedOpen = useRef(false);
   const [messages, setMessages] = useState<Message[]>([{ role: "assistant", content: GREETING }]);
   const [input, setInput] = useState("");
   const [pending, setPending] = useState(false);
@@ -103,27 +103,37 @@ export function BeaconAiChat() {
   const [formError, setFormError] = useState("");
   const [slots, setSlots] = useState<ChatSlot[]>([]);
   const [pendingSlot, setPendingSlot] = useState<ChatSlot | null>(null);
+  const [appliedPrompt, setAppliedPrompt] = useState<string | null>(null);
+  if (chatOpen && chatInitialMessage && appliedPrompt !== chatInitialMessage) {
+    setAppliedPrompt(chatInitialMessage);
+    setInput(chatInitialMessage);
+  }
+  if (!chatOpen && appliedPrompt) setAppliedPrompt(null);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth" });
-  }, [messages, pending, reducedMotion, open]);
+  }, [messages, pending, reducedMotion, chatOpen]);
 
   useEffect(() => {
-    if (!open) return;
+    if (!chatOpen) {
+      trackedOpen.current = false;
+      return;
+    }
+    if (trackedOpen.current) return;
+    trackedOpen.current = true;
+    trackEvent("chat_open", { source: "beacon-ai" });
+  }, [chatOpen]);
+
+  useEffect(() => {
+    if (!chatOpen) return;
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setOpen(false);
+      if (event.key === "Escape") closeChat();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [open]);
+  }, [chatOpen, closeChat]);
 
-  if (
-    pathname?.startsWith("/admin") ||
-    pathname?.startsWith("/dashboard") ||
-    pathname?.startsWith("/portal")
-  ) {
-    return null;
-  }
+  if (!showsPublicAssistant(pathname)) return null;
 
   function appendDelta(delta: string) {
     setMessages((prev) => {
@@ -158,7 +168,7 @@ export function BeaconAiChat() {
 
       const contentType = response.headers.get("content-type") ?? "";
       if (!contentType.includes("text/event-stream")) {
-        throw new Error("Beacon AI did not stream a reply.");
+        throw new Error(`${assistantName} did not stream a reply.`);
       }
 
       const result = await readBeaconStream(response, appendDelta);
@@ -182,29 +192,6 @@ export function BeaconAiChat() {
   function handleSubmit(event: FormEvent) {
     event.preventDefault();
     void sendMessage(input);
-  }
-
-  function handleDetails(event: FormEvent) {
-    event.preventDefault();
-    const nextName = name.trim();
-    const nextEmail = email.trim();
-    const nextPhone = phone.trim();
-    if (!nextEmail && !nextPhone) {
-      setFormError("Add an email or phone so we can follow up.");
-      return;
-    }
-    const parts = [
-      nextName ? `My name is ${nextName}` : "",
-      nextEmail ? `Email: ${nextEmail}` : "",
-      nextPhone ? `Phone: ${nextPhone}` : "",
-    ].filter(Boolean);
-    setShowDetails(false);
-    if (pendingSlot && nextName && nextEmail) {
-      void bookSlot(pendingSlot, nextName, nextEmail, nextPhone);
-      setPendingSlot(null);
-      return;
-    }
-    void sendMessage(`${parts.join(". ")}. Please follow up.`);
   }
 
   async function bookSlot(slot: ChatSlot, nextName = name.trim(), nextEmail = email.trim(), nextPhone = phone.trim()) {
@@ -231,7 +218,7 @@ export function BeaconAiChat() {
           ...(nextPhone ? { phone: nextPhone } : {}),
           meetingType: "automation-audit",
           source: "beacon-ai",
-          message: "Booked from Beacon AI.",
+          message: `Booked from ${assistantName}.`,
           ...readStoredAttribution(),
         }),
       });
@@ -255,9 +242,27 @@ export function BeaconAiChat() {
     }
   }
 
-  function openChat() {
-    setOpen(true);
-    trackEvent("chat_open", { source: "beacon-ai" });
+  function handleDetails(event: FormEvent) {
+    event.preventDefault();
+    const nextName = name.trim();
+    const nextEmail = email.trim();
+    const nextPhone = phone.trim();
+    if (!nextEmail && !nextPhone) {
+      setFormError("Add an email or phone so we can follow up.");
+      return;
+    }
+    const parts = [
+      nextName ? `My name is ${nextName}` : "",
+      nextEmail ? `Email: ${nextEmail}` : "",
+      nextPhone ? `Phone: ${nextPhone}` : "",
+    ].filter(Boolean);
+    setShowDetails(false);
+    if (pendingSlot && nextName && nextEmail) {
+      void bookSlot(pendingSlot, nextName, nextEmail, nextPhone);
+      setPendingSlot(null);
+      return;
+    }
+    void sendMessage(`${parts.join(". ")}. Please follow up.`);
   }
 
   const panelMotion = reducedMotion
@@ -269,200 +274,185 @@ export function BeaconAiChat() {
       };
 
   return (
-    <>
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            ref={trapRef}
-            {...panelMotion}
-            transition={{ duration: reducedMotion ? 0 : 0.28, ease: [0.22, 1, 0.36, 1] }}
-            data-assistant-panel=""
-            className="sleek-card fixed z-[119] flex flex-col overflow-hidden rounded-3xl"
-            style={panelStyle}
-            role="dialog"
-            aria-label="The Beacon Studio AI assistant"
-            aria-modal="true"
-          >
-            <AssistantPanelHeader onClose={() => setOpen(false)} />
+    <AnimatePresence>
+      {chatOpen && (
+        <motion.div
+          ref={trapRef}
+          {...panelMotion}
+          transition={{ duration: reducedMotion ? 0 : 0.28, ease: [0.22, 1, 0.36, 1] }}
+          data-assistant-panel=""
+          className="sleek-card fixed z-[160] flex flex-col overflow-hidden rounded-3xl"
+          style={panelStyle}
+          role="dialog"
+          aria-label={`${assistantName} chat`}
+          aria-modal="true"
+        >
+          <AssistantPanelHeader onClose={closeChat} />
 
-            <div className="flex-1 space-y-3 overflow-y-auto px-4 py-3" role="log" aria-live="polite">
-              {messages.map((message, index) => {
-                if (message.role === "assistant" && !message.content && pending) {
-                  return (
-                    <div key={index} className="flex justify-start" aria-label="Beacon AI is replying">
-                      <div className="rounded-2xl bg-surface-elevated px-3 py-2">
-                        <LighthouseSpinner size={28} label="Thinking" />
-                      </div>
-                    </div>
-                  );
-                }
-                if (!message.content) return null;
+          <div className="flex-1 space-y-3 overflow-y-auto px-4 py-3" role="log" aria-live="polite">
+            {messages.map((message, index) => {
+              if (message.role === "assistant" && !message.content && pending) {
                 return (
-                  <div
-                    key={index}
-                    className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
-                  >
-                    <div
-                      className={`max-w-[88%] whitespace-pre-wrap rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed ${
-                        message.role === "user"
-                          ? "bg-accent text-background"
-                          : "bg-surface-elevated text-foreground"
-                      }`}
-                    >
-                      {message.role === "assistant" ? (
-                        <ChatMessageContent content={message.content} />
-                      ) : (
-                        message.content
-                      )}
+                  <div key={index} className="flex justify-start" aria-label={`${assistantName} is replying`}>
+                    <div className="rounded-2xl bg-surface-elevated px-3 py-2">
+                      <LighthouseSpinner size={28} label="Thinking" />
                     </div>
                   </div>
                 );
-              })}
-              {detailsSaved && (
-                <p className="text-center text-[11px] text-muted">Details saved. We will follow up.</p>
-              )}
-              <div ref={endRef} />
-            </div>
-
-            {messages.length <= 1 && (
-              <div className="flex flex-wrap gap-1.5 px-4 pb-2">
-                {SUGGESTIONS.map((question) => (
-                  <button
-                    key={question}
-                    type="button"
-                    onClick={() => void sendMessage(question)}
-                    disabled={pending}
-                    className="rounded-full bg-surface-elevated px-2.5 py-1 text-[11px] text-muted hover:text-accent disabled:opacity-50"
+              }
+              if (!message.content) return null;
+              return (
+                <div
+                  key={index}
+                  className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
+                >
+                  <div
+                    className={`max-w-[88%] whitespace-pre-wrap rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed ${
+                      message.role === "user"
+                        ? "bg-accent text-background"
+                        : "bg-surface-elevated text-foreground"
+                    }`}
                   >
-                    {question}
+                    {message.role === "assistant" ? (
+                      <ChatMessageContent content={message.content} />
+                    ) : (
+                      message.content
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+            {detailsSaved && (
+              <p className="text-center text-[11px] text-muted">Details saved. We will follow up.</p>
+            )}
+            <div ref={endRef} />
+          </div>
+
+          {messages.length <= 1 && (
+            <div className="flex flex-wrap gap-1.5 px-4 pb-2">
+              {SUGGESTIONS.map((question) => (
+                <button
+                  key={question}
+                  type="button"
+                  onClick={() => void sendMessage(question)}
+                  disabled={pending}
+                  className="rounded-full bg-surface-elevated px-2.5 py-1 text-[11px] text-muted hover:text-accent disabled:opacity-50"
+                >
+                  {question}
+                </button>
+              ))}
+            </div>
+          )}
+
+          <div className="space-y-2 px-3 pb-3">
+            {slots.length > 0 && (
+              <div className="flex flex-wrap gap-1.5">
+                {slots.map((slot) => (
+                  <button
+                    key={`${slot.date}-${slot.time}`}
+                    type="button"
+                    disabled={pending}
+                    onClick={() => void bookSlot(slot)}
+                    className="rounded-full bg-surface-elevated px-2.5 py-1 text-[11px] text-foreground hover:text-accent disabled:opacity-50"
+                  >
+                    {slot.label}
                   </button>
                 ))}
               </div>
             )}
+            <button
+              type="button"
+              onClick={() => {
+                trackEvent("cta_click", { type: "book", source: "beacon-ai" });
+                openBooking("automation-audit");
+              }}
+              className="flex h-10 w-full items-center justify-center rounded-2xl bg-accent text-sm font-semibold text-background"
+            >
+              Book a free 20-min audit
+            </button>
 
-            <div className="space-y-2 px-3 pb-3">
-              {slots.length > 0 && (
-                <div className="flex flex-wrap gap-1.5">
-                  {slots.map((slot) => (
-                    <button
-                      key={`${slot.date}-${slot.time}`}
-                      type="button"
-                      disabled={pending}
-                      onClick={() => void bookSlot(slot)}
-                      className="rounded-full bg-surface-elevated px-2.5 py-1 text-[11px] text-foreground hover:text-accent disabled:opacity-50"
-                    >
-                      {slot.label}
-                    </button>
-                  ))}
-                </div>
-              )}
-              <button
-                type="button"
-                onClick={() => {
-                  trackEvent("cta_click", { type: "book", source: "beacon-ai" });
-                  openBooking("automation-audit");
-                }}
-                className="flex h-10 w-full items-center justify-center rounded-2xl bg-accent text-sm font-semibold text-background"
-              >
-                Book a free 20-min audit
-              </button>
-
-              {showDetails ? (
-                <form onSubmit={handleDetails} className="space-y-2 rounded-2xl bg-surface-elevated p-2.5">
-                  <label className="sr-only" htmlFor="beacon-lead-name">
-                    Name
-                  </label>
-                  <input
-                    id="beacon-lead-name"
-                    value={name}
-                    onChange={(event) => setName(event.target.value)}
-                    placeholder="Name"
-                    autoComplete="name"
-                    className="field h-9 px-3 text-sm"
-                  />
-                  <label className="sr-only" htmlFor="beacon-lead-email">
-                    Email
-                  </label>
-                  <input
-                    id="beacon-lead-email"
-                    type="email"
-                    value={email}
-                    onChange={(event) => setEmail(event.target.value)}
-                    placeholder="Email"
-                    autoComplete="email"
-                    className="field h-9 px-3 text-sm"
-                  />
-                  <label className="sr-only" htmlFor="beacon-lead-phone">
-                    Phone
-                  </label>
-                  <input
-                    id="beacon-lead-phone"
-                    type="tel"
-                    value={phone}
-                    onChange={(event) => setPhone(event.target.value)}
-                    placeholder="Phone or WhatsApp"
-                    autoComplete="tel"
-                    className="field h-9 px-3 text-sm"
-                  />
-                  {formError && <p className="text-[11px] text-accent-warm">{formError}</p>}
-                  <button
-                    type="submit"
-                    disabled={pending}
-                    className="h-9 w-full rounded-xl bg-surface px-3 text-sm font-semibold text-heading disabled:opacity-50"
-                  >
-                    Send details
-                  </button>
-                </form>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => setShowDetails(true)}
-                  className="w-full text-center text-[11px] text-muted hover:text-accent"
-                >
-                  Or leave your name and email
-                </button>
-              )}
-
-              <form onSubmit={handleSubmit} className="flex gap-2">
-                <label htmlFor="beacon-ai-input" className="sr-only">
-                  Message Beacon AI
+            {showDetails ? (
+              <form onSubmit={handleDetails} className="space-y-2 rounded-2xl bg-surface-elevated p-2.5">
+                <label className="sr-only" htmlFor="beacon-lead-name">
+                  Name
                 </label>
                 <input
-                  id="beacon-ai-input"
-                  type="text"
-                  value={input}
-                  maxLength={BEACON_AI_MAX_MESSAGE_CHARS}
-                  onChange={(event) => setInput(event.target.value)}
-                  placeholder="Ask about a workflow, product, or price"
-                  disabled={pending}
-                  className="field h-10 flex-1 px-3 text-sm disabled:opacity-60"
+                  id="beacon-lead-name"
+                  value={name}
+                  onChange={(event) => setName(event.target.value)}
+                  placeholder="Name"
+                  autoComplete="name"
+                  className="field h-9 px-3 text-sm"
                 />
+                <label className="sr-only" htmlFor="beacon-lead-email">
+                  Email
+                </label>
+                <input
+                  id="beacon-lead-email"
+                  type="email"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  placeholder="Email"
+                  autoComplete="email"
+                  className="field h-9 px-3 text-sm"
+                />
+                <label className="sr-only" htmlFor="beacon-lead-phone">
+                  Phone
+                </label>
+                <input
+                  id="beacon-lead-phone"
+                  type="tel"
+                  value={phone}
+                  onChange={(event) => setPhone(event.target.value)}
+                  placeholder="Phone or WhatsApp"
+                  autoComplete="tel"
+                  className="field h-9 px-3 text-sm"
+                />
+                {formError && <p className="text-[11px] text-accent-warm">{formError}</p>}
                 <button
                   type="submit"
-                  disabled={pending || !input.trim()}
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-accent text-background disabled:opacity-40"
-                  aria-label="Send message"
+                  disabled={pending}
+                  className="h-9 w-full rounded-xl bg-surface px-3 text-sm font-semibold text-heading disabled:opacity-50"
                 >
-                  <Send className="h-4 w-4" aria-hidden />
+                  Send details
                 </button>
               </form>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setShowDetails(true)}
+                className="w-full text-center text-[11px] text-muted hover:text-accent"
+              >
+                Or leave your name and email
+              </button>
+            )}
 
-      {fabLayout && (
-        <div
-          className="fixed z-[118]"
-          style={{
-            top: fabLayout.y,
-            left: fabLayout.side === "left" ? fabLayout.x : "auto",
-            right: fabLayout.side === "right" ? fabLayout.rightInset : "auto",
-          }}
-        >
-          <AssistantFabButton mode={fabLayout.mode} onClick={openChat} />
-        </div>
+            <form onSubmit={handleSubmit} className="flex gap-2">
+              <label htmlFor="beacon-ai-input" className="sr-only">
+                Message {assistantName}
+              </label>
+              <input
+                id="beacon-ai-input"
+                type="text"
+                value={input}
+                maxLength={BEACON_AI_MAX_MESSAGE_CHARS}
+                onChange={(event) => setInput(event.target.value)}
+                placeholder="Ask about a workflow, product, or price"
+                disabled={pending}
+                className="field h-10 flex-1 px-3 text-sm disabled:opacity-60"
+              />
+              <button
+                type="submit"
+                disabled={pending || !input.trim()}
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-accent text-background disabled:opacity-40"
+                aria-label="Send message"
+              >
+                <Send className="h-4 w-4" strokeWidth={1.75} aria-hidden />
+              </button>
+            </form>
+          </div>
+        </motion.div>
       )}
-    </>
+    </AnimatePresence>
   );
 }

@@ -40,7 +40,7 @@ export function beaconWhatsappLink(): string {
 
 export function beaconAiUnavailableText(leadSaved = false): string {
   const saved = leadSaved ? " We saved your details and will follow up." : "";
-  return `Beacon AI is unavailable right now.${saved} [WhatsApp ${siteConfig.phoneDisplay}](${beaconWhatsappLink()}) or book the free 20-minute audit and we will help you directly.`;
+  return `${siteConfig.assistant.name} is unavailable right now.${saved} [WhatsApp ${siteConfig.phoneDisplay}](${beaconWhatsappLink()}) or book the free 20-minute audit and we will help you directly.`;
 }
 
 export function beaconAiRateLimitText(): string {
@@ -113,7 +113,8 @@ export function beaconLeadNote(messages: BeaconChatMessage[]): string {
     .filter(Boolean)
     .join("\n")
     .slice(-600);
-  return body ? `Beacon AI chat\n${body}` : "Beacon AI chat";
+  const title = `${siteConfig.assistant.name} chat`;
+  return body ? `${title}\n${body}` : title;
 }
 
 export function buildBeaconAiSystemPrompt(): string {
@@ -152,7 +153,7 @@ export function buildBeaconAiSystemPrompt(): string {
 
   const faq = siteConfig.faq.map((item) => `Q: ${item.question}\nA: ${item.answer}`).join("\n\n");
 
-  return `You are Beacon AI, the assistant on the ${siteConfig.brand.name} website (${siteConfig.location}).
+  return `You are ${siteConfig.assistant.name}, the assistant on the ${siteConfig.brand.name} website (${siteConfig.location}).
 
 Goal: answer helpfully in plain language, then invite the visitor to book the free 20-minute audit or leave their name plus email or phone so the studio can follow up. Be useful first. One clear nudge is enough. Do not invent facts.
 

@@ -93,8 +93,8 @@ export default function RootLayout({
         <OrganizationJsonLd />
         <Providers>
           <Header />
-          {/* pb-24 (~6rem) clears fixed FABs without inventing a blank page after the footer */}
-          <main id="main" className="flex-1 pb-28 md:pb-24">
+          {/* Clears the single bottom-right cluster, including the home-indicator inset. */}
+          <main id="main" className="flex-1 pb-[calc(5.75rem+env(safe-area-inset-bottom))]">
             {children}
           </main>
           <Footer />
