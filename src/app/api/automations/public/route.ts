@@ -1,11 +1,18 @@
 import { NextResponse } from "next/server";
-import { bookSlot, bookingView, submitReview } from "@/lib/automations/runtime";
+import { bookSlot, bookingView, publicInstance, submitReview } from "@/lib/automations/runtime";
 import { parseRequestJson } from "@/lib/storage";
 
 export const runtime = "nodejs";
 
 export async function GET(request: Request) {
-  const slug = new URL(request.url).searchParams.get("slug") || "";
+  const url = new URL(request.url);
+  const slug = url.searchParams.get("slug") || "";
+  const page = url.searchParams.get("page") || "book";
+  if (page !== "book") {
+    const view = await publicInstance(slug, page);
+    if (!view) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    return NextResponse.json(view);
+  }
   const view = await bookingView(slug);
   if (!view) return NextResponse.json({ error: "Not found" }, { status: 404 });
   return NextResponse.json(view);

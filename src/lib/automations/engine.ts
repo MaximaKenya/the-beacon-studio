@@ -1,7 +1,9 @@
 import { randomUUID } from "crypto";
 import { templateById } from "@/automations/templates/public";
-import { deliver } from "@/lib/automations/channels";
+import { deliver, rememberDeliveries } from "@/lib/automations/channels";
 import { groqText } from "@/lib/automations/groq";
+import { entryKey } from "@/lib/automations/inputs";
+import { initialCustomReminderAt, isEmailAddress, nextYearlyIso, paymentReminderText, recurrenceDays, splitRecipients } from "@/lib/automations/messages";
 import { traceStep } from "@/lib/automations/trace";
 import { createChargeLink } from "@/lib/automations/paylinks";
 import { addLog } from "@/lib/automations/store";
@@ -13,6 +15,7 @@ import type {
 } from "@/lib/automations/types";
 
 type Entry = {
+  id?: string;
   name?: string;
   email?: string;
   phone?: string;
@@ -129,6 +132,7 @@ async function sendOut(
     channel: target.channel || textOf(input.instance.config.channel) || "both",
     liveTest: Boolean(live),
   });
+  rememberDeliveries(input.doc, input.instance.id, result, nowOf(input));
   await touch(input.instance, nowOf(input), "messages");
   addLog(input.doc, input.instance.id, `${target.subject}. ${result.note}`);
   return result;
@@ -236,6 +240,7 @@ async function runLead(input: EngineInput): Promise<{ ok: boolean; message: stri
   let qualified = Boolean(message);
   let summary = message.slice(0, 180) || "New lead";
   let reply = textOf(config.greeting) || `Thanks ${name}. We have your message and will follow up.`;
+  let confidence: "low" | "ok" = raw ? "ok" : "low";
   if (raw) {
     try {
       const parsed = JSON.parse(raw.replace(/^```json\s*|```$/g, "")) as { qualified?: boolean; summary?: string; reply?: string };
@@ -244,6 +249,7 @@ async function runLead(input: EngineInput): Promise<{ ok: boolean; message: stri
       if (parsed.reply) reply = parsed.reply;
     } catch {
       reply = raw.slice(0, 500);
+      confidence = "low";
     }
   }
   input.doc.leads.push({
@@ -256,6 +262,7 @@ async function runLead(input: EngineInput): Promise<{ ok: boolean; message: stri
     message,
     qualified,
     summary,
+    confidence,
   });
   await touch(input.instance, nowOf(input), "leads");
   if (email || phone) await sendOut(input, { email, phone, subject: `Re: ${input.instance.businessName}`, text: reply });
@@ -283,6 +290,7 @@ async function runPayments(input: EngineInput, escalate: boolean): Promise<{ ok:
         ...(row.note ? { note: row.note } : {}),
         status: "unpaid",
         remindersSent: 0,
+        entryKey: entryKey(row),
       };
       if (charge.amountKes > 0 && charge.email && !input.instance.demo) {
         const link = await createChargeLink({
@@ -297,14 +305,7 @@ async function runPayments(input: EngineInput, escalate: boolean): Promise<{ ok:
         if (link.reference) charge.reference = link.reference;
       }
       input.doc.charges.push(charge);
-      const due = row.date ? new Date(row.date) : new Date(nowOf(input).getTime() + 3 * 24 * 60 * 60 * 1000);
-      const base = Number.isNaN(due.getTime()) ? nowOf(input) : due;
-      const offsets = escalate ? [-3, 0, 7] : [-3, 0, 3];
-      offsets.forEach((offset, step) => {
-        const when = new Date(base.getTime() + offset * 24 * 60 * 60 * 1000);
-        const runAt = when.getTime() < nowOf(input).getTime() ? plusHours(nowOf(input), 1 + step) : when.toISOString();
-        schedule(input.doc, input.instance.id, runAt, "payment-reminder", { chargeId: charge.id, step });
-      });
+      schedulePaymentReminders(input.doc, input.instance.id, charge.id, row.date, escalate, nowOf(input));
     }
     addLog(input.doc, input.instance.id, `Tracking ${rows.length} payment${rows.length === 1 ? "" : "s"}.`);
     return { ok: true, message: "Payment reminders scheduled." };
@@ -312,13 +313,16 @@ async function runPayments(input: EngineInput, escalate: boolean): Promise<{ ok:
   const charge = input.doc.charges.find((item) => item.id === input.job?.chargeId);
   if (!charge || charge.status === "paid") return { ok: true, message: "Already paid." };
   const step = input.job?.step ?? charge.remindersSent;
-  const ladder = [
-    `Hello ${charge.name}, a payment of KES ${charge.amountKes.toLocaleString("en-KE")} is coming due${charge.dueDate ? ` on ${charge.dueDate}` : ""}.`,
-    `Hello ${charge.name}, KES ${charge.amountKes.toLocaleString("en-KE")} is now due. Please pay so we can close it.`,
-    `Hello ${charge.name}, this is a final reminder for KES ${charge.amountKes.toLocaleString("en-KE")}.`,
-  ];
   const notice = textOf(input.instance.config.notice);
-  const text = `${escalate ? ladder[Math.min(step, 2)] : ladder[Math.min(step, 1)]}${notice ? `\n${notice}` : ""}${charge.payUrl ? `\nPay: ${charge.payUrl}` : "\nReply to this message if you need an invoice."}`;
+  const text = paymentReminderText({
+    step,
+    escalate,
+    name: charge.name,
+    amountKes: charge.amountKes,
+    ...(charge.dueDate ? { dueDate: charge.dueDate } : {}),
+    ...(notice ? { notice } : {}),
+    ...(charge.payUrl ? { payUrl: charge.payUrl } : {}),
+  });
   await sendOut(input, { email: charge.email, phone: charge.phone, subject: `Payment reminder — ${input.instance.businessName}`, text });
   charge.remindersSent += 1;
   await touch(input.instance, nowOf(input), "reminders");
@@ -356,8 +360,9 @@ async function runFaq(input: EngineInput): Promise<{ ok: boolean; message: strin
       name,
       ...(email ? { email } : {}),
       message: question,
-      summary: reply.slice(0, 180),
-    });
+    summary: reply.slice(0, 180),
+    confidence: /do not have|not in it|not configured/i.test(reply) ? "low" : "ok",
+  });
     await touch(input.instance, nowOf(input), "leads");
     if (email) {
       await sendOut(input, { email: ownerEmail(input.instance), subject: `FAQ question from ${name}`, text: `${question}\n\n${reply}`, channel: "email" });
@@ -447,13 +452,15 @@ async function runDigest(input: EngineInput): Promise<{ ok: boolean; message: st
       "Turn these figures into a short report for the business owner. Use only the figures given. Do not invent numbers.",
       `${plain}\n${textOf(input.instance.config.note)}`
     )) || plain;
-  const recipients = textOf(input.instance.config.recipients) || ownerEmail(input.instance);
-  await sendOut(input, {
-    email: recipients.split(",")[0]?.trim() || ownerEmail(input.instance),
-    subject: `${input.instance.businessName} report`,
-    text: written,
-    channel: textOf(input.instance.config.channel) || "email",
-  });
+  const recipients = splitRecipients(textOf(input.instance.config.recipients), ownerEmail(input.instance));
+  for (const recipient of recipients) {
+    await sendOut(input, {
+      ...(isEmailAddress(recipient) ? { email: recipient } : { phone: recipient }),
+      subject: `${input.instance.businessName} report`,
+      text: written,
+      channel: textOf(input.instance.config.channel) || "email",
+    });
+  }
   schedule(input.doc, input.instance.id, nextLocalRun(at, digestEvery(input)), "digest");
   return { ok: true, message: "Report sent." };
 }
@@ -540,7 +547,7 @@ async function runDates(input: EngineInput): Promise<{ ok: boolean; message: str
     }
     }
     if (recurrence) {
-      schedule(input.doc, input.instance.id, plusDays(nowOf(input), recurrence === "daily" ? 1 : recurrence === "monthly" ? 30 : 7), "custom-reminder");
+      schedule(input.doc, input.instance.id, initialCustomReminderAt(nowOf(input)), "custom-reminder");
     }
     addLog(input.doc, input.instance.id, "Reminders scheduled.");
     return { ok: true, message: "Reminders scheduled." };
@@ -567,7 +574,7 @@ async function runDates(input: EngineInput): Promise<{ ok: boolean; message: str
       await sendOut(input, { email: row.email, phone: row.phone, subject: input.instance.businessName, text });
     }
     const recurrence = textOf(input.instance.config.recurrence) || "weekly";
-    schedule(input.doc, input.instance.id, plusDays(nowOf(input), recurrence === "daily" ? 1 : recurrence === "monthly" ? 30 : 7), "custom-reminder");
+    schedule(input.doc, input.instance.id, plusDays(nowOf(input), recurrenceDays(recurrence)), "custom-reminder");
     return { ok: true, message: "Custom reminder sent." };
   }
   let payload: Entry & { message?: string } = {};
@@ -583,8 +590,34 @@ async function runDates(input: EngineInput): Promise<{ ok: boolean; message: str
     kind: payload.kind || "",
   });
   await sendOut(input, { email: payload.email, phone: payload.phone, subject: `Reminder — ${input.instance.businessName}`, text });
+  if (input.instance.templateId === "greetings") {
+    const next = nextYearlyIso(payload.date || "", nowOf(input));
+    if (next) {
+      schedule(input.doc, input.instance.id, next, "date-reminder", {
+        label: JSON.stringify({ ...payload, date: payload.date }),
+      });
+    }
+  }
   await touch(input.instance, nowOf(input), "reminders");
   return { ok: true, message: "Reminder sent." };
+}
+
+export function schedulePaymentReminders(
+  doc: AutomationDoc,
+  instanceId: string,
+  chargeId: string,
+  dueDate: string | undefined,
+  escalate: boolean,
+  now: Date
+) {
+  const due = dueDate ? new Date(dueDate.length === 10 ? `${dueDate}T09:00:00+03:00` : dueDate) : new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
+  const base = Number.isNaN(due.getTime()) ? now : due;
+  const offsets = escalate ? [-3, 0, 7] : [-3, 0, 3];
+  offsets.forEach((offset, step) => {
+    const when = new Date(base.getTime() + offset * 24 * 60 * 60 * 1000);
+    const runAt = when.getTime() < now.getTime() ? plusHours(now, 1 + step) : when.toISOString();
+    schedule(doc, instanceId, runAt, "payment-reminder", { chargeId, step });
+  });
 }
 
 async function runStock(input: EngineInput): Promise<{ ok: boolean; message: string }> {

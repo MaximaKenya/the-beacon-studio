@@ -1,8 +1,14 @@
 import { NextResponse } from "next/server";
 import { startBundleCheckout } from "@/lib/automations/runtime";
+import { TRIAL_DAYS } from "@/lib/automations/trial";
+import { isPaystackConfigured } from "@/lib/paystack";
 import { parseRequestJson } from "@/lib/storage";
 
 export const runtime = "nodejs";
+
+export async function GET() {
+  return NextResponse.json({ paystack: isPaystackConfigured(), trialDays: TRIAL_DAYS });
+}
 
 export async function POST(request: Request) {
   try {
@@ -10,7 +16,7 @@ export async function POST(request: Request) {
     const templateIds = Array.isArray(body.templateIds) ? body.templateIds.filter((id): id is string => typeof id === "string") : [];
     const configs = body.configs && typeof body.configs === "object" && !Array.isArray(body.configs) ? (body.configs as Record<string, unknown>) : {};
     const billing = body.billing === "annual" ? "annual" : "monthly";
-    const pay = body.pay === "invoice" ? "invoice" : "paystack";
+    const pay = body.pay === "invoice" ? "invoice" : body.pay === "trial" ? "trial" : "paystack";
     const result = await startBundleCheckout({
       templateIds,
       configs,

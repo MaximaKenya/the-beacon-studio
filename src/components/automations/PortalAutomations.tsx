@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import Link from "next/link";
 import {
   AutomationDesk,
@@ -10,7 +10,11 @@ import {
   type DeskLead,
   type DeskLog,
 } from "@/components/automations/AutomationDesk";
+import { AreaChart, Bars, Donut, NpsGauge } from "@/components/automations/Charts";
+import { filterDays, type AutomationAnalytics, type DayBucket } from "@/lib/automations/analytics";
 import type { ChannelReadiness } from "@/lib/automations/channels";
+import { formatNairobi, nairobiDateKey } from "@/lib/time";
+import { formatKes } from "@/lib/fx";
 import { parseResponseJson } from "@/lib/safe-json";
 
 type Snapshot = {
@@ -19,12 +23,18 @@ type Snapshot = {
   charges: DeskCharge[];
   leads: DeskLead[];
   channels?: ChannelReadiness;
+  analytics?: AutomationAnalytics;
+  trial?: { endsAt: string; days: number; ended: boolean } | null;
+  paystack?: boolean;
+  invoices?: { id: string; status: string; amount: number; currency: string; tierName: string }[];
 };
 
 const empty: Snapshot = { instances: [], logs: [], charges: [], leads: [] };
 
 export function PortalAutomations() {
   const [data, setData] = useState<Snapshot | null>(null);
+  const [range, setRange] = useState<7 | 30 | 90>(30);
+  const [focus, setFocus] = useState<string>("");
 
   const load = useCallback(async () => {
     const res = await fetch("/api/automations/portal");
@@ -42,30 +52,205 @@ export function PortalAutomations() {
     return () => window.clearTimeout(handle);
   }, [load]);
 
+  const days = useMemo(() => {
+    const series = data?.analytics?.days || [];
+    const end = nairobiDateKey();
+    const fromDate = new Date();
+    fromDate.setDate(fromDate.getDate() - (range - 1));
+    return filterDays(series, nairobiDateKey(fromDate), end, focus || undefined);
+  }, [data, range, focus]);
+
+  async function requestInvoice() {
+    await fetch("/api/automations/portal", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "request-invoice" }),
+    });
+    await load();
+  }
+
+  if (!data) {
+    return (
+      <section className="space-y-4 pb-8">
+        <div className="sleek-card h-28 animate-pulse rounded-3xl" />
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <div key={index} className="sleek-card h-24 animate-pulse rounded-2xl" />
+          ))}
+        </div>
+      </section>
+    );
+  }
+
+  const active = data.instances.filter((item) => item.status === "active").length;
+  const collected = data.charges.filter((charge) => charge.status === "paid").reduce((sum, charge) => sum + charge.amountKes, 0);
+  const month = data.analytics?.month;
+
   return (
-    <section className="space-y-4">
+    <section className="space-y-6 pb-8">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h2 className="font-display text-xl font-semibold text-foreground">Automations</h2>
-          <p className="mt-1 text-sm text-muted">Status, the next run, logs, and billing for this login.</p>
+          <p className="mt-1 text-sm text-muted">
+            {data.trial
+              ? data.trial.ended
+                ? "Trial ended. Request an invoice to continue."
+                : `${data.trial.days} days remaining on the free month.`
+              : "Status, runs, and what to do next."}
+          </p>
         </div>
-        <Link href="/automations" className="text-sm text-accent hover:underline">
-          Add from the buffet
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          <button type="button" className="admin-btn" onClick={() => void requestInvoice()}>
+            Request invoice
+          </button>
+          <Link href="/automations" className="admin-btn">
+            Add from the buffet
+          </Link>
+        </div>
       </div>
-      {data?.channels && <ChannelStatus channels={data.channels} />}
-      {data ? (
-        <AutomationDesk
-          instances={data.instances}
-          logs={data.logs}
-          charges={data.charges}
-          leads={data.leads}
-          endpoint="/api/automations/portal"
-          onChanged={() => void load()}
-        />
-      ) : (
-        <p className="text-sm text-muted">Loading automations…</p>
+
+      {!data.paystack && (
+        <p className="text-sm text-muted">Free for 30 days, no card needed. Pay with Paystack stays hidden until that account is ready.</p>
       )}
+
+      {data.instances.length === 0 ? (
+        <div className="sleek-card rounded-3xl p-6">
+          <p className="text-sm text-muted">No automations yet.</p>
+          <Link href="/automations" className="mt-3 inline-block text-sm text-accent">
+            Browse the buffet
+          </Link>
+        </div>
+      ) : (
+        <>
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <Card label="Active" value={String(active)} />
+            <Card label="Runs this month" value={String(month?.runs || 0)} />
+            <Card label="Messages sent" value={String(month?.messages || data.instances.reduce((sum, item) => sum + item.stats.messages, 0))} />
+            <Card label="Leads captured" value={String(month?.leads || data.leads.length)} />
+            <Card label="Bookings" value={String(month?.bookings || 0)} />
+            <Card label="Payments collected" value={formatKes(collected)} />
+            <Card label="Trial" value={data.trial ? (data.trial.ended ? "Ended" : `${data.trial.days} days`) : "—"} />
+            <Card label="Outstanding" value={formatKes(data.analytics?.outstandingKes || 0)} />
+          </div>
+
+          {data.channels && <ChannelStatus channels={data.channels} />}
+
+          <div className="flex flex-wrap items-center gap-2">
+            {([7, 30, 90] as const).map((item) => (
+              <button key={item} type="button" className={`rounded-full px-3 py-1 text-xs font-semibold ${range === item ? "bg-accent text-background" : "bg-surface-elevated/80 text-muted"}`} onClick={() => setRange(item)}>
+                {item} days
+              </button>
+            ))}
+            <label className="text-xs text-muted">
+              Automation
+              <select value={focus} onChange={(event) => setFocus(event.target.value)} className="field ml-2 h-8 px-2 text-xs">
+                <option value="">All</option>
+                {data.instances.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.templateId}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+
+          <div className="grid gap-4 lg:grid-cols-2">
+            <Panel title="Runs">
+              <AreaChart days={days} series="runs" />
+            </Panel>
+            <Panel title="Messages">
+              <AreaChart days={days} series="messages" />
+            </Panel>
+            <Panel title="Messages by channel">
+              <Donut slices={data.analytics?.channels || []} label="Messages by channel" />
+            </Panel>
+            <Panel title="Messages by automation">
+              <Donut slices={data.analytics?.types || []} label="Messages by automation" />
+            </Panel>
+            <Panel title="Leads, bookings, reviews">
+              <Bars slices={barSlices(days)} />
+            </Panel>
+            <Panel title="NPS">
+              <NpsGauge score={data.analytics?.nps ?? null} />
+            </Panel>
+            <Panel title="Collected and outstanding">
+              <Bars
+                slices={[
+                  { label: "Collected", value: data.analytics?.collectedKes || 0 },
+                  { label: "Outstanding", value: data.analytics?.outstandingKes || 0 },
+                ]}
+              />
+            </Panel>
+            <Panel title="Activity">
+              {data.logs.length === 0 ? (
+                <p className="py-8 text-sm text-muted">No activity yet.</p>
+              ) : (
+                <ul className="max-h-56 space-y-2 overflow-auto">
+                  {data.logs.slice(0, 12).map((log) => (
+                    <li key={log.id} className="text-sm text-foreground">
+                      {log.message}
+                      <span className="mt-0.5 block text-xs text-muted">{formatNairobi(log.at)}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </Panel>
+          </div>
+
+          {(data.invoices || []).length > 0 && (
+            <div className="sleek-card rounded-2xl p-4">
+              <h3 className="text-sm font-medium text-foreground">Invoices</h3>
+              <ul className="mt-2 space-y-2 text-sm">
+                {data.invoices?.map((invoice) => (
+                  <li key={invoice.id} className="flex flex-wrap items-center justify-between gap-2">
+                    <span>
+                      {invoice.tierName} · {formatKes(invoice.amount)} · {invoice.status}
+                    </span>
+                    <a className="text-accent" href={`/api/automations/invoice/${invoice.id}`}>
+                      Open
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </>
+      )}
+
+      <AutomationDesk
+        instances={data.instances}
+        logs={data.logs}
+        charges={data.charges}
+        leads={data.leads}
+        endpoint="/api/automations/portal"
+        onChanged={() => void load()}
+      />
     </section>
+  );
+}
+
+function barSlices(days: DayBucket[]) {
+  return [
+    { label: "Leads", value: days.reduce((sum, day) => sum + day.leads, 0) },
+    { label: "Bookings", value: days.reduce((sum, day) => sum + day.bookings, 0) },
+    { label: "Reviews", value: days.reduce((sum, day) => sum + day.reviews, 0) },
+  ];
+}
+
+function Card({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="sleek-card rounded-2xl p-4">
+      <p className="text-xs text-muted">{label}</p>
+      <p className="mt-1 font-display text-2xl font-semibold text-foreground">{value}</p>
+    </div>
+  );
+}
+
+function Panel({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <div className="sleek-card rounded-2xl p-4">
+      <h3 className="text-sm font-medium text-foreground">{title}</h3>
+      <div className="mt-3">{children}</div>
+    </div>
   );
 }

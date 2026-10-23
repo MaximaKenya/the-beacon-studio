@@ -4,6 +4,15 @@ What must be true before calling the site live for clients. Full setup: `INTEGRA
 
 **Live today:** https://the-beacon-studio-0def818a6eaf.herokuapp.com/
 
+## Automations buffet
+
+Client and admin steps live in `AUTOMATIONS.md`. Short version:
+
+- Signup starts a **30-day trial** (`TRIAL_DAYS` in `src/lib/automations/trial.ts`). No card. Paystack checkout is hidden until `PAYSTACK_SECRET_KEY` is set.
+- Heroku Scheduler should keep calling `POST /api/automations/tick` hourly with `CRON_SECRET`. The admin Action Center shows the last successful tick and warns after 2 hours.
+- SMS needs `AT_USERNAME` and `AT_API_KEY`. WhatsApp needs `WHATSAPP_TOKEN` and `WHATSAPP_PHONE_ID`. Until then, phone messages wait and the Action Center badges them.
+- A Heroku variable named `PAYSTACK_FORWARD_CONFIRENT` was flagged as a possible misspelling. The router looks up `PAYSTACK_FORWARD_` plus slug `CONFIRENT`. Confirm it on Heroku before renaming. Do not change it from the app.
+
 ## Required for an honest public launch
 
 | Item | Where | Notes |

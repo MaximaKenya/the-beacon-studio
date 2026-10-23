@@ -10,6 +10,15 @@ export type AutomationStats = {
   lastRunAt?: string;
 };
 
+export type InstanceTrial = {
+  start: string;
+  endsAt: string;
+  remindersSent: number[];
+  endedAt?: string;
+  paidUntil?: string;
+  welcomed?: boolean;
+};
+
 export type AutomationNote = {
   id: string;
   at: string;
@@ -49,6 +58,9 @@ export type AutomationInstance = {
   periodEnd?: string;
   bundleId?: string;
   demo?: boolean;
+  trial?: InstanceTrial;
+  /** When the client last saved the inputs table. */
+  inputsUpdatedAt?: string;
   lastRunView?: SandboxRunView;
   createdAt: string;
   updatedAt: string;
@@ -76,6 +88,8 @@ export type AutomationJob = {
   bookingId?: string;
   label?: string;
   step?: number;
+  attempts?: number;
+  failed?: boolean;
 };
 
 export type AutomationLead = {
@@ -88,6 +102,8 @@ export type AutomationLead = {
   message?: string;
   qualified?: boolean;
   summary?: string;
+  confidence?: "low" | "ok";
+  readAt?: string;
 };
 
 export type AutomationCharge = {
@@ -104,6 +120,7 @@ export type AutomationCharge = {
   reference?: string;
   remindersSent: number;
   paidAt?: string;
+  entryKey?: string;
 };
 
 export type AutomationBooking = {
@@ -127,6 +144,34 @@ export type AutomationReview = {
   comment?: string;
 };
 
+export type AutomationDelivery = {
+  id: string;
+  instanceId: string;
+  at: string;
+  channel: "email" | "sms" | "whatsapp";
+  status: "sent" | "failed" | "waiting";
+  to: string;
+  subject: string;
+  text: string;
+  note: string;
+};
+
+export type AdminLogEntry = {
+  id: string;
+  at: string;
+  kind: "done" | "automated";
+  title: string;
+  detail: string;
+};
+
+export type AutomationOps = {
+  tickLockedAt?: string;
+  lastTickAt?: string;
+  lastTickOk?: boolean;
+  lastTickError?: string;
+  lastDigestAt?: string;
+};
+
 export type AutomationDoc = {
   seeded: boolean;
   instances: AutomationInstance[];
@@ -136,6 +181,9 @@ export type AutomationDoc = {
   charges: AutomationCharge[];
   bookings: AutomationBooking[];
   reviews: AutomationReview[];
+  deliveries: AutomationDelivery[];
+  adminLog: AdminLogEntry[];
+  ops: AutomationOps;
 };
 
 export function emptyDoc(): AutomationDoc {
@@ -148,5 +196,23 @@ export function emptyDoc(): AutomationDoc {
     charges: [],
     bookings: [],
     reviews: [],
+    deliveries: [],
+    adminLog: [],
+    ops: {},
   };
+}
+
+/** Older documents omit the arrays added with the buffet product. */
+export function normalizeDoc(doc: AutomationDoc): AutomationDoc {
+  doc.instances ||= [];
+  doc.logs ||= [];
+  doc.jobs ||= [];
+  doc.leads ||= [];
+  doc.charges ||= [];
+  doc.bookings ||= [];
+  doc.reviews ||= [];
+  doc.deliveries ||= [];
+  doc.adminLog ||= [];
+  doc.ops ||= {};
+  return doc;
 }

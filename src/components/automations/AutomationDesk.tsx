@@ -2,12 +2,18 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { templateById } from "@/automations/templates/public";
+import { templateById, type EntryColumn } from "@/automations/templates/public";
 import type { SandboxRunView } from "@/lib/automations/types";
 import type { ChannelReadiness } from "@/lib/automations/channels";
+import { automationChecklist, checklistProgress } from "@/lib/automations/checklist";
+import { forwardingAddress } from "@/lib/automations/forwarding";
+import type { InputRow } from "@/lib/automations/inputs";
+import { TRIAL_DAYS, trialDaysRemaining } from "@/lib/automations/trial";
 import { formatKes, formatUsd } from "@/lib/fx";
 import { formatNairobi } from "@/lib/time";
 import { parseResponseJson } from "@/lib/safe-json";
+import { InputsEditor } from "@/components/automations/InputsEditor";
+import { ProgressRing } from "@/components/automations/Charts";
 
 export type DeskInstance = {
   id: string;
@@ -35,6 +41,8 @@ export type DeskInstance = {
   nextRun: string | null;
   hook: string;
   page: "book" | "review" | "rsvp" | "request" | null;
+  trial?: { start: string; endsAt: string; endedAt?: string; paidUntil?: string; remindersSent: number[] };
+  inputsUpdatedAt?: string;
 };
 
 export type DeskLog = {
@@ -159,8 +167,14 @@ export function AutomationDesk({
                   {instance.demo ? " · demo" : ""}
                 </p>
               </div>
-              <StatusPill status={instance.status} />
+              <div className="text-right">
+                <StatusPill status={instance.status} />
+                <p className="mt-1 text-xs text-muted">{instance.nextRun ? `Next ${formatNairobi(instance.nextRun)}` : "No run queued"}</p>
+              </div>
             </button>
+            <p className="mt-3 text-sm text-muted">
+              Last result: {logs.find((log) => log.instanceId === instance.id)?.message || "No run yet."}
+            </p>
             <dl className="mt-4 grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
               <Stat label="Monthly" value={formatKes(instance.monthlyKes)} hint={formatUsd(instance.monthlyUsd)} />
               <Stat label="Next run" value={instance.nextRun ? formatNairobi(instance.nextRun) : "—"} />
@@ -235,6 +249,16 @@ function InstanceDetail({
             Activate
           </button>
         )}
+        {canActivate && instance.trial && (
+          <>
+            <button type="button" disabled={busy} className="admin-btn" onClick={() => onAct("extend-trial", { days: 14 })}>
+              Extend trial 14 days
+            </button>
+            <button type="button" disabled={busy} className="admin-btn" onClick={() => onAct("end-trial")}>
+              End trial
+            </button>
+          </>
+        )}
         <Link href="/automations" className="admin-btn">
           Add more
         </Link>
@@ -249,10 +273,13 @@ function InstanceDetail({
           </button>
         )}
       </div>
+      <TrialLine instance={instance} onAct={onAct} />
+      <Checklist instance={instance} onAct={onAct} />
+      <ShareLinks instance={instance} onAct={onAct} />
+      <CaptureTools instance={instance} busy={busy} onAct={onAct} />
       <p className="text-sm text-muted">
         Billing {instance.billing}
-        {instance.periodEnd ? ` · renews ${formatNairobi(instance.periodEnd)}` : ""}
-        {instance.hook !== "none" ? ` · hook /api/automations/hooks/${instance.hook}/${instance.slug}` : ""}
+        {instance.periodEnd ? ` · through ${formatNairobi(instance.periodEnd)}` : ""}
       </p>
       <div className="grid gap-4 lg:grid-cols-2">
         <MiniList
@@ -264,15 +291,30 @@ function InstanceDetail({
             meta: `${log.level} · ${formatNairobi(log.at)}`,
           }))}
         />
-        <MiniList
-          title="Payments"
-          empty="No payment links yet."
-          rows={charges.slice(0, 8).map((charge) => ({
-            id: charge.id,
-            title: `${charge.name} · ${formatKes(charge.amountKes)} · ${charge.status}`,
-            meta: charge.dueDate ? `Due ${charge.dueDate}` : "",
-          }))}
-        />
+        <div>
+          <h3 className="text-sm font-medium text-foreground">Payments</h3>
+          <ul className="mt-2 space-y-2">
+            {charges.length === 0 && <li className="text-sm text-muted">No ledger rows yet.</li>}
+            {charges.slice(0, 12).map((charge) => (
+              <li key={charge.id} className="flex flex-wrap items-center justify-between gap-2 text-sm text-foreground">
+                <span>
+                  {charge.name} · {formatKes(charge.amountKes)} · {charge.status}
+                  {charge.dueDate ? <span className="mt-0.5 block text-xs text-muted">Due {charge.dueDate}</span> : null}
+                </span>
+                <span className="flex gap-2">
+                  <a className="text-xs text-accent" href={`/api/automations/receipt/${charge.id}`}>
+                    Invoice
+                  </a>
+                  {charge.status === "unpaid" && (
+                    <button type="button" className="text-xs text-accent" disabled={busy} onClick={() => onAct("mark-paid", { chargeId: charge.id })}>
+                      Mark paid
+                    </button>
+                  )}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
         <MiniList
           title="Leads"
           empty="No leads yet."
@@ -316,8 +358,9 @@ function InstanceDetail({
           </form>
         </div>
       </div>
+      <LedgerInputs instance={instance} busy={busy} onAct={onAct} />
       <div>
-        <h3 className="text-sm font-medium text-foreground">Setup</h3>
+        <h3 className="text-sm font-medium text-foreground">Setup JSON</h3>
         <textarea
           value={configText}
           onChange={(event) => setConfigText(event.target.value)}
@@ -331,6 +374,150 @@ function InstanceDetail({
         </button>
       </div>
     </div>
+  );
+}
+
+function TrialLine({ instance, onAct }: { instance: DeskInstance; onAct: (action: string, extra?: Record<string, unknown>) => void }) {
+  if (!instance.trial) return null;
+  const days = trialDaysRemaining(instance.trial.endsAt);
+  if (instance.trial.endedAt && instance.status === "paused") {
+    return (
+      <div className="sleek-card rounded-2xl p-4">
+        <p className="text-sm font-medium text-foreground">Trial ended</p>
+        <p className="mt-1 text-sm text-muted">Choose a plan or request an invoice. Nothing was deleted.</p>
+        <button type="button" className="admin-btn mt-3" onClick={() => onAct("request-invoice")}>
+          Request invoice
+        </button>
+      </div>
+    );
+  }
+  return (
+    <p className="text-sm text-foreground">
+      {days} day{days === 1 ? "" : "s"} remaining · {TRIAL_DAYS}-day free trial
+      {instance.trial.paidUntil ? ` · paid through ${formatNairobi(instance.trial.paidUntil)}` : ""}
+    </p>
+  );
+}
+
+function Checklist({ instance, onAct }: { instance: DeskInstance; onAct: (action: string, extra?: Record<string, unknown>) => void }) {
+  const items = automationChecklist(instance);
+  return (
+    <div className="flex gap-4">
+      <ProgressRing progress={checklistProgress(items)} />
+      <ul className="space-y-1 text-sm">
+        {items.map((item) => (
+          <li key={item.id} className="text-foreground">
+            <span className={item.done ? "text-muted" : ""}>{item.done ? "Done · " : "Next · "}{item.label}</span>
+            {!item.done && item.id.startsWith("share") && (
+              <button type="button" className="ml-2 text-xs text-accent" onClick={() => onAct("shared", { key: item.id.replace("share-", "") })}>
+                I shared it
+              </button>
+            )}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function ShareLinks({ instance, onAct }: { instance: DeskInstance; onAct: (action: string, extra?: Record<string, unknown>) => void }) {
+  const origin = typeof window === "undefined" ? "" : window.location.origin;
+  const template = templateById(instance.templateId);
+  const page = template?.hook === "lead" ? "lead" : instance.page;
+  const links: { label: string; value: string; key: string }[] = [];
+  if (page) {
+    links.push({ label: "Hosted form", value: `${origin}/a/${instance.slug}/${page}`, key: page === "book" ? "book" : page === "review" ? "review" : "lead" });
+    links.push({
+      label: "Embed",
+      value: `<iframe title="${instance.businessName}" src="${origin}/a/${instance.slug}/${page}" style="width:100%;max-width:480px;height:640px;border:0;border-radius:24px"></iframe>`,
+      key: "embed",
+    });
+    links.push({ label: "Script", value: `<script src="${origin}/api/automations/embed/${instance.slug}"></script>`, key: "script" });
+  }
+  if (instance.hook !== "none") {
+    links.push({ label: "Webhook", value: `${origin}/api/automations/hooks/${instance.hook}/${instance.slug}`, key: "hook" });
+  }
+  if (template?.behavior === "inbox-triage") links.push({ label: "Forward mail", value: forwardingAddress(instance.slug, "inbox"), key: "inbox" });
+  if (template?.behavior === "meeting-notes") links.push({ label: "Forward notes", value: forwardingAddress(instance.slug, "notes"), key: "notes" });
+  if (links.length === 0) return null;
+  return (
+    <div className="space-y-2">
+      <h3 className="text-sm font-medium text-foreground">Share</h3>
+      {links.map((link) => (
+        <div key={link.label} className="flex flex-col gap-1 sm:flex-row sm:items-center">
+          <span className="w-28 shrink-0 text-xs text-muted">{link.label}</span>
+          <code className="min-w-0 flex-1 truncate text-xs text-foreground">{link.value}</code>
+          <button
+            type="button"
+            className="admin-btn"
+            onClick={() => {
+              void navigator.clipboard.writeText(link.value);
+              onAct("shared", { key: link.key });
+            }}
+          >
+            Copy
+          </button>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function CaptureTools({
+  instance,
+  busy,
+  onAct,
+}: {
+  instance: DeskInstance;
+  busy: boolean;
+  onAct: (action: string, extra?: Record<string, unknown>) => void;
+}) {
+  const template = templateById(instance.templateId);
+  const [text, setText] = useState("");
+  const [subject, setSubject] = useState("");
+  if (template?.behavior !== "inbox-triage" && template?.behavior !== "meeting-notes") return null;
+  const notes = template.behavior === "meeting-notes";
+  return (
+    <form
+      className="space-y-2"
+      onSubmit={(event) => {
+        event.preventDefault();
+        onAct(notes ? "notes" : "inbox", notes ? { notes: text, text } : { from: "pasted", subject, body: text, message: text });
+        setText("");
+      }}
+    >
+      <h3 className="text-sm font-medium text-foreground">{notes ? "Paste meeting notes" : "Paste an email"}</h3>
+      {!notes && (
+        <input value={subject} onChange={(event) => setSubject(event.target.value)} placeholder="Subject" className="field h-10 w-full px-3 text-sm" />
+      )}
+      <textarea value={text} onChange={(event) => setText(event.target.value)} rows={4} placeholder={notes ? "Notes" : "Email body"} className="field w-full px-3 py-2 text-sm" />
+      <button type="submit" className="admin-btn" disabled={busy || !text.trim()}>
+        {notes ? "Summarize" : "Draft a reply"}
+      </button>
+    </form>
+  );
+}
+
+function LedgerInputs({
+  instance,
+  busy,
+  onAct,
+}: {
+  instance: DeskInstance;
+  busy: boolean;
+  onAct: (action: string, extra?: Record<string, unknown>) => void;
+}) {
+  const field = templateById(instance.templateId)?.fields.find((item) => item.type === "entries");
+  if (!field?.columns) return null;
+  const rows = Array.isArray(instance.config.entries) ? (instance.config.entries as InputRow[]) : [];
+  return (
+    <InputsEditor
+      columns={field.columns as EntryColumn[]}
+      rows={rows}
+      updatedAt={instance.inputsUpdatedAt ? formatNairobi(instance.inputsUpdatedAt) : undefined}
+      busy={busy}
+      onSave={(next) => onAct("config", { config: { ...instance.config, entries: next, csv: "" } })}
+    />
   );
 }
 
