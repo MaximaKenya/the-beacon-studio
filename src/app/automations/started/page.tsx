@@ -27,7 +27,7 @@ export default async function AutomationStartedPage({
   }
   const live = params.trial === "1" || invoice || paid || Boolean(email);
   return (
-    <div className="mx-auto max-w-xl px-6 py-28 pb-32 max-lg:pr-[6.75rem]">
+    <div className="mx-auto max-w-xl px-6 py-28 pb-32" data-clear-cluster="">
       <article className="sleek-card rounded-3xl p-8">
         <p className="text-xs font-semibold uppercase tracking-widest text-accent">The Beacon Studio</p>
         <h1 className="mt-2 font-display text-3xl font-semibold text-foreground">

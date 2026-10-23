@@ -65,7 +65,7 @@ export default function PublicAutomationPage() {
   const title = page === "lead" ? "Tell us what you need" : page === "book" ? "Book a time" : page === "review" ? "How did we do?" : page === "rsvp" ? "RSVP" : "Send a request";
 
   return (
-    <div className="mx-auto max-w-lg px-6 py-28 pb-32 max-lg:pr-[6.75rem]">
+    <div className="mx-auto max-w-lg px-6 py-28 pb-32" data-clear-cluster="">
       <form onSubmit={(event) => void onSubmit(event)} className="sleek-card space-y-3 rounded-3xl p-6">
         <p className="text-xs font-semibold uppercase tracking-widest text-accent">{business || "The Beacon Studio"}</p>
         <h1 className="font-display text-2xl font-semibold text-foreground">{title}</h1>
