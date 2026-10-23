@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Check } from "lucide-react";
 import { formatKes, formatUsd } from "@/lib/fx";
@@ -21,7 +21,9 @@ export function BuffetBuilder({ templates }: { templates: PricedTemplate[] }) {
   const [businessName, setBusinessName] = useState("");
   const [configs, setConfigs] = useState<Record<string, Record<string, unknown>>>({});
   const [message, setMessage] = useState<string | null>(null);
-  const [loading, setLoading] = useState<"paystack" | "invoice" | null>(null);
+  const [loading, setLoading] = useState<"paystack" | "invoice" | "trial" | null>(null);
+  const [paystackOn, setPaystackOn] = useState(false);
+  const [trialDays, setTrialDays] = useState(30);
 
   const visible = templates.filter((template) => {
     const haystack = `${template.name} ${template.outcome} ${template.category}`.toLowerCase();
@@ -38,7 +40,17 @@ export function BuffetBuilder({ templates }: { templates: PricedTemplate[] }) {
     setConfigs((current) => ({ ...current, [id]: { ...current[id], [key]: value } }));
   }
 
-  async function checkout(pay: "paystack" | "invoice") {
+  useEffect(() => {
+    void fetch("/api/automations/checkout")
+      .then((res) => res.json())
+      .then((data: { paystack?: boolean; trialDays?: number }) => {
+        setPaystackOn(Boolean(data.paystack));
+        if (data.trialDays) setTrialDays(data.trialDays);
+      })
+      .catch(() => setPaystackOn(false));
+  }, []);
+
+  async function checkout(pay: "paystack" | "invoice" | "trial") {
     if (!quote) return;
     setLoading(pay);
     setMessage(null);
@@ -62,7 +74,11 @@ export function BuffetBuilder({ templates }: { templates: PricedTemplate[] }) {
         return;
       }
       setMessage(data.message || "Checkout did not start.");
-      if (data.ok && pay === "invoice") window.location.href = `/automations/started?invoice=1&email=${encodeURIComponent(ownerEmail)}`;
+      if (data.ok) {
+        const params = new URLSearchParams({ email: ownerEmail, trial: "1" });
+        if (pay === "invoice") params.set("invoice", "1");
+        window.location.href = `/automations/started?${params.toString()}`;
+      }
     } catch {
       setMessage("Checkout did not start.");
     } finally {
@@ -183,10 +199,10 @@ export function BuffetBuilder({ templates }: { templates: PricedTemplate[] }) {
                 {quote.bundleLabel && <Row label={quote.bundleLabel} value={`−${quote.bundlePercent}%`} />}
                 {quote.annualPercent > 0 && <Row label="Annual discount" value={`−${quote.annualPercent}%`} />}
                 {quote.setupKes > 0 && <Row label="Setup" value={formatKes(quote.setupKes)} hint={formatUsd(quote.setupUsd)} />}
-                <Row label="Due today" value={formatKes(quote.dueKes)} hint={`about ${formatUsd(quote.dueUsd)}`} strong />
+                <Row label="After the free month" value={formatKes(quote.dueKes)} hint={`about ${formatUsd(quote.dueUsd)}`} strong />
               </dl>
               <p className="mt-3 text-xs leading-relaxed text-muted">
-                Includes {quote.included.length} automation{quote.included.length === 1 ? "" : "s"}. After payment they become active together.
+                Free for {trialDays} days, no card needed. Includes {quote.included.length} automation{quote.included.length === 1 ? "" : "s"}.
               </p>
             </>
           )}
@@ -201,11 +217,17 @@ export function BuffetBuilder({ templates }: { templates: PricedTemplate[] }) {
             </button>
           ) : (
             <div className="mt-4 space-y-2">
-              <button type="button" disabled={!!loading} onClick={() => void checkout("paystack")} className="inline-flex h-11 w-full items-center justify-center rounded-2xl bg-accent text-sm font-semibold text-background disabled:opacity-50">
-                {loading === "paystack" ? "Starting Paystack…" : "Pay with Paystack"}
+              <button type="button" disabled={!!loading} onClick={() => void checkout("trial")} className="inline-flex h-11 w-full items-center justify-center rounded-2xl bg-accent text-sm font-semibold text-background disabled:opacity-50">
+                {loading === "trial" ? "Starting…" : `Start ${trialDays} days free`}
               </button>
+              <p className="text-center text-xs text-muted">Free for {trialDays} days, no card needed.</p>
+              {paystackOn && (
+                <button type="button" disabled={!!loading} onClick={() => void checkout("paystack")} className="inline-flex h-11 w-full items-center justify-center rounded-2xl bg-surface-elevated/80 text-sm font-semibold text-foreground disabled:opacity-50">
+                  {loading === "paystack" ? "Starting Paystack…" : "Pay with Paystack"}
+                </button>
+              )}
               <button type="button" disabled={!!loading} onClick={() => void checkout("invoice")} className="inline-flex h-11 w-full items-center justify-center rounded-2xl bg-surface-elevated/80 text-sm font-semibold text-foreground disabled:opacity-50">
-                {loading === "invoice" ? "Sending…" : "Pay by invoice"}
+                {loading === "invoice" ? "Sending…" : "Request invoice"}
               </button>
             </div>
           )}

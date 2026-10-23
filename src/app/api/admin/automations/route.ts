@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { resetDemoSandbox, runSandboxNow } from "@/lib/automations/sandbox";
-import { addInstanceNote, adminSnapshot, saveInstanceConfig, setInstanceStatus, stopFollowUps } from "@/lib/automations/runtime";
+import { addInstanceNote, adminSnapshot, changeTrial, markBundleInvoicePaid, markLeadRead, markOwnedCharge, retryFailedJobs, saveInstanceConfig, setInstanceStatus, stopFollowUps } from "@/lib/automations/runtime";
 import { parseRequestJson } from "@/lib/storage";
 
 export const runtime = "nodejs";
@@ -29,10 +29,16 @@ export async function POST(request: Request) {
     await setInstanceStatus(id, "active", origin);
     return NextResponse.json({ ok: true });
   }
-  if (action === "config") return NextResponse.json(await saveInstanceConfig(id, body.config));
+  if (action === "config") return NextResponse.json(await saveInstanceConfig(id, body.config, undefined, origin));
   if (action === "note") return NextResponse.json(await addInstanceNote(id, String(body.text || ""), "studio"));
   if (action === "stop") return NextResponse.json(await stopFollowUps(id));
   if (action === "run") return NextResponse.json(await runSandboxNow(id, body.sendToMe === true));
   if (action === "reset-demo") return NextResponse.json(await resetDemoSandbox());
+  if (action === "mark-paid") return NextResponse.json(await markOwnedCharge(String(body.chargeId || ""), undefined, "studio"));
+  if (action === "mark-invoice") return NextResponse.json(await markBundleInvoicePaid(String(body.paymentId || "")));
+  if (action === "extend-trial") return NextResponse.json(await changeTrial(id, "extend", Number(body.days) || 14));
+  if (action === "end-trial") return NextResponse.json(await changeTrial(id, "end"));
+  if (action === "retry-failed") return NextResponse.json(await retryFailedJobs());
+  if (action === "mark-lead-read") return NextResponse.json(await markLeadRead(String(body.leadId || id)));
   return NextResponse.json({ error: "Unknown action." }, { status: 400 });
 }

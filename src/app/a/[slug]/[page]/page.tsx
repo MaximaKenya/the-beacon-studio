@@ -10,6 +10,7 @@ export default function PublicAutomationPage() {
   const page = params.page;
   const [slots, setSlots] = useState<{ start: string; label: string }[]>([]);
   const [message, setMessage] = useState<string | null>(null);
+  const [business, setBusiness] = useState("");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -18,10 +19,13 @@ export default function PublicAutomationPage() {
   const [score, setScore] = useState("5");
 
   useEffect(() => {
-    if (page !== "book") return;
-    void fetch(`/api/automations/public?slug=${encodeURIComponent(slug)}`)
-      .then((res) => parseResponseJson<{ slots?: { start: string; label: string }[] }>(res, {}))
-      .then((data) => setSlots(data.slots || []))
+    const query = page === "book" ? "" : `&page=${encodeURIComponent(page)}`;
+    void fetch(`/api/automations/public?slug=${encodeURIComponent(slug)}${query}`)
+      .then((res) => parseResponseJson<{ slots?: { start: string; label: string }[]; businessName?: string }>(res, {}))
+      .then((data) => {
+        if (page === "book") setSlots(data.slots || []);
+        if (data.businessName) setBusiness(data.businessName);
+      })
       .catch(() => setSlots([]));
   }, [page, slug]);
 
@@ -29,7 +33,7 @@ export default function PublicAutomationPage() {
     event.preventDefault();
     const action = page === "book" ? "book" : page === "review" ? "review" : "hook";
     if (action === "hook") {
-      const kind = page === "rsvp" ? "rsvp" : "intake";
+      const kind = page === "lead" ? "lead" : page === "rsvp" ? "rsvp" : "intake";
       const res = await fetch(`/api/automations/hooks/${kind}/${slug}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -58,11 +62,12 @@ export default function PublicAutomationPage() {
     setMessage(data.google ? `${data.message || "Thank you."} ${data.google}` : data.message || "Saved.");
   }
 
-  const title = page === "book" ? "Book a time" : page === "review" ? "How did we do?" : page === "rsvp" ? "RSVP" : "Send a request";
+  const title = page === "lead" ? "Tell us what you need" : page === "book" ? "Book a time" : page === "review" ? "How did we do?" : page === "rsvp" ? "RSVP" : "Send a request";
 
   return (
-    <div className="mx-auto max-w-lg px-6 py-28">
+    <div className="mx-auto max-w-lg px-6 py-28 pb-32 max-lg:pr-[6.75rem]">
       <form onSubmit={(event) => void onSubmit(event)} className="sleek-card space-y-3 rounded-3xl p-6">
+        <p className="text-xs font-semibold uppercase tracking-widest text-accent">{business || "The Beacon Studio"}</p>
         <h1 className="font-display text-2xl font-semibold text-foreground">{title}</h1>
         <input required value={name} onChange={(event) => setName(event.target.value)} placeholder="Name" className="field h-11 px-3 text-sm" />
         <input value={email} onChange={(event) => setEmail(event.target.value)} placeholder="Email" type="email" className="field h-11 px-3 text-sm" />

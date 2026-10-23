@@ -20,6 +20,11 @@ export function formatNairobi(
   }).format(date);
 }
 
+/** User-facing appointment time. Always Africa/Nairobi, never a raw UTC string. */
+export function formatBookingWhen(d: Date | string): string {
+  return `${formatNairobi(d, { second: undefined })} (Africa/Nairobi)`;
+}
+
 export function formatNairobiDate(d: Date | string = new Date()): string {
   return formatNairobi(d, {
     hour: undefined,

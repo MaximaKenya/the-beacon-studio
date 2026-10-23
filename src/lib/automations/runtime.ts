@@ -4,16 +4,21 @@ import { templateById } from "@/automations/templates/public";
 import { parseTemplateConfig } from "@/automations/templates/schema";
 import { upcomingSlots } from "@/automations/slots";
 import { upsertClient } from "@/lib/clients";
-import { channelReadiness, deliver } from "@/lib/automations/channels";
+import { buildAnalytics } from "@/lib/automations/analytics";
+import { buildActionItems } from "@/lib/automations/action-center";
+import { channelReadiness, deliver, rememberDeliveries } from "@/lib/automations/channels";
 import { SANDBOX_EMAIL } from "@/lib/automations/setup-guides";
 import { markChargePaid, recordReview, runEngine } from "@/lib/automations/engine";
-import { addLog, instancesForEmail, loadAutomations, saveAutomations } from "@/lib/automations/store";
+import { activateOnTrial, applyBundlePayment, endInstanceTrial, extendInstanceTrial, sendTrialWelcome, syncLedger } from "@/lib/automations/lifecycle";
+import { addAdminLog, addLog, instancesForEmail, loadAutomations, saveAutomations } from "@/lib/automations/store";
+import { TRIAL_DAYS, trialDaysRemaining } from "@/lib/automations/trial";
 import { emptyDoc, type AutomationDoc, type AutomationInstance } from "@/lib/automations/types";
 import { mutateJsonFile } from "@/lib/storage";
 import { jobClaimable } from "@/lib/tick-claim";
-import { createPayment, updatePaymentById, type PaymentRecord } from "@/lib/payments";
+import { createPayment, listPayments, updatePaymentById, type PaymentRecord } from "@/lib/payments";
 import { beaconPaystackMetadata, beaconPaystackReference, isPaystackConfigured, paystackSecret } from "@/lib/paystack";
 import { isValidEmail, normalizeEmail } from "@/lib/validation";
+import { formatBookingWhen } from "@/lib/time";
 
 function slugFor(templateId: string): string {
   return `${templateId}-${randomBytes(4).toString("hex")}`;
@@ -59,7 +64,12 @@ export async function fulfillAutomationPayment(payment: PaymentRecord, origin: s
     const doc = await loadAutomations();
     if (markChargePaid(doc, payment.automationChargeId)) await saveAutomations(doc);
   }
-  if (payment.automationInstanceIds?.length) await activateInstances(payment.automationInstanceIds, origin);
+  if (payment.automationInstanceIds?.length) {
+    await activateInstances(payment.automationInstanceIds, origin);
+    const paid = await loadAutomations();
+    applyBundlePayment(paid, payment.automationInstanceIds);
+    await saveAutomations(paid);
+  }
 }
 
 async function claimDueJobIds(now: Date): Promise<string[]> {
@@ -88,7 +98,10 @@ export async function runDueJobs(origin: string): Promise<{ ran: number }> {
   for (const job of doc.jobs) {
     if (!claimedIds.has(job.id) || job.status === "done" || job.status === "cancelled") continue;
     const instance = doc.instances.find((item) => item.id === job.instanceId);
-    if (!instance || instance.status !== "active") continue;
+    if (!instance || instance.status !== "active") {
+      job.status = "cancelled";
+      continue;
+    }
     if (job.kind === "renewal") {
       addLog(doc, instance.id, `Renewal is due by ${instance.periodEnd?.slice(0, 10) || "the period end"}. Pay from the portal or ask for an invoice.`);
       job.status = "done";
@@ -103,9 +116,10 @@ export async function runDueJobs(origin: string): Promise<{ ran: number }> {
           email: booking.email,
           phone: booking.phone,
           subject: `Reminder — ${instance.businessName}`,
-          text: `Hello ${booking.name}, this is your ${job.label || ""} reminder for ${new Date(booking.start).toUTCString()}.`,
+          text: `Hello ${booking.name}, this is your ${job.label || ""} reminder for ${formatBookingWhen(booking.start)}.`,
           idempotencyKey: `automation-reminder/${job.id}`,
         });
+        rememberDeliveries(doc, instance.id, sent, now);
         instance.stats.messages += 1;
         instance.stats.reminders += 1;
         addLog(doc, instance.id, `Appointment reminder for ${booking.name}. ${sent.note}`);
@@ -114,8 +128,22 @@ export async function runDueJobs(origin: string): Promise<{ ran: number }> {
       ran += 1;
       continue;
     }
-    await runEngine({ doc, instance, mode: "job", job, origin, now });
-    job.status = "done";
+    const result = await runEngine({ doc, instance, mode: "job", job, origin, now });
+    if (!result.ok) {
+      job.attempts = (job.attempts || 0) + 1;
+      if (job.attempts < 3) {
+        job.status = "due";
+        delete job.claimedAt;
+        job.runAt = new Date(now.getTime() + 30 * 60 * 1000).toISOString();
+        addAdminLog(doc, "automated", "Run retried", `${instance.businessName}: ${result.message} (attempt ${job.attempts} of 3).`);
+      } else {
+        job.status = "done";
+        job.failed = true;
+        addAdminLog(doc, "automated", "Run stopped after 3 tries", `${instance.businessName}: ${result.message}`);
+      }
+    } else {
+      job.status = "done";
+    }
     ran += 1;
   }
   await saveAutomations(doc);
@@ -143,12 +171,12 @@ type CheckoutInput = {
   ownerName: string;
   ownerEmail: string;
   businessName: string;
-  pay: "paystack" | "invoice";
+  pay: "paystack" | "invoice" | "trial";
   origin: string;
 };
 
 export async function startBundleCheckout(input: CheckoutInput): Promise<
-  | { ok: true; url?: string; message: string; email: string }
+  | { ok: true; url?: string; message: string; email: string; trialDays: number }
   | { ok: false; status: number; message: string }
 > {
   const email = normalizeEmail(input.ownerEmail);
@@ -198,12 +226,15 @@ export async function startBundleCheckout(input: CheckoutInput): Promise<
     };
     doc.instances.push(instance);
     created.push(instance);
-    addLog(doc, instance.id, "Waiting for payment.");
   });
+  const started = new Date();
+  for (const instance of created) await activateOnTrial(doc, instance, input.origin, started);
+  await sendTrialWelcome(doc, email);
   await saveAutomations(doc);
 
   const ids = created.map((item) => item.id);
   const label = quote.items.map((item) => item.name).join(", ");
+  const trialMessage = `Free for ${TRIAL_DAYS} days, no card needed. Sign in to the portal with this email.`;
   if (input.pay === "invoice") {
     await createPayment({
       provider: "bank",
@@ -217,17 +248,18 @@ export async function startBundleCheckout(input: CheckoutInput): Promise<
       payerEmail: email,
       payerName: input.ownerName.trim(),
       automationInstanceIds: ids,
-      note: `${input.businessName.trim()} asked for an invoice. KES ${quote.dueKes.toLocaleString("en-KE")} (${input.billing}).`,
+      note: `${input.businessName.trim()} asked for an invoice. Due after the ${TRIAL_DAYS}-day trial. KES ${quote.dueKes.toLocaleString("en-KE")} (${input.billing}).`,
     });
     return {
       ok: true,
       email,
-      message: "Invoice requested. The automations stay pending until the studio marks them active. Sign in to the portal with this email to watch the status.",
+      trialDays: TRIAL_DAYS,
+      message: `Your ${TRIAL_DAYS}-day trial is on. An invoice is ready for when it ends.`,
     };
   }
 
-  if (!isPaystackConfigured()) {
-    return { ok: false, status: 200, message: "Paystack is not configured yet. Request an invoice instead." };
+  if (input.pay !== "paystack" || !isPaystackConfigured()) {
+    return { ok: true, email, trialDays: TRIAL_DAYS, message: trialMessage };
   }
   const payment = await createPayment({
     provider: "paystack",
@@ -271,14 +303,50 @@ export async function startBundleCheckout(input: CheckoutInput): Promise<
     data?: { authorization_url?: string };
   };
   if (!response.ok || !body.data?.authorization_url) {
-    return { ok: false, status: 502, message: body.message || "Paystack could not start checkout." };
+    return {
+      ok: true,
+      email,
+      trialDays: TRIAL_DAYS,
+      message: "Your free month is on. Paystack did not open, so request an invoice from the portal when you are ready.",
+    };
   }
-  return { ok: true, url: body.data.authorization_url, email, message: "Redirecting to Paystack." };
+  return { ok: true, url: body.data.authorization_url, email, trialDays: TRIAL_DAYS, message: "Redirecting to Paystack. The free month is already on." };
+}
+
+function soonestTrial(instances: AutomationInstance[]) {
+  const trials = instances.map((item) => item.trial).filter((trial): trial is NonNullable<AutomationInstance["trial"]> => Boolean(trial));
+  if (trials.length === 0) return null;
+  const endsAt = [...trials].sort((a, b) => a.endsAt.localeCompare(b.endsAt))[0]?.endsAt;
+  if (!endsAt) return null;
+  return {
+    endsAt,
+    days: trialDaysRemaining(endsAt),
+    ended: trials.every((trial) => Boolean(trial.endedAt)),
+  };
 }
 
 export async function portalSnapshot(email: string) {
   const doc = await loadAutomations();
-  return snapshotFor(doc, instancesForEmail(doc, email));
+  const instances = instancesForEmail(doc, email);
+  const payments = await listPayments();
+  const normalized = normalizeEmail(email);
+  const ids = new Set(instances.map((item) => item.id));
+  return {
+    ...snapshotFor(doc, instances),
+    analytics: analyticsFor(doc, instances),
+    trial: soonestTrial(instances),
+    paystack: isPaystackConfigured(),
+    invoices: payments
+      .filter((payment) => payment.payerEmail === normalized && (payment.tierId === "automation-bundle" || payment.automationInstanceIds?.some((id) => ids.has(id))))
+      .map((payment) => ({
+        id: payment.id,
+        status: payment.status,
+        amount: payment.amount,
+        currency: payment.currency,
+        createdAt: payment.createdAt,
+        tierName: payment.tierName,
+      })),
+  };
 }
 
 export async function adminSnapshot() {
@@ -291,6 +359,7 @@ export async function adminSnapshot() {
     list.push(instance);
     byEmail.set(instance.ownerEmail, list);
   }
+  const payments = await listPayments();
   const clients = [...byEmail.entries()].map(([email, instances]) => {
     const view = snapshotFor(doc, instances);
     return {
@@ -298,8 +367,20 @@ export async function adminSnapshot() {
       name: instances[0]?.ownerName || email,
       businessName: instances[0]?.businessName || "",
       mrrKes: instances.filter((item) => item.status === "active").reduce((sum, item) => sum + item.monthlyKes, 0),
+      trial: soonestTrial(instances),
       ...view,
     };
+  });
+  const channels = channelReadiness();
+  const actions = buildActionItems({
+    instances: doc.instances,
+    charges: doc.charges,
+    leads: doc.leads,
+    jobs: doc.jobs,
+    payments,
+    channels,
+    waiting: (doc.deliveries || []).filter((item) => item.status === "waiting").length,
+    lastTickAt: doc.ops?.lastTickAt,
   });
   return {
     mrrKes: active.reduce((sum, item) => sum + item.monthlyKes, 0),
@@ -307,10 +388,39 @@ export async function adminSnapshot() {
     pending: live.filter((item) => item.status === "pending_payment").length,
     paused: live.filter((item) => item.status === "paused").length,
     demos: doc.instances.filter((item) => item.ownerEmail === SANDBOX_EMAIL).length,
-    channels: channelReadiness(),
+    channels,
     clients,
     sandbox: snapshotFor(doc, doc.instances.filter((item) => item.ownerEmail === SANDBOX_EMAIL)),
+    actions,
+    ops: doc.ops || {},
+    adminLog: (doc.adminLog || []).slice(-60).reverse(),
+    paystack: isPaystackConfigured(),
+    invoices: payments
+      .filter((payment) => payment.status === "pending" && (payment.tierId === "automation-bundle" || payment.automationInstanceIds?.length))
+      .map((payment) => ({
+        id: payment.id,
+        email: payment.payerEmail,
+        name: payment.payerName,
+        amount: payment.amount,
+        currency: payment.currency,
+        tierName: payment.tierName,
+        createdAt: payment.createdAt,
+        note: payment.note,
+      })),
   };
+}
+
+function analyticsFor(doc: AutomationDoc, instances: AutomationInstance[]) {
+  const ids = new Set(instances.map((item) => item.id));
+  return buildAnalytics({
+    instances,
+    logs: doc.logs.filter((log) => ids.has(log.instanceId)),
+    deliveries: (doc.deliveries || []).filter((item) => ids.has(item.instanceId)),
+    leads: doc.leads.filter((lead) => ids.has(lead.instanceId)),
+    bookings: doc.bookings.filter((booking) => ids.has(booking.instanceId)),
+    reviews: doc.reviews.filter((review) => ids.has(review.instanceId)),
+    charges: doc.charges.filter((charge) => ids.has(charge.instanceId)),
+  });
 }
 
 function snapshotFor(doc: AutomationDoc, instances: AutomationInstance[]) {
@@ -365,16 +475,25 @@ export async function setInstanceStatus(id: string, status: "active" | "paused" 
   await saveAutomations(doc);
 }
 
-export async function saveInstanceConfig(id: string, config: unknown, email?: string) {
+export async function saveInstanceConfig(id: string, config: unknown, email?: string, origin = "") {
   const doc = await loadAutomations();
   const instance = doc.instances.find((item) => item.id === id);
   if (!instance) return { ok: false, message: "Not found." };
   if (email && instance.ownerEmail !== normalizeEmail(email)) return { ok: false, message: "Not your automation." };
   const parsed = parseTemplateConfig(instance.templateId, config);
   if (!parsed.ok) return parsed;
+  if (Array.isArray(parsed.config.entries)) {
+    parsed.config.entries = parsed.config.entries.map((row) => {
+      if (!row || typeof row !== "object") return row;
+      const record = row as Record<string, unknown>;
+      return record.id ? record : { ...record, id: randomUUID() };
+    });
+  }
   instance.config = parsed.config;
-  instance.updatedAt = new Date().toISOString();
+  instance.inputsUpdatedAt = new Date().toISOString();
+  instance.updatedAt = instance.inputsUpdatedAt;
   addLog(doc, id, "Setup updated.");
+  await syncLedger(doc, instance, origin || "https://thebeaconstudio.co.ke");
   await saveAutomations(doc);
   return { ok: true, message: "Saved." };
 }
@@ -404,7 +523,6 @@ export async function bookingView(slug: string) {
 }
 
 export async function bookSlot(slug: string, input: { start: string; name: string; email?: string; phone?: string; note?: string }, origin: string) {
-  void origin;
   const doc = await loadAutomations();
   const instance = doc.instances.find((item) => item.slug === slug && item.status === "active");
   if (!instance) return { ok: false, message: "Booking is not open." };
@@ -438,15 +556,16 @@ export async function bookSlot(slug: string, input: { start: string; name: strin
       });
     }
   }
-  await deliver({
+  const sent = await deliver({
     instance,
     email: booking.email,
     phone: booking.phone,
     subject: `Booked — ${instance.businessName}`,
-    text: `Hello ${booking.name}, you are booked for ${start.toUTCString()}. We will remind you 24 hours and 1 hour before.`,
+    text: `Hello ${booking.name}, you are booked for ${formatBookingWhen(start)}. We will remind you 24 hours and 1 hour before. Calendar: ${origin}/api/automations/bookings/${booking.id}/ics`,
   });
+  rememberDeliveries(doc, instance.id, sent);
   instance.stats.messages += 1;
-  addLog(doc, instance.id, `Booking for ${booking.name} at ${input.start}.`);
+  addLog(doc, instance.id, `Booking for ${booking.name} at ${formatBookingWhen(start)}.`);
   await saveAutomations(doc);
   return { ok: true, message: "Booked. A confirmation is on its way." };
 }
@@ -471,6 +590,137 @@ export async function publicInstance(slug: string, page: string) {
   const instance = doc.instances.find((item) => item.slug === slug && item.status === "active");
   if (!instance) return null;
   const template = templateById(instance.templateId);
-  if (!template || template.page !== page) return null;
-  return { businessName: instance.businessName, templateId: instance.templateId, question: String(instance.config.question || ""), categories: String(instance.config.categories || "") };
+  if (!template) return null;
+  if (page === "lead" && template.hook === "lead") {
+    return { businessName: instance.businessName, templateId: instance.templateId, question: "", categories: "", title: template.name };
+  }
+  if (template.page !== page) return null;
+  return { businessName: instance.businessName, templateId: instance.templateId, question: String(instance.config.question || ""), categories: String(instance.config.categories || ""), title: template.name };
+}
+
+export async function markOwnedCharge(chargeId: string, email?: string, actor: "client" | "studio" = "client") {
+  const doc = await loadAutomations();
+  const charge = doc.charges.find((item) => item.id === chargeId);
+  if (!charge) return { ok: false, message: "That charge was not found." };
+  const instance = doc.instances.find((item) => item.id === charge.instanceId);
+  if (email && instance && instance.ownerEmail !== normalizeEmail(email)) return { ok: false, message: "Not your automation." };
+  if (!markChargePaid(doc, chargeId)) return { ok: false, message: "It is already paid." };
+  addAdminLog(doc, actor === "studio" ? "done" : "automated", "Charge marked paid", `${charge.name} · KES ${charge.amountKes.toLocaleString("en-KE")}. Reminders stopped.`);
+  await saveAutomations(doc);
+  return { ok: true, message: "Marked paid. Reminders stopped." };
+}
+
+export async function markBundleInvoicePaid(paymentId: string) {
+  const payments = await listPayments();
+  const payment = payments.find((item) => item.id === paymentId);
+  if (!payment) return { ok: false, message: "Invoice not found." };
+  if (payment.status === "success") return { ok: true, message: "Already paid." };
+  await updatePaymentById(payment.id, { status: "success", resultDesc: "Marked paid in the action center." });
+  if (payment.automationInstanceIds?.length) {
+    const doc = await loadAutomations();
+    applyBundlePayment(doc, payment.automationInstanceIds, new Date(), "done");
+    await saveAutomations(doc);
+  }
+  return { ok: true, message: "Invoice marked paid. The paid period starts when the trial ends." };
+}
+
+export async function changeTrial(id: string, action: "extend" | "end", days = 14) {
+  const doc = await loadAutomations();
+  const instance = doc.instances.find((item) => item.id === id && !item.demo);
+  if (!instance) return { ok: false, message: "Automation not found." };
+  if (action === "end") {
+    endInstanceTrial(instance);
+    addLog(doc, id, "Trial ended by the studio.");
+    addAdminLog(doc, "done", "Trial ended", `${instance.businessName} · ${instance.ownerEmail}`);
+  } else {
+    extendInstanceTrial(instance, days);
+    addLog(doc, id, `Trial extended by ${days} days.`);
+    addAdminLog(doc, "done", "Trial extended", `${instance.businessName} · ${days} more days.`);
+  }
+  await saveAutomations(doc);
+  return { ok: true, message: action === "end" ? "Trial ended." : `Trial extended by ${days} days.` };
+}
+
+export async function retryFailedJobs() {
+  const doc = await loadAutomations();
+  const now = new Date().toISOString();
+  let count = 0;
+  for (const job of doc.jobs) {
+    if (!job.failed) continue;
+    job.failed = false;
+    job.attempts = 0;
+    job.status = "due";
+    delete job.claimedAt;
+    job.runAt = now;
+    count += 1;
+  }
+  if (count) addAdminLog(doc, "done", "Failed runs queued", `${count} run${count === 1 ? "" : "s"} will try again on the next tick.`);
+  await saveAutomations(doc);
+  return { ok: true, message: count ? `${count} run${count === 1 ? "" : "s"} queued.` : "No failed runs." };
+}
+
+export async function markLeadRead(id: string) {
+  const doc = await loadAutomations();
+  const lead = doc.leads.find((item) => item.id === id);
+  if (!lead) return { ok: false, message: "Lead not found." };
+  lead.readAt = new Date().toISOString();
+  addAdminLog(doc, "done", "Lead marked read", lead.name);
+  await saveAutomations(doc);
+  return { ok: true, message: "Marked read." };
+}
+
+export async function rememberShare(id: string, key: string, email?: string) {
+  const doc = await loadAutomations();
+  const instance = doc.instances.find((item) => item.id === id);
+  if (!instance) return { ok: false, message: "Not found." };
+  if (email && instance.ownerEmail !== normalizeEmail(email)) return { ok: false, message: "Not your automation." };
+  const shared = instance.config.shared && typeof instance.config.shared === "object" ? { ...(instance.config.shared as Record<string, unknown>) } : {};
+  shared[key] = true;
+  instance.config = { ...instance.config, shared };
+  instance.updatedAt = new Date().toISOString();
+  await saveAutomations(doc);
+  return { ok: true, message: "Link marked shared." };
+}
+
+export async function requestOwnerInvoice(email: string) {
+  const doc = await loadAutomations();
+  const mine = instancesForEmail(doc, email);
+  if (mine.length === 0) return { ok: false, message: "No automations on this login." };
+  const normalized = normalizeEmail(email);
+  const payments = await listPayments();
+  const open = payments.find((payment) => payment.payerEmail === normalized && payment.status === "pending" && payment.tierId === "automation-bundle");
+  if (open) return { ok: true, message: "An invoice is already open.", invoiceId: open.id };
+  const amount = mine.reduce((sum, item) => sum + item.monthlyKes, 0);
+  const payment = await createPayment({
+    provider: "bank",
+    status: "pending",
+    mode: "invoice",
+    tierId: "automation-bundle",
+    tierName: mine.map((item) => templateById(item.templateId)?.name || item.templateId).join(", ").slice(0, 140),
+    amount,
+    currency: "KES",
+    depositPercent: 100,
+    payerEmail: normalized,
+    payerName: mine[0]?.ownerName,
+    automationInstanceIds: mine.map((item) => item.id),
+    note: `Requested from the portal. Due after the trial. KES ${amount.toLocaleString("en-KE")}.`,
+  });
+  addAdminLog(doc, "automated", "Invoice requested", `${normalized} · KES ${amount.toLocaleString("en-KE")}`);
+  await saveAutomations(doc);
+  return { ok: true, message: "Invoice requested. The studio will mark it when it is paid.", invoiceId: payment.id };
+}
+
+export async function runOwnerHook(email: string, id: string, kind: "inbox" | "notes", body: Record<string, unknown>, origin: string) {
+  const doc = await loadAutomations();
+  const instance = doc.instances.find((item) => item.id === id);
+  if (!instance || instance.ownerEmail !== normalizeEmail(email)) return { ok: false, message: "Not your automation." };
+  const template = templateById(instance.templateId);
+  if (!template || template.hook !== kind) return { ok: false, message: "This automation does not take that input." };
+  if (instance.status !== "active") return { ok: false, message: "This automation is paused." };
+  const result = await runEngine({ doc, instance, mode: "hook", body, origin });
+  const shared = instance.config.shared && typeof instance.config.shared === "object" ? { ...(instance.config.shared as Record<string, unknown>) } : {};
+  shared[kind] = true;
+  instance.config = { ...instance.config, shared };
+  await saveAutomations(doc);
+  return { ok: result.ok, message: result.message, reply: result.reply };
 }

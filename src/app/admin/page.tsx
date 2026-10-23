@@ -30,8 +30,8 @@ import { AdminAutomations } from "@/components/automations/AdminAutomations";
 import { parseResponseJson } from "@/lib/safe-json";
 
 const ADMIN_NAV = [
+  { id: "actions", label: "Action Center" },
   { id: "mailbox", label: "Mail" },
-  { id: "automations", label: "Automations" },
   { id: "inbox", label: "Inbox" },
   { id: "leads", label: "Leads" },
   { id: "operations", label: "Operations" },
@@ -435,8 +435,8 @@ export default function AdminPage() {
         )}
 
         <div className="mb-10 space-y-8">
-          <AdminMailbox />
           <AdminAutomations />
+          <AdminMailbox />
           <AdminInbox />
           <AdminLeads />
         </div>

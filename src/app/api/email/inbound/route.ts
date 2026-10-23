@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { forwardingTargets } from "@/lib/automations/forwarding";
+import { dispatchHook } from "@/lib/automations/runtime";
 import { ingestInboundEmail } from "@/lib/mailbox";
 import { resendClient } from "@/lib/resend";
 
@@ -119,6 +121,26 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("[email/inbound] store failed", error instanceof Error ? error.message : "store failed");
     return NextResponse.json({ error: "Store failed" }, { status: 500 });
+  }
+
+  const origin = new URL(request.url).origin;
+  for (const target of forwardingTargets(received.to)) {
+    try {
+      await dispatchHook(
+        target.slug,
+        target.kind,
+        {
+          from: received.from,
+          subject: received.subject || "",
+          body: text || "",
+          message: text || "",
+          notes: text || "",
+        },
+        origin
+      );
+    } catch (error) {
+      console.error("[email/inbound] automation route failed", error instanceof Error ? error.message : "route failed");
+    }
   }
 
   return NextResponse.json({ ok: true });
