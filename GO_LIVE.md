@@ -17,8 +17,8 @@ Client and admin steps live in `AUTOMATIONS.md`. Short version:
 
 | Item | Where | Notes |
 |---|---|---|
-| Real studio email | `src/data/site.ts` | Phone is set. Email is still `hello@example.com` |
-| LinkedIn (and Twitter if used) | `site.ts` social / SEO | Still `yourusername` placeholders |
+| Real studio email | `src/data/site.ts` | Done: `hello@thebeaconstudio.co.ke` (plus support@, billing@, admin@) |
+| LinkedIn (and Twitter if used) | `site.ts` social / SEO, or `BRAND_LINKEDIN_URL` | Still `yourusername` placeholders. Branded emails and letterheads hide LinkedIn until a real URL is set |
 | `seo.siteUrl` + custom domain | `site.ts` + DNS → Heroku | Defaults to Heroku app URL until domain is ready |
 | `ADMIN_PASSWORD` | Heroku config vars | **Required** — missing on Heroku today |
 | `PORTAL_SECRET` | Heroku config vars | Missing; falls back to admin password in local/dev only |
@@ -302,3 +302,16 @@ Hub (Beacon, Heroku + Vercel):
 - `CRON_SECRET` — schedule `/api/hub/tick` (dispatch + callback retries) every 5 minutes.
 
 Each sister app: `BEACON_HUB_URL=https://thebeaconstudio.co.ke`, `BEACON_HUB_KEY`, `BEACON_HUB_SECRET`.
+
+## Branded communications TODO (see docs/BRAND_COMMS.md)
+
+Emails, SMS, WhatsApp, signatures and letterheads read these from env. Each is left out (never invented) until set. Set them on Heroku, and use the `NEXT_PUBLIC_` versions if the admin Brand preview should show them too.
+
+- [ ] `BRAND_POSTAL_ADDRESS`: registered or postal address, e.g. "P.O. Box …, Nairobi". Until set, footers say "Nairobi, Kenya".
+- [ ] `BRAND_REGISTRATION_NO`: business or company registration number. Until set, letterheads say "Reg. No. pending".
+- [ ] `BRAND_KRA_PIN`: KRA PIN for invoices and quotes. Hidden until set.
+- [ ] `BRAND_LINKEDIN_URL`: real LinkedIn page. Also replace `yourusername` in `site.ts`.
+- [ ] Twitter/X handle: `site.ts` still has `twitterHandle: "@yourusername"`.
+- [ ] `BRAND_PRIVACY_URL`: there is no `/privacy` page yet. Until set, the email "Privacy" link opens a mail to admin@.
+- [ ] Check the logo (`public/email/beacon-mark.png`) in Gmail, Outlook and Apple Mail, in both light and dark mode.
+- [ ] Sister apps (ConfiRent, CadenceApp, LookFinesse, ConfiLearn, Convoria, ConfiTrade): copy `src/lib/brand-comms.ts` and pass `appName`.

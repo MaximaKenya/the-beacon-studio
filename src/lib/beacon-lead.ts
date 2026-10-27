@@ -1,4 +1,5 @@
 import { notifyAddressFor } from "@/lib/mail-addresses";
+import { renderBrandEmail } from "@/lib/brand-email";
 import { randomUUID } from "crypto";
 import { siteConfig } from "@/data/site";
 import { extractBeaconLead, type BeaconChatMessage } from "@/lib/beacon-ai";
@@ -26,14 +27,6 @@ export type BeaconLeadSaveResult = "created" | "updated" | "skipped";
 
 function digits(value: string): string {
   return value.replace(/\D/g, "");
-}
-
-function escapeHtml(value: string): string {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
 }
 
 /**
@@ -186,7 +179,14 @@ async function notifyStudio(input: {
     to: notifyAddressFor("leadAlert"),
     subject: `${siteConfig.assistant.name} lead — ${input.name}`,
     ...(input.email ? { replyTo: input.email } : {}),
-    html: `<p><strong>${escapeHtml(input.name)}</strong> (${escapeHtml(who)})</p><p>Source: beacon-ai</p><p>${escapeHtml(input.message).replace(/\n/g, "<br/>")}</p>`,
-    text: `${input.name} (${who})\nSource: beacon-ai\n\n${input.message}`,
+    ...renderBrandEmail({
+      heading: `New assistant lead: ${input.name}`,
+      greeting: "A visitor left their details with the assistant.",
+      paragraphs: [input.message],
+      card: [
+        { label: "From", value: `${input.name} (${who})` },
+        { label: "Source", value: "beacon-ai" },
+      ],
+    }),
   });
 }

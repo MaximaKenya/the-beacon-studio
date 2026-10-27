@@ -1,4 +1,5 @@
 import { notifyAddressFor } from "@/lib/mail-addresses";
+import { renderBrandEmail } from "@/lib/brand-email";
 import { NextResponse } from "next/server";
 import { parseRequestJson, readJsonFile, writeJsonFile } from "@/lib/storage";
 import { isValidEmail } from "@/lib/validation";
@@ -108,8 +109,15 @@ export async function POST(request: Request) {
         to: notifyAddressFor("leadAlert"),
         subject: `Contact form — ${name}`,
         ...(emailOk ? { replyTo: email } : {}),
-        html: `<p><strong>${name}</strong> (${email || phone})</p><p>Source: ${entry.source}</p><p>${message.replace(/\n/g, "<br/>")}</p>`,
-        text: `${name} (${email || phone})\nSource: ${entry.source}\n\n${message}`,
+        ...renderBrandEmail({
+          heading: `New contact: ${name}`,
+          greeting: "New message from the contact form.",
+          paragraphs: [message],
+          card: [
+            { label: "From", value: `${name} (${email || phone})` },
+            { label: "Source", value: entry.source || "website" },
+          ],
+        }),
       });
     }
 

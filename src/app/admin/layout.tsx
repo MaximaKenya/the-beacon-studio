@@ -19,6 +19,10 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
               Admin
             </span>
           </div>
+          <div className="flex shrink-0 items-center gap-2">
+          <Link href="/admin/brand-preview" className="hidden h-9 items-center whitespace-nowrap rounded-xl bg-surface/80 px-3 text-sm font-medium text-foreground transition-colors hover:text-accent sm:inline-flex">
+            Brand preview
+          </Link>
           <Link
             href="/"
             className="inline-flex h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xl bg-surface/80 px-2.5 text-sm font-medium text-foreground transition-colors hover:text-accent sm:gap-2 sm:px-3"
@@ -28,6 +32,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             <span className="hidden sm:inline">Back to site</span>
             <span className="sm:hidden">Site</span>
           </Link>
+          </div>
         </div>
       </header>
       {children}

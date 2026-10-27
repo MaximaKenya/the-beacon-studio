@@ -12,6 +12,7 @@ import type {
 } from "@/lib/mailbox-types";
 import { formatNairobi } from "@/lib/time";
 import { parseResponseJson } from "@/lib/safe-json";
+import { hasSignature, withSignature } from "@/lib/brand-comms";
 import { MAILBOX_HINTS, MAILBOX_IDS, MAILBOX_LABELS, isMailboxId, mailboxAddress, type MailboxId } from "@/lib/mail-addresses";
 import { FOLDER_LABELS, MAIL_FOLDERS, MOVE_TARGETS, type FolderCounts, type MoveTarget } from "@/lib/mail-folders";
 
@@ -37,12 +38,15 @@ type Composer = {
   from: MailboxId;
 };
 
+/** Composer text with the sending mailbox's signature appended (editable in the textarea). */
+const signed = (text: string, from: MailboxId) => withSignature(text, from);
+
 const emptyComposer = (from: MailboxId = "hello"): Composer => ({
   mode: "new",
   to: "",
   cc: "",
   subject: "",
-  text: "",
+  text: signed("", from),
   files: [],
   from,
 });
@@ -135,7 +139,7 @@ export function AdminMailbox() {
           ...emptyComposer(mailbox),
           to: detail.compose.to,
           subject: detail.compose.subject || "",
-          text: detail.compose.text || "",
+          text: signed(detail.compose.text || "", mailbox),
         });
         flash(`Compose opened for ${detail.compose.to}.`);
         return;
@@ -290,8 +294,8 @@ export function AdminMailbox() {
       text:
         preset ??
         (mode === "forward" && last
-          ? `\n\n---------- Forwarded message ----------\nFrom: ${last.from}\nSubject: ${last.subject}\n\n${last.text}`
-          : ""),
+          ? `${signed("", arrived)}\n\n---------- Forwarded message ----------\nFrom: ${last.from}\nSubject: ${last.subject}\n\n${last.text}`
+          : signed("", arrived)),
       files: [],
     });
   }
@@ -540,7 +544,11 @@ export function AdminMailbox() {
                 From
                 <select
                   value={composer.from}
-                  onChange={(event) => setComposer({ ...composer, from: event.target.value as MailboxId })}
+                  onChange={(event) => {
+                    const from = event.target.value as MailboxId;
+                    // Swap the signature for the new mailbox when the text still ends with one.
+                    setComposer({ ...composer, from, text: hasSignature(composer.text) ? signed(composer.text, from) : composer.text });
+                  }}
                   className="mt-1 w-full rounded-xl px-3 py-2 text-sm"
                 >
                   {MAILBOX_IDS.map((id) => (

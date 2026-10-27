@@ -2,8 +2,9 @@ import { notifyAddressFor, type MailPurpose } from "@/lib/mail-addresses";
 import { siteConfig } from "@/data/site";
 import { templateById } from "@/automations/templates/public";
 import { renderBrandEmail, publicSiteUrl } from "@/lib/brand-email";
+import { welcomeEmail } from "@/lib/brand-comms";
 import { actionBadge, buildActionItems } from "@/lib/automations/action-center";
-import { channelReadiness } from "@/lib/automations/channels";
+import { brandPhoneText, channelReadiness } from "@/lib/automations/channels";
 import { channelForWaiting } from "@/lib/automations/delivery-plan";
 import { entriesFromConfig, runEngine, scheduleDateRow, schedulePaymentReminders, scheduleSequenceRow } from "@/lib/automations/engine";
 import { entryKey, type InputRow } from "@/lib/automations/inputs";
@@ -59,6 +60,36 @@ async function ownerLetter(input: {
   return result.sent;
 }
 
+/**
+ * Welcome email for a new signup / trial: what each mailbox is for, the trial
+ * counter, three getting-started steps, /how-it-works and the portal.
+ * Callers mark the signup as welcomed only when this returns true, so it is sent once.
+ */
+export async function sendWelcomeEmail(
+  input: { to: string; name?: string; businessName?: string; daysLeft?: number; included?: string[]; idempotencyKey?: string },
+  send: typeof sendResendEmail = sendResendEmail
+): Promise<boolean> {
+  if (!input.to || input.to.endsWith("@example.com")) return false;
+  if (send === sendResendEmail && !isResendConfigured()) return false;
+  const mail = welcomeEmail({
+    ...(input.name ? { name: input.name } : {}),
+    ...(input.businessName ? { businessName: input.businessName } : {}),
+    trialDays: TRIAL_DAYS,
+    daysLeft: input.daysLeft ?? TRIAL_DAYS,
+    ...(input.included ? { included: input.included } : {}),
+    siteUrl: publicSiteUrl(),
+  });
+  const result = await send({
+    purpose: "welcome",
+    to: input.to,
+    subject: mail.subject,
+    html: mail.html,
+    text: mail.text,
+    ...(input.idempotencyKey ? { idempotencyKey: input.idempotencyKey } : {}),
+  });
+  return result.sent;
+}
+
 export async function activateOnTrial(doc: AutomationDoc, instance: AutomationInstance, origin: string, now: Date) {
   if (instance.demo || instance.trial) return;
   const window = trialWindow(now);
@@ -72,25 +103,19 @@ export async function activateOnTrial(doc: AutomationDoc, instance: AutomationIn
   addAdminLog(doc, "automated", "Trial started", `${instance.businessName} · ${instance.ownerEmail} · ${TRIAL_DAYS} days.`);
 }
 
-export async function sendTrialWelcome(doc: AutomationDoc, email: string) {
+export async function sendTrialWelcome(doc: AutomationDoc, email: string, send: typeof sendResendEmail = sendResendEmail) {
   const mine = doc.instances.filter((item) => item.ownerEmail === email && item.trial && !item.trial.welcomed && !item.demo);
   if (mine.length === 0) return;
   const days = trialDaysRemaining(mine[0].trial!.endsAt);
   const names = mine.map((item) => templateById(item.templateId)?.name || item.templateId);
-  const sent = await ownerLetter({
+  const sent = await sendWelcomeEmail({
     to: email,
-    purpose: "welcome",
-    subject: `Your ${TRIAL_DAYS}-day trial is on`,
-    heading: `${days} days free`,
-    paragraphs: [
-      `${mine[0].businessName} is live on The Beacon Studio.`,
-      `Included: ${names.join(", ")}.`,
-      `You have ${days} days left. No card is needed. When the trial ends the automations pause until you choose a plan or request an invoice.`,
-      annualLine(mine),
-      "Setup checklist: 1) Open the portal and fill in each automation's settings. 2) Add your customer list or connect your form. 3) Run a test and check the preview. 4) Connect SMS or WhatsApp when you are ready.",
-    ],
-    action: { label: "Open your portal", href: `${publicSiteUrl()}/portal` },
-  });
+    name: mine[0].ownerName,
+    businessName: mine[0].businessName,
+    daysLeft: days,
+    included: names,
+    idempotencyKey: `welcome/${email}/${mine[0].trial!.start}`,
+  }, send);
   if (sent) {
     for (const item of mine) {
       if (item.trial) item.trial.welcomed = true;
@@ -182,7 +207,7 @@ export async function flushWaitingDeliveries(doc: AutomationDoc) {
     if (!channel || !delivery.to) continue;
     const instance = doc.instances.find((item) => item.id === delivery.instanceId);
     if (!instance || instance.status !== "active" || instance.demo) continue;
-    const result = channel === "sms" ? await sendSms(delivery.to, delivery.text) : await sendWhatsApp(delivery.to, delivery.text);
+    const result = channel === "sms" ? await sendSms(delivery.to, brandPhoneText("sms", delivery.text, instance)) : await sendWhatsApp(delivery.to, brandPhoneText("whatsapp", delivery.text, instance));
     if (!result.sent) continue;
     delivery.status = "sent";
     delivery.channel = channel;

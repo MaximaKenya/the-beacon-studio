@@ -2,6 +2,8 @@ import { randomUUID } from "crypto";
 import { siteConfig } from "@/data/site";
 import { findClientByEmail, listClients, upsertClient } from "@/lib/clients";
 import { brandedEmail, htmlToText } from "@/lib/email-html";
+import { renderBrandEmail } from "@/lib/brand-email";
+import { hasSignature, stripSignature } from "@/lib/brand-comms";
 import { composeBookingEmail, findBooking } from "@/lib/booking-mail";
 import type {
   MailClientLink,
@@ -487,6 +489,24 @@ export async function saveMailboxDraft(input: ComposeInput): Promise<MailThreadD
   return detail;
 }
 
+/**
+ * Admin Mail tab letter. A trailing studio signature in the text (added by the composer,
+ * editable) is rendered as the branded HTML signature for the sending mailbox.
+ */
+function composedLetter(message: StoredMessage, senderAddress?: string): { html: string; text: string } {
+  const local = (senderAddress || message.from || "").split("@")[0]?.toLowerCase() || "";
+  const mailbox = isMailboxId(local) ? local : undefined;
+  if (mailbox && hasSignature(message.text)) {
+    return renderBrandEmail({
+      heading: message.subject,
+      greeting: "",
+      paragraphs: [stripSignature(message.text)],
+      signature: mailbox,
+    });
+  }
+  return brandedEmail({ heading: message.subject, greeting: "Hello,", bodyText: message.text });
+}
+
 async function deliverMessage(
   thread: StoredThread,
   message: StoredMessage,
@@ -516,11 +536,7 @@ async function deliverMessage(
     : null;
   const branded = letter
     ? { html: letter.html, text: letter.text }
-    : brandedEmail({
-        heading: message.subject,
-        greeting: "Hello,",
-        bodyText: message.text,
-      });
+    : composedLetter(message, sender?.address);
   const headers = threadingHeaders(thread, message);
   if (headers.References) message.references = headers.References;
 

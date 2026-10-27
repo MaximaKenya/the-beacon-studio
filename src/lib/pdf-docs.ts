@@ -7,6 +7,7 @@
 import { siteConfig } from "@/data/site";
 import { formatNairobi, NAIROBI_TZ } from "@/lib/time";
 import type { QuotationRecord, ReceiptRecord } from "@/lib/documents";
+import { letterheadLines, renderLetterhead } from "@/lib/brand-comms";
 
 type JsPdf = import("jspdf").jsPDF;
 
@@ -43,10 +44,7 @@ async function header(pdf: JsPdf, subtitle: string) {
   const pageW = pdf.internal.pageSize.getWidth();
   // Soft card strip behind brand
   pdf.setFillColor(CARD_BG.r, CARD_BG.g, CARD_BG.b);
-  pdf.roundedRect(28, 20, pageW - 56, 48, 10, 10, "F");
-  pdf.setDrawColor(226, 232, 240);
-  pdf.setLineWidth(0.6);
-  pdf.roundedRect(28, 20, pageW - 56, 48, 10, 10, "S");
+  pdf.roundedRect(28, 20, pageW - 56, 56, 12, 12, "F");
 
   const logo = await logoDataUrl();
   if (logo) pdf.addImage(logo, "PNG", 40, 26, 32, 32);
@@ -58,50 +56,38 @@ async function header(pdf: JsPdf, subtitle: string) {
   pdf.setFontSize(9);
   pdf.setTextColor(MUTED.r, MUTED.g, MUTED.b);
   pdf.text(siteConfig.brand.lockup, 72, 54);
+  pdf.setFontSize(7.5);
+  pdf.text(letterheadLines().contactStrip, 72, 66);
   pdf.setTextColor(ACCENT.r, ACCENT.g, ACCENT.b);
   pdf.setFont("helvetica", "bold");
   pdf.setFontSize(11);
   pdf.text(subtitle, pageW - 40, 44, { align: "right" });
 }
 
-function footer(pdf: JsPdf) {
+/** Letterhead footer on every page: prepared by, registration, page X of Y. */
+function footer(pdf: JsPdf, preparedBy = `${siteConfig.brand.name} team`) {
   const pageW = pdf.internal.pageSize.getWidth();
   const pageH = pdf.internal.pageSize.getHeight();
-  pdf.setDrawColor(226, 232, 240);
-  pdf.line(40, pageH - 40, pageW - 40, pageH - 40);
-  pdf.setFontSize(8);
-  pdf.setTextColor(MUTED.r, MUTED.g, MUTED.b);
-  pdf.text(
-    `${siteConfig.brand.name} · ${NAIROBI_TZ} · ${formatNairobi()}`,
-    pageW / 2,
-    pageH - 28,
-    { align: "center" }
-  );
+  const head = letterheadLines();
+  const pages = pdf.getNumberOfPages();
+  for (let page = 1; page <= pages; page += 1) {
+    pdf.setPage(page);
+    pdf.setFillColor(232, 246, 243);
+    pdf.roundedRect(28, pageH - 50, pageW - 56, 32, 10, 10, "F");
+    pdf.setFontSize(8);
+    pdf.setTextColor(MUTED.r, MUTED.g, MUTED.b);
+    pdf.text(`Prepared by ${preparedBy} · ${head.registration} · ${NAIROBI_TZ} · ${formatNairobi()}`, 40, pageH - 30);
+    pdf.text(`Page ${page} of ${pages}`, pageW - 40, pageH - 30, { align: "right" });
+  }
 }
 
 function money(amount: number, currency = "USD") {
   return `${currency} ${amount.toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
 }
 
-const PRINT_STYLES = `
-  html,body{margin:0;padding:0;background:#f8fafc;color:#0f172a}
-  body{font-family:system-ui,sans-serif;max-width:720px;margin:32px auto;padding:28px 28px 40px;
-    background:#fff;border:1px solid #e2e8f0;border-radius:20px;box-shadow:0 12px 40px rgba(15,23,42,.06);line-height:1.5}
-  .brand{display:flex;align-items:center;gap:14px;border-bottom:2px solid #0d9488;padding-bottom:16px;margin-bottom:24px}
-  .mark{width:44px;height:44px;border-radius:14px;background:#f1f5f9;border:1px solid #e2e8f0;
-    display:flex;align-items:center;justify-content:center}
-  h1{font-size:13px;letter-spacing:.14em;color:#0d9488;margin:0}
-  h2{font-size:18px;margin:0;color:#0f172a}
-  .meta{color:#64748b;font-size:13px}
-  table{width:100%;border-collapse:collapse;margin:16px 0}
-  td{padding:10px 0;border-bottom:1px solid #e2e8f0;font-size:13px}
-  .total{font-weight:700;color:#0d9488;font-size:15px}
-  @media print{body{margin:12px;box-shadow:none;border-radius:12px}}
-`;
-
-function markSvg(): string {
+function logoSrc(): string {
   const origin = typeof window !== "undefined" ? window.location.origin : siteConfig.seo.siteUrl;
-  return `<img src="${origin}/email/beacon-mark.png" width="36" height="36" alt="" style="display:block;border-radius:10px;width:36px;height:36px;">`;
+  return `${origin}/email/beacon-mark.png`;
 }
 
 export async function downloadQuotationPdf(quote: QuotationRecord): Promise<void> {
@@ -244,22 +230,23 @@ export async function printQuotationPdf(quote: QuotationRecord): Promise<void> {
 }
 
 export function quotationHtml(quote: QuotationRecord): string {
-  return `<!DOCTYPE html><html><head><title>${quote.filename}</title>
-<style>${PRINT_STYLES}</style></head><body>
-<div class="brand"><div class="mark">${markSvg()}</div><div><h2>${siteConfig.brand.name}</h2><div class="meta">${siteConfig.brand.lockup}</div></div><div style="margin-left:auto;text-align:right"><h1>QUOTATION</h1></div></div>
-<p><strong>${quote.clientName}</strong><br/>${quote.clientEmail}${quote.clientCompany ? `<br/>${quote.clientCompany}` : ""}</p>
-<p class="meta">Issued ${formatNairobi(quote.createdAt)} · Valid until ${formatNairobi(quote.validUntil)} · ${NAIROBI_TZ}</p>
-<p><strong>Scope</strong><br/>${escapeHtml(quote.scopeSummary)}</p>
-<p class="meta">${quote.projectTypeLabel} · ${quote.budgetLabel} · ${quote.timelineLabel}</p>
-<table>${quote.lineItems
+  const rows = quote.lineItems
     .map(
       (i) =>
-        `<tr><td><strong>${escapeHtml(i.label)}</strong><br/><span class="meta">${escapeHtml(i.detail || "")}</span></td><td style="text-align:right">${i.amountFrom != null ? `$${i.amountFrom}–$${i.amountTo}` : ""}</td></tr>`
+        `<tr><td><strong>${escapeHtml(i.label)}</strong><br/><span style="color:var(--muted)">${escapeHtml(i.detail || "")}</span></td><td style="text-align:right">${i.amountFrom != null ? `$${i.amountFrom}–$${i.amountTo}` : ""}</td></tr>`
     )
-    .join("")}</table>
-<p class="total">${quote.costFrom === 0 && quote.costTo === 0 ? "Quoted after a free assessment" : `Cost range: $${quote.costFrom} – $${quote.costTo}<br/>${quote.depositPercent}% deposit: $${quote.depositAmount}`}</p>
-<p class="meta">Generated for print · ${siteConfig.brand.name}</p>
-</body></html>`;
+    .join("");
+  return renderLetterhead({
+    title: "Quotation",
+    reference: quote.filename,
+    date: `Issued ${formatNairobi(quote.createdAt)} · Valid until ${formatNairobi(quote.validUntil)} (${NAIROBI_TZ})`,
+    preparedFor: [quote.clientName, quote.clientEmail, quote.clientCompany].filter(Boolean).join(" · "),
+    logoSrc: logoSrc(),
+    bodyHtml: `<p><strong>Scope</strong><br/>${escapeHtml(quote.scopeSummary)}</p>
+<p style="color:var(--muted)">${escapeHtml(quote.projectTypeLabel)} · ${escapeHtml(quote.budgetLabel)} · ${escapeHtml(quote.timelineLabel)}</p>
+<table>${rows}</table>
+<p style="font-weight:700;color:var(--accent)">${quote.costFrom === 0 && quote.costTo === 0 ? "Quoted after a free assessment" : `Cost range: $${quote.costFrom} – $${quote.costTo}<br/>${quote.depositPercent}% deposit: $${quote.depositAmount}`}</p>`,
+  });
 }
 
 export async function downloadReceiptPdf(receipt: ReceiptRecord): Promise<void> {
@@ -300,23 +287,26 @@ export async function downloadReceiptPdf(receipt: ReceiptRecord): Promise<void> 
   pdf.setTextColor(MUTED.r, MUTED.g, MUTED.b);
   pdf.text("Thank you — The Beacon Studio. All times Africa/Nairobi (EAT).", 40, y);
 
-  footer(pdf);
+  footer(pdf, `${siteConfig.brand.name} · Billing`);
   pdf.save(receipt.filename);
 }
 
 export function receiptHtml(receipt: ReceiptRecord): string {
-  return `<!DOCTYPE html><html><head><title>${receipt.filename}</title>
-<style>${PRINT_STYLES}</style></head><body>
-<div class="brand"><div class="mark">${markSvg()}</div><div><strong>${siteConfig.brand.name}</strong><div class="meta">${siteConfig.brand.lockup}</div></div><h1 style="margin-left:auto">RECEIPT</h1></div>
-<table>
-<tr><td>Amount paid</td><td style="text-align:right"><strong>${receipt.currency} ${receipt.amountPaid}</strong></td></tr>
+  return renderLetterhead({
+    title: "Receipt",
+    reference: receipt.reference,
+    date: `${formatNairobi(receipt.createdAt)} (${NAIROBI_TZ})`,
+    ...(receipt.clientName ? { preparedFor: receipt.clientName } : {}),
+    preparedBy: `${siteConfig.brand.name} · Billing`,
+    logoSrc: logoSrc(),
+    bodyHtml: `<table>
+<tr><td>Amount paid</td><td style="text-align:right"><strong>${escapeHtml(receipt.currency)} ${receipt.amountPaid}</strong></td></tr>
 <tr><td>Method</td><td style="text-align:right">${escapeHtml(receipt.method)}</td></tr>
 <tr><td>Reference</td><td style="text-align:right">${escapeHtml(receipt.reference)}</td></tr>
-<tr><td>Remaining balance</td><td style="text-align:right">${receipt.currency} ${receipt.remainingBalance}</td></tr>
-<tr><td>Timestamp</td><td style="text-align:right">${formatNairobi(receipt.createdAt)} (${NAIROBI_TZ})</td></tr>
+<tr><td>Remaining balance</td><td style="text-align:right">${escapeHtml(receipt.currency)} ${receipt.remainingBalance}</td></tr>
 </table>
-<p class="meta">Thank you — ${siteConfig.brand.name}</p>
-</body></html>`;
+<p>Thank you for your payment.</p>`,
+  });
 }
 
 export async function printReceiptPdf(receipt: ReceiptRecord): Promise<void> {
