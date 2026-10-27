@@ -115,6 +115,9 @@ export function PortalAutomations({ demo: demoProp }: { demo?: { email: string; 
           <button type="button" className="admin-btn" onClick={() => void requestInvoice()}>
             Request invoice
           </button>
+          <Link href="/how-it-works" className="admin-btn">
+            How it works
+          </Link>
           <Link href="/automations" className="admin-btn">
             Add from the buffet
           </Link>

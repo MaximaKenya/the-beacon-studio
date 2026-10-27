@@ -92,7 +92,7 @@ export const TEMPLATE_DEFS: TemplateDef[] = [
     behavior: "sequence",
     hook: "lead",
     fields: [
-      { key: "steps", label: "Follow-up steps", type: "textarea", required: true, help: "One message per line. Sent a day apart.", placeholder: "Still thinking about the quote?\nHappy to adjust it.\nLast note from us on this quote." },
+      { key: "steps", label: "Follow-up steps", type: "textarea", required: true, help: "One message per line. Sent two days apart.", placeholder: "Still thinking about the quote?\nHappy to adjust it.\nLast note from us on this quote." },
       { key: "entries", label: "Open quotes", type: "entries", columns: ["name", "email", "phone", "date", "note"], help: "Optional. You can also POST a quote to the webhook." },
     ],
     demoConfig: { steps: "Still thinking about the quote?\nHappy to adjust it.", entries: [{ name: "Amina", email: "demo@example.com", note: "Website quote", date: "2026-10-18" }] },

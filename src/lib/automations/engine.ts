@@ -14,7 +14,7 @@ import type {
   AutomationJob,
 } from "@/lib/automations/types";
 
-type Entry = {
+export type Entry = {
   id?: string;
   name?: string;
   email?: string;
@@ -465,6 +465,29 @@ async function runDigest(input: EngineInput): Promise<{ ok: boolean; message: st
   return { ok: true, message: "Report sent." };
 }
 
+/** Schedule every step of the sequence for one client row (step 1 tomorrow, then two days apart, like form leads). */
+export function scheduleSequenceRow(doc: AutomationDoc, instance: AutomationInstance, row: Entry, now: Date) {
+  const steps = textOf(instance.config.steps).split(/\n+/).map((line) => line.trim()).filter(Boolean);
+  steps.forEach((step, index) => {
+    schedule(doc, instance.id, plusDays(now, 1 + index * 2), "sequence", {
+      step: index,
+      label: JSON.stringify({ name: row.name, email: row.email, phone: row.phone, text: step }),
+      entryKey: entryKey(row),
+    });
+  });
+}
+
+/** Schedule the reminder for one dated row (birthday, shift, expiry, recall, guest). Past dates go out tomorrow. */
+export function scheduleDateRow(doc: AutomationDoc, instance: AutomationInstance, row: Entry, now: Date) {
+  const leadDays = numOf(instance.config.leadDays) || (instance.templateId === "clinic-recall" ? 0 : 1);
+  const message = textOf(instance.config.message) || "Hello {{name}}, a reminder for {{note}} on {{date}}.";
+  const base = row.date ? new Date(row.date) : now;
+  const recall = instance.templateId === "clinic-recall" ? numOf(instance.config.recallDays) || 180 : 0;
+  const when = new Date(base.getTime() + recall * 24 * 60 * 60 * 1000 - leadDays * 24 * 60 * 60 * 1000);
+  const runAt = Number.isNaN(when.getTime()) || when.getTime() < now.getTime() ? plusDays(now, 1) : when.toISOString();
+  schedule(doc, instance.id, runAt, "date-reminder", { label: JSON.stringify({ ...row, message }), entryKey: entryKey(row) });
+}
+
 async function runSequence(input: EngineInput): Promise<{ ok: boolean; message: string }> {
   const steps = textOf(input.instance.config.steps).split(/\n+/).map((line) => line.trim()).filter(Boolean);
   if (input.mode === "hook") {
@@ -489,14 +512,7 @@ async function runSequence(input: EngineInput): Promise<{ ok: boolean; message: 
     return { ok: true, message: "Sequence started." };
   }
   if (input.mode === "activate") {
-    for (const row of entriesFromConfig(input.instance.config)) {
-      steps.forEach((step, index) => {
-        schedule(input.doc, input.instance.id, plusDays(nowOf(input), index + 1), "sequence", {
-          step: index,
-          label: JSON.stringify({ name: row.name, email: row.email, phone: row.phone, text: step }),
-        });
-      });
-    }
+    for (const row of entriesFromConfig(input.instance.config)) scheduleSequenceRow(input.doc, input.instance, row, nowOf(input));
     addLog(input.doc, input.instance.id, `Onboarding sequence has ${steps.length} steps.`);
     return { ok: true, message: "Sequence scheduled." };
   }
@@ -525,6 +541,7 @@ async function runDates(input: EngineInput): Promise<{ ok: boolean; message: str
       if (!Number.isNaN(when.getTime())) {
         schedule(input.doc, input.instance.id, plusDays(when, -1), "date-reminder", {
           label: JSON.stringify({ name, email, phone, date: eventDate, note: input.instance.config.eventName }),
+          entryKey: entryKey(rows[rows.length - 1]),
         });
       }
     }
@@ -532,19 +549,9 @@ async function runDates(input: EngineInput): Promise<{ ok: boolean; message: str
     return { ok: true, message: "RSVP saved." };
   }
   if (input.mode === "activate") {
-    const leadDays = numOf(input.instance.config.leadDays) || (input.instance.templateId === "clinic-recall" ? 0 : 1);
-    const message = textOf(input.instance.config.message) || "Hello {{name}}, a reminder for {{note}} on {{date}}.";
     const recurrence = textOf(input.instance.config.recurrence);
     if (!recurrence) {
-    for (const row of entriesFromConfig(input.instance.config)) {
-      const base = row.date ? new Date(row.date) : nowOf(input);
-      const recall = input.instance.templateId === "clinic-recall" ? numOf(input.instance.config.recallDays) || 180 : 0;
-      const when = new Date(base.getTime() + recall * 24 * 60 * 60 * 1000 - leadDays * 24 * 60 * 60 * 1000);
-      const runAt = when.getTime() < nowOf(input).getTime() ? plusDays(nowOf(input), 1) : when.toISOString();
-      schedule(input.doc, input.instance.id, runAt, "date-reminder", {
-        label: JSON.stringify({ ...row, message }),
-      });
-    }
+      for (const row of entriesFromConfig(input.instance.config)) scheduleDateRow(input.doc, input.instance, row, nowOf(input));
     }
     if (recurrence) {
       schedule(input.doc, input.instance.id, initialCustomReminderAt(nowOf(input)), "custom-reminder");
@@ -595,6 +602,7 @@ async function runDates(input: EngineInput): Promise<{ ok: boolean; message: str
     if (next) {
       schedule(input.doc, input.instance.id, next, "date-reminder", {
         label: JSON.stringify({ ...payload, date: payload.date }),
+        ...(input.job?.entryKey ? { entryKey: input.job.entryKey } : {}),
       });
     }
   }

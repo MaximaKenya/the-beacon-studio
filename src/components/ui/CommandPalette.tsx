@@ -126,6 +126,7 @@ export function CommandPaletteProvider({ children }: { children: ReactNode }) {
 
     const pageItems: CommandItem[] = [
       { path: "/book", title: "Book the free audit" },
+      { path: "/how-it-works", title: "How automations work" },
       { path: "/checklist", title: "SME checklist" },
       ...categoryLandings.map((page) => ({ path: page.path, title: page.title })),
       ...industryLandings.map((page) => ({ path: page.path, title: page.title })),

@@ -29,6 +29,24 @@ Reviews and bookings keep `/a/<slug>/review` and `/a/<slug>/book`. Times are Afr
 
 Paste an email or notes in the portal and submit. If Resend inbound is on for the domain, you can also forward to `inbox+<slug>@thebeaconstudio.co.ke` or `notes+<slug>@thebeaconstudio.co.ke`.
 
+## How each automation works
+
+Every automation has a plain-language card: what starts it, what the client enters and where, what it does, what the client sees, what it sends and on which channel, and what is needed to turn it on. The cards live in `src/lib/automations/how-it-works.ts`. They show on each automation in the portal and on the public page `/how-it-works`, which also has the step-by-step guide (sign up, set up, enter data, watch results, pause and resume, billing).
+
+Sequences (abandoned quote, nurture, onboarding) send step one at once for a form lead, or tomorrow for a row added in Inputs, then one step every two days.
+
+Rows a client adds in the portal after signup are scheduled once each: a charge and reminders for ledgers, a reminder for dated rows (greetings, shifts, expiries, recalls, RSVP guests), and every step for sequence rows. Rows already scheduled are not scheduled again.
+
+### Channels until keys exist
+
+- **Email** needs `RESEND_API_KEY`. Without it each email is recorded as not sent, and the Action Center shows Resend.
+- **SMS and WhatsApp** need Africa's Talking or WhatsApp keys. Until then every text is held in the Notify queue as *waiting* and goes out when the channel is connected.
+- Automations that text phones: lead reply, abandoned quote, nurture, onboarding, all payment ledgers, appointments, reviews, NPS, greetings, RSVP, staff shifts, clinic recall, and custom reminders set to SMS or WhatsApp. The rest only email the owner.
+
+## End-to-end test
+
+`npm run build && npm run automations:e2e` runs every automation through the HTTP API on a throwaway server and data folder, with no database and no Resend, Groq, SMS, WhatsApp or Paystack keys, so nothing can be sent. For each automation it signs up a trial client, signs in to the portal, enters data (portal rows, `/a/<slug>/…` forms, hooks, pasted email or notes, a booking), makes the due jobs run with the tick, then checks the run log, the Notify queue, portal metrics, the admin Action Center, and pause and resume. Pass names to test some: `npm run automations:e2e -- rent-collection rsvp`.
+
 ## For admin
 
 `/admin` opens on the **Action Center**.

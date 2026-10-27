@@ -1,3 +1,4 @@
+import { entryKey, type InputRow } from "@/lib/automations/inputs";
 import { randomBytes, randomUUID } from "crypto";
 import { allocateMonthly, quoteBundle, type BillingInterval } from "@/automations/pricing";
 import { templateById } from "@/automations/templates/public";
@@ -9,7 +10,7 @@ import { buildActionItems } from "@/lib/automations/action-center";
 import { channelReadiness, deliver, rememberDeliveries } from "@/lib/automations/channels";
 import { SANDBOX_EMAIL } from "@/lib/automations/setup-guides";
 import { markChargePaid, recordReview, runEngine } from "@/lib/automations/engine";
-import { activateOnTrial, applyBundlePayment, endInstanceTrial, extendInstanceTrial, sendTrialWelcome, syncLedger } from "@/lib/automations/lifecycle";
+import { activateOnTrial, applyBundlePayment, endInstanceTrial, extendInstanceTrial, jobEntryKey, sendTrialWelcome, syncLedger } from "@/lib/automations/lifecycle";
 import { addAdminLog, addLog, instancesForEmail, loadAutomations, saveAutomations } from "@/lib/automations/store";
 import { extendTrialEnd, TRIAL_DAYS, trialDaysRemaining } from "@/lib/automations/trial";
 import { queueCounts } from "@/lib/notify-usage";
@@ -125,6 +126,8 @@ export async function runDueJobs(origin: string): Promise<{ ran: number }> {
           idempotencyKey: `automation-reminder/${job.id}`,
         });
         rememberDeliveries(doc, instance.id, sent, now);
+        instance.stats.runs += 1;
+        instance.stats.lastRunAt = now.toISOString();
         instance.stats.messages += 1;
         instance.stats.reminders += 1;
         addLog(doc, instance.id, `Appointment reminder for ${booking.name}. ${sent.note}`);
@@ -532,10 +535,18 @@ export async function saveInstanceConfig(id: string, config: unknown, email?: st
   const parsed = parseTemplateConfig(instance.templateId, config);
   if (!parsed.ok) return parsed;
   if (Array.isArray(parsed.config.entries)) {
+    // Rows entered at signup have no id yet; their charges and jobs are keyed by content.
+    // Keep that key as the id so a first save does not schedule them a second time.
+    const known = new Set<string>([
+      ...doc.charges.filter((charge) => charge.instanceId === id && charge.entryKey).map((charge) => charge.entryKey as string),
+      ...doc.jobs.filter((job) => job.instanceId === id).map(jobEntryKey).filter((key): key is string => Boolean(key)),
+    ]);
     parsed.config.entries = parsed.config.entries.map((row) => {
       if (!row || typeof row !== "object") return row;
       const record = row as Record<string, unknown>;
-      return record.id ? record : { ...record, id: randomUUID() };
+      if (record.id) return record;
+      const key = entryKey(record as InputRow);
+      return { ...record, id: known.has(key) ? key : randomUUID() };
     });
   }
   instance.config = parsed.config;
@@ -613,6 +624,8 @@ export async function bookSlot(slug: string, input: { start: string; name: strin
     text: `Hello ${booking.name}, you are booked for ${formatBookingWhen(start)}. We will remind you 24 hours and 1 hour before. Calendar: ${origin}/api/automations/bookings/${booking.id}/ics`,
   });
   rememberDeliveries(doc, instance.id, sent);
+  instance.stats.runs += 1;
+  instance.stats.lastRunAt = new Date().toISOString();
   instance.stats.messages += 1;
   addLog(doc, instance.id, `Booking for ${booking.name} at ${formatBookingWhen(start)}.`);
   await saveAutomations(doc);

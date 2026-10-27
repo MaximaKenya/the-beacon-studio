@@ -12,6 +12,7 @@ import { TRIAL_DAYS, trialDaysRemaining } from "@/lib/automations/trial";
 import { formatKes, formatUsd } from "@/lib/fx";
 import { formatNairobi } from "@/lib/time";
 import { parseResponseJson } from "@/lib/safe-json";
+import { HowItWorksCard } from "@/components/automations/HowItWorksCard";
 import { InputsEditor } from "@/components/automations/InputsEditor";
 import { ProgressRing } from "@/components/automations/Charts";
 
@@ -274,6 +275,7 @@ function InstanceDetail({
         )}
       </div>
       <TrialLine instance={instance} onAct={onAct} />
+      <HowItWorksCard templateId={instance.templateId} />
       <Checklist instance={instance} onAct={onAct} />
       <ShareLinks instance={instance} onAct={onAct} />
       <CaptureTools instance={instance} busy={busy} onAct={onAct} />
