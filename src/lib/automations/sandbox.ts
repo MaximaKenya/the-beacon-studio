@@ -11,6 +11,34 @@ import { isPlaceholderContact } from "@/lib/launch";
 
 export { SANDBOX_BUSINESS, SANDBOX_EMAIL, SANDBOX_OWNER };
 
+/** Public site URL for links in previews. Never a made-up host. */
+export const SANDBOX_ORIGIN = (siteConfig.seo?.siteUrl || "https://thebeaconstudio.co.ke").replace(/\/$/, "");
+
+/** Demo phone numbers: 254 700 000 0NN. Obviously not real customers. */
+export function isDemoPhone(phone: string): boolean {
+  return /^2547000000\d\d$/.test(phone.replace(/\D/g, ""));
+}
+
+/** 10:00 Nairobi (07:00 UTC), `days` from now. */
+export function nairobiTenAm(days: number, now = new Date()): Date {
+  const d = new Date(now.getTime() + days * 86_400_000);
+  d.setUTCHours(7, 0, 0, 0);
+  return d;
+}
+
+export function formatNairobi(iso: string): string {
+  return new Intl.DateTimeFormat("en-KE", {
+    timeZone: "Africa/Nairobi",
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).format(new Date(iso)) + " EAT";
+}
+
 const SEND_KINDS = new Set([
   "sequence",
   "payment-reminder",
@@ -33,12 +61,12 @@ function person(name: string, email: string, phone: string, extra: Record<string
 }
 
 function kenyanConfig(id: string, base: Record<string, unknown>): Record<string, unknown> {
-  const amina = person("Amina Wanjiku", "amina.wanjiku@example.com", "254711000014");
-  const juma = person("Juma Otieno", "juma.traders@example.com", "254722000028");
-  const neema = person("Neema Kariuki", "neema.kariuki@example.com", "254733000041");
-  const wanjiku = person("Wanjiku Mwangi", "wanjiku.mwangi@example.com", "254701000066");
-  const faith = person("Faith Achieng", "faith.achieng@example.com", "254712000077");
-  const brian = person("Brian Mwangi", "brian.mwangi@example.com", "254723000088");
+  const amina = person("Amina Wanjiku", "amina.wanjiku@example.com", "254700000006");
+  const juma = person("Juma Otieno", "juma.traders@example.com", "254700000008");
+  const neema = person("Neema Kariuki", "neema.kariuki@example.com", "254700000011");
+  const wanjiku = person("Wanjiku Mwangi", "wanjiku.mwangi@example.com", "254700000002");
+  const faith = person("Faith Achieng", "faith.achieng@example.com", "254700000007");
+  const brian = person("Brian Mwangi", "brian.mwangi@example.com", "254700000009");
   const patches: Record<string, Record<string, unknown>> = {
     "lead-reply": {
       greeting: "Thanks for writing to Jamii Traders. We have your message and will call you about the order.",
@@ -102,7 +130,7 @@ function kenyanConfig(id: string, base: Record<string, unknown>): Record<string,
     "low-stock": { entries: [{ name: "Bamburi cement 50kg", qty: 4, reorderAt: 20, note: "Aisle 2" }] },
     "doc-expiry": {
       leadDays: 14,
-      entries: [{ name: "Landlord", email: "landlord.plot12@example.com", phone: "254700000090", date: day(21), note: "Shop lease, Plot 12" }],
+      entries: [{ name: "Landlord", email: "landlord.plot12@example.com", phone: "254700000001", date: day(21), note: "Shop lease, Plot 12" }],
     },
     "inbox-triage": { instructions: "Be brief. Do not promise a refund. Offer a call with the shop." },
     "meeting-notes": { instructions: "Decisions, owners, and dates only." },
@@ -113,14 +141,15 @@ function kenyanConfig(id: string, base: Record<string, unknown>): Record<string,
     },
     "school-fees": {
       notice: "Term fees are due on the date below. Pay with the link or by M-Pesa.",
-      entries: [{ name: "Parent of Achieng", email: "achieng.parent@example.com", phone: "254724000055", amountKes: 24500, date: day(11), note: "Term 3" }],
+      entries: [{ name: "Parent of Achieng", email: "achieng.parent@example.com", phone: "254700000010", amountKes: 24500, date: day(11), note: "Term 3" }],
     },
     "clinic-recall": {
       recallDays: 180,
-      entries: [{ name: "Kamau Njoroge", email: "kamau.njoroge@example.com", phone: "254710000033", date: day(-200), note: "review" }],
+      message: "Hello {{name}}, it is time for your {{note}} visit. Reply to book a time.",
+      entries: [{ name: "Kamau Njoroge", email: "kamau.njoroge@example.com", phone: "254700000005", date: day(-200), note: "review" }],
     },
     "rent-collection": {
-      entries: [{ name: "House 12, South B", email: "house12.southb@example.com", phone: "254701000099", amountKes: 32000, date: day(8), note: "November rent" }],
+      entries: [{ name: "House 12, South B", email: "house12.southb@example.com", phone: "254700000003", amountKes: 32000, date: day(8), note: "November rent" }],
     },
     maintenance: { categories: "Plumbing, power, locks" },
     "custom-reminder": {
@@ -128,7 +157,7 @@ function kenyanConfig(id: string, base: Record<string, unknown>): Record<string,
       recurrence: "weekly",
       channel: "email",
       recipients: "asha.kamau@example.com",
-      entries: [{ name: "Shop team", email: "asha.kamau@example.com", phone: "254706000010", date: day(2), note: "stock take" }],
+      entries: [{ name: "Shop team", email: "asha.kamau@example.com", phone: "254700000004", date: day(2), note: "stock take" }],
     },
     "custom-report": {
       metrics: ["leads", "payments", "messages", "runs"],
@@ -145,7 +174,7 @@ function sampleBody(templateId: string): Record<string, unknown> {
   const common = {
     name: "Amina Wanjiku",
     email: "amina.wanjiku@example.com",
-    phone: "254711000014",
+    phone: "254700000006",
   };
   if (templateId === "faq-bot") return { ...common, message: "Are you open on Saturday, and do you deliver cement in South B?" };
   if (templateId === "inbox-triage") {
@@ -217,7 +246,7 @@ export async function seedSandbox(doc: AutomationDoc): Promise<void> {
     if (doc.instances.some((item) => item.id === `sandbox-${template.id}`)) continue;
     const instance = blankInstance(template.id, kenyanConfig(template.id, template.demoConfig), template.priceKes, template.priceUsd);
     doc.instances.push(instance);
-    await runEngine({ doc, instance, mode: "activate", origin: "http://sandbox.local", now });
+    await runEngine({ doc, instance, mode: "activate", origin: SANDBOX_ORIGIN, now });
     addLog(doc, instance.id, `${template.name} is on for ${SANDBOX_BUSINESS}. Sandbox runs stay as previews.`);
   }
   const leadId = "sandbox-lead-reply";
@@ -228,7 +257,7 @@ export async function seedSandbox(doc: AutomationDoc): Promise<void> {
       at: now.toISOString(),
       name: "Amina Wanjiku",
       email: "amina.wanjiku@example.com",
-      phone: "254711000014",
+      phone: "254700000006",
       message: "Need 40 bags of cement in South B next week.",
       qualified: true,
       summary: "Nairobi delivery lead for cement.",
@@ -240,7 +269,7 @@ export async function seedSandbox(doc: AutomationDoc): Promise<void> {
       instanceId: "sandbox-invoice-reminders",
       name: "Amina Wanjiku",
       email: "amina.wanjiku@example.com",
-      phone: "254711000014",
+      phone: "254700000006",
       amountKes: 12400,
       note: "Paint order, paid by M-Pesa",
       status: "paid",
@@ -249,15 +278,14 @@ export async function seedSandbox(doc: AutomationDoc): Promise<void> {
   }
   const bookId = "sandbox-appointments";
   if (!doc.bookings.some((booking) => booking.instanceId === bookId)) {
-    const start = new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000);
-    start.setHours(10, 0, 0, 0);
+    const start = nairobiTenAm(2, now);
     doc.bookings.push({
       id: randomUUID(),
       instanceId: bookId,
       start: start.toISOString(),
       name: "Brian Mwangi",
       email: "brian.mwangi@example.com",
-      phone: "254723000088",
+      phone: "254700000009",
       note: "Measure the shop shutter",
       status: "confirmed",
     });
@@ -297,12 +325,14 @@ export async function previewSandboxInstance(
       detail: JSON.stringify({ config: copy.config, sample: body }, null, 2),
     });
     if (job) {
-      await runEngine({ doc: scratch, instance: copy, mode: "job", job, origin: "http://sandbox.local", deliverTo });
+      await runEngine({ doc: scratch, instance: copy, mode: "job", job, origin: SANDBOX_ORIGIN, deliverTo });
     } else if (template.hook !== "none") {
-      await runEngine({ doc: scratch, instance: copy, mode: "hook", body, origin: "http://sandbox.local", deliverTo });
+      await runEngine({ doc: scratch, instance: copy, mode: "hook", body, origin: SANDBOX_ORIGIN, deliverTo });
     } else if (template.behavior === "booking") {
       const booking = scratch.bookings.find((item) => item.instanceId === copy.id);
-      const when = booking ? new Date(booking.start).toUTCString() : "the next open slot";
+      // The seeded booking is saved once; keep the demo in the future.
+      const startIso = booking && Date.parse(booking.start) > Date.now() ? booking.start : nairobiTenAm(2).toISOString();
+      const when = formatNairobi(startIso);
       const text = `Hello ${booking?.name || "Brian Mwangi"}, you are booked at ${SANDBOX_BUSINESS} for ${when}. We will remind you 24 hours and 1 hour before.`;
       traceStep({
         kind: "preview",
@@ -320,7 +350,10 @@ export async function previewSandboxInstance(
         });
       }
     } else {
-      await runEngine({ doc: scratch, instance: copy, mode: "activate", origin: "http://sandbox.local", deliverTo });
+      await runEngine({ doc: scratch, instance: copy, mode: "activate", origin: SANDBOX_ORIGIN, deliverTo });
+      // Hourly ticks can use up the saved demo job. Run the job activate just scheduled.
+      const fresh = scratch.jobs.find((item) => item.instanceId === copy.id && item.status === "due" && SEND_KINDS.has(item.kind));
+      if (fresh) await runEngine({ doc: scratch, instance: copy, mode: "job", job: fresh, origin: SANDBOX_ORIGIN, deliverTo });
     }
     if (!steps.some((step) => step.kind === "ai")) {
       traceStep({
@@ -373,8 +406,50 @@ export async function runSandboxNow(id: string, sendToMe: boolean): Promise<{ ok
 export async function resetDemoSandbox(): Promise<{ ok: boolean; message: string }> {
   const { loadAutomations, saveAutomations } = await import("@/lib/automations/store");
   const doc = await loadAutomations();
-  stripIds(doc, sandboxIds(doc));
+  const named = new Set(doc.instances.filter((item) => item.id.startsWith("democlient-")).map((item) => item.id));
+  stripIds(doc, new Set([...sandboxIds(doc)].filter((id) => !named.has(id))));
   await seedSandbox(doc);
   await saveAutomations(doc);
   return { ok: true, message: `${SANDBOX_BUSINESS} is reset. Every automation is back on sample data.` };
+}
+
+/** Owner address for a named demo client. example.com never receives mail. */
+export function demoOwnerEmail(name: string): string {
+  const slug = name.toLowerCase().replace(/\(.*?\)/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").replace(/^demo-/, "").slice(0, 40) || "client";
+  return `demo-${slug}@example.com`;
+}
+
+/**
+ * Named demo client (for example "Demo Clinic (sample data)") built from the
+ * sandbox sample config. Every instance is `demo: true`, so channels never
+ * deliver to customers and billing, referrals and digests skip it.
+ */
+export async function createNamedDemo(nameInput: string, templateIds: string[]): Promise<{ ok: boolean; message: string; email?: string; ids?: string[] }> {
+  const name = nameInput.replace(/[<>]/g, "").trim().slice(0, 80);
+  if (!name) return { ok: false, message: "Name the demo client." };
+  const wanted = new Set(templateIds.filter((id) => typeof id === "string"));
+  const templates = pricedTemplates().filter((t) => wanted.size === 0 || wanted.has(t.id));
+  if (!templates.length) return { ok: false, message: "Pick at least one known template." };
+  const { loadAutomations, saveAutomations } = await import("@/lib/automations/store");
+  const doc = await loadAutomations();
+  const email = demoOwnerEmail(name);
+  const slugBase = email.slice(5, email.indexOf("@"));
+  const ids: string[] = [];
+  const now = new Date();
+  for (const template of templates) {
+    const id = `democlient-${slugBase}-${template.id}`;
+    if (doc.instances.some((item) => item.id === id)) continue;
+    const instance = blankInstance(template.id, kenyanConfig(template.id, template.demoConfig), template.priceKes, template.priceUsd);
+    instance.id = id;
+    instance.slug = `${slugBase}-${template.id}`.slice(0, 80);
+    instance.ownerEmail = email;
+    instance.ownerName = name;
+    instance.businessName = name;
+    doc.instances.push(instance);
+    await runEngine({ doc, instance, mode: "activate", origin: SANDBOX_ORIGIN, now });
+    addLog(doc, id, `${template.name} is on for ${name}. Demo client: nothing is sent or charged.`);
+    ids.push(id);
+  }
+  await saveAutomations(doc);
+  return { ok: true, message: ids.length ? `${name} is ready with ${ids.length} automations. Messaging is blocked.` : `${name} already has those automations.`, email, ids };
 }

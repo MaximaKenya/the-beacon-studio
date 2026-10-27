@@ -1,3 +1,4 @@
+import { adminPasswordMatches, isAdminAuthenticated } from "@/lib/admin-auth";
 import { NextResponse } from "next/server";
 import {
   appendAnalyticsEvent,
@@ -88,9 +89,8 @@ export async function POST(request: Request) {
 }
 
 export async function GET(request: Request) {
-  const auth = request.headers.get("x-admin-token");
-  const password = process.env.ADMIN_PASSWORD;
-  if (!password || auth !== password) {
+  const auth = request.headers.get("x-admin-token") || "";
+  if (!(await isAdminAuthenticated()) && !(auth && adminPasswordMatches(auth))) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

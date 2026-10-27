@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { httpsRedirectTarget } from "@/lib/session-cookie";
+import { clientIp, crossOriginBlocked, postLimitFor, rateLimit } from "@/lib/rate-limit";
 import { normalizeReferralCode, REFERRAL_COOKIE, REFERRAL_COOKIE_DAYS } from "@/lib/referral-rules";
 
 /**
@@ -17,6 +18,22 @@ export function proxy(request: NextRequest) {
   });
   if (target) {
     return NextResponse.redirect(target, 308);
+  }
+  const path = request.nextUrl.pathname;
+  if (path.startsWith("/api/") && request.method !== "GET" && request.method !== "HEAD" && request.method !== "OPTIONS") {
+    if (crossOriginBlocked(path, request.headers.get("origin"), request.headers.get("x-forwarded-host") || request.headers.get("host"))) {
+      return NextResponse.json({ error: "Cross-origin request blocked." }, { status: 403 });
+    }
+    const rule = postLimitFor(path);
+    if (rule) {
+      const hit = rateLimit(`${clientIp(request.headers)}:${path}`, rule.limit, rule.windowMs);
+      if (!hit.ok) {
+        return NextResponse.json(
+          { error: "Too many requests. Try again shortly." },
+          { status: 429, headers: { "Retry-After": String(hit.retryAfter) } }
+        );
+      }
+    }
   }
   const response = NextResponse.next();
   const ref = normalizeReferralCode(request.nextUrl.searchParams.get("ref"));

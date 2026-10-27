@@ -9,13 +9,7 @@ import {
 
 export const runtime = "nodejs";
 
-const COOKIE = "beacon_admin";
-const MAX_AGE = 60 * 60 * 24 * 7; // 7 days
-
-function sessionToken(password: string): string {
-  // Lightweight opaque token — not cryptographic auth for high-security contexts
-  return Buffer.from(`beacon:${password}`).toString("base64url");
-}
+import { ADMIN_COOKIE as COOKIE, ADMIN_MAX_AGE as MAX_AGE, adminPasswordMatches, createAdminToken, verifyAdminToken } from "@/lib/admin-auth";
 
 const NO_STORE = { "Cache-Control": "no-store" };
 
@@ -31,7 +25,7 @@ export async function POST(request: Request) {
   try {
     const body = await parseRequestJson(request);
     const pin = typeof body.password === "string" ? body.password : "";
-    if (pin !== password) {
+    if (!pin || pin.length > 256 || !adminPasswordMatches(pin)) {
       return NextResponse.json({ error: "Invalid password." }, { status: 401, headers: NO_STORE });
     }
 
@@ -39,7 +33,7 @@ export async function POST(request: Request) {
     applySessionCookie(
       response,
       COOKIE,
-      sessionToken(password),
+      createAdminToken() as string,
       sessionCookieOptionsFromRequest(request, MAX_AGE)
     );
     return response;
@@ -61,6 +55,6 @@ export async function GET() {
   }
   const jar = await cookies();
   const token = jar.get(COOKIE)?.value;
-  const authenticated = token === sessionToken(password);
+  const authenticated = verifyAdminToken(token);
   return NextResponse.json({ authenticated, configured: true }, { headers: NO_STORE });
 }

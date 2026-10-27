@@ -1,17 +1,31 @@
 import { NextResponse } from "next/server";
 import { updatePaymentById, updatePaymentByCheckoutId, listPayments } from "@/lib/payments";
 import { createReceiptFromPayment } from "@/lib/documents";
-import { parseRequestJson } from "@/lib/storage";
+import { isAdminAuthenticated } from "@/lib/admin-auth";
+import { verifyStripeSignature } from "@/lib/stripe-signature";
 
 export const runtime = "nodejs";
 
 /**
  * Stripe webhook (checkout.session.completed) OR manual confirm:
  * POST { sessionId } | { paymentId } | raw Stripe event body
+ * Needs a valid Stripe-Signature (STRIPE_WEBHOOK_SECRET) or an admin session.
  */
 export async function POST(request: Request) {
   try {
-    const body = await parseRequestJson(request);
+    const raw = (await request.text()).slice(0, 256_000);
+    const secret = process.env.STRIPE_WEBHOOK_SECRET?.trim() || "";
+    const signed = secret ? verifyStripeSignature(raw, request.headers.get("stripe-signature"), secret) : false;
+    if (!signed && !(await isAdminAuthenticated())) {
+      return NextResponse.json({ error: secret ? "Bad signature." : "Stripe webhook not configured." }, { status: secret ? 401 : 503 });
+    }
+    let body: Record<string, unknown> = {};
+    try {
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === "object") body = parsed as Record<string, unknown>;
+    } catch {
+      return NextResponse.json({ error: "Bad JSON." }, { status: 400 });
+    }
 
     // Stripe event shape
     const type = typeof body.type === "string" ? body.type : "";

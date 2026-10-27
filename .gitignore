@@ -50,3 +50,7 @@ next-env.d.ts
 # temp clones for product research
 .tmp/
 
+
+# all local JSON storage (may hold personal data)
+data/*
+!data/.gitkeep

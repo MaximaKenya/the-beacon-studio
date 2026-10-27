@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { markReferralRedeemed } from "@/lib/referrals";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
-import { resetDemoSandbox, runSandboxNow } from "@/lib/automations/sandbox";
+import { createNamedDemo, resetDemoSandbox, runSandboxNow } from "@/lib/automations/sandbox";
 import { addInstanceNote, adminSnapshot, changeTrial, markBundleInvoicePaid, markLeadRead, markOwnedCharge, retryFailedJobs, saveInstanceConfig, setInstanceStatus, stopFollowUps } from "@/lib/automations/runtime";
+import { shareToken } from "@/lib/automations/share";
 import { parseRequestJson } from "@/lib/storage";
 
 export const runtime = "nodejs";
@@ -34,6 +35,12 @@ export async function POST(request: Request) {
   if (action === "note") return NextResponse.json(await addInstanceNote(id, String(body.text || ""), "studio"));
   if (action === "stop") return NextResponse.json(await stopFollowUps(id));
   if (action === "run") return NextResponse.json(await runSandboxNow(id, body.sendToMe === true));
+  if (action === "create-demo") {
+    const templates = Array.isArray(body.templates) ? body.templates.map(String).slice(0, 60) : [];
+    const result = await createNamedDemo(String(body.name || ""), templates);
+    const viewUrl = result.email ? `/portal/demo?e=${encodeURIComponent(result.email)}&t=${shareToken("demo-portal", result.email)}` : undefined;
+    return NextResponse.json({ ...result, viewUrl }, { status: result.ok ? 200 : 400 });
+  }
   if (action === "reset-demo") return NextResponse.json(await resetDemoSandbox());
   if (action === "mark-paid") return NextResponse.json(await markOwnedCharge(String(body.chargeId || ""), undefined, "studio"));
   if (action === "redeem-referral") return NextResponse.json(await markReferralRedeemed(String(body.referralId || "")));

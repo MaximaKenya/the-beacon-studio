@@ -37,19 +37,25 @@ type Snapshot = {
 
 const empty: Snapshot = { instances: [], logs: [], charges: [], leads: [] };
 
-export function PortalAutomations() {
+export function PortalAutomations({ demo: demoProp }: { demo?: { email: string; token: string } } = {}) {
+  const demoEmail = demoProp?.email;
+  const demoToken = demoProp?.token;
   const [data, setData] = useState<Snapshot | null>(null);
   const [range, setRange] = useState<7 | 30 | 90>(30);
   const [focus, setFocus] = useState<string>("");
 
   const load = useCallback(async () => {
-    const res = await fetch("/api/automations/portal");
+    const res = await fetch(
+      demoEmail && demoToken
+        ? `/api/automations/portal?demo=${encodeURIComponent(demoEmail)}&t=${encodeURIComponent(demoToken)}`
+        : "/api/automations/portal"
+    );
     if (!res.ok) {
       setData(empty);
       return;
     }
     setData(await parseResponseJson<Snapshot>(res, empty));
-  }, []);
+  }, [demoEmail, demoToken]);
 
   useEffect(() => {
     const handle = window.setTimeout(() => {

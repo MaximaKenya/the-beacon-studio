@@ -1,3 +1,4 @@
+import { safeEqual } from "@/lib/admin-auth";
 import { NextResponse } from "next/server";
 import { flushWaitingDeliveries, sendAdminDigest, sweepTrials, claimAutomationTick, finishAutomationTick } from "@/lib/automations/lifecycle";
 import { runDueJobs } from "@/lib/automations/runtime";
@@ -11,8 +12,8 @@ function authorized(request: Request): boolean {
   const secret = process.env.CRON_SECRET?.trim();
   if (!secret) return false;
   const header = request.headers.get("authorization") || "";
-  const url = new URL(request.url);
-  return header === `Bearer ${secret}` || url.searchParams.get("secret") === secret;
+  // Header only: a secret in the URL ends up in router and proxy logs.
+  return safeEqual(header, `Bearer ${secret}`);
 }
 
 async function handle(request: Request) {

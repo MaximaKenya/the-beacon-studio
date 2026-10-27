@@ -11,7 +11,7 @@
     "heroku-postbuild": "npm run build",
     "start": "next start",
     "lint": "eslint",
-    "test": "tsx --test src/lib/lead-extract.test.ts src/lib/leads.test.ts src/lib/booking-mail.test.ts src/lib/session-cookie.test.ts src/components/brand/logo-options.test.ts src/lib/conversion.test.ts src/components/home/splash.test.ts src/lib/assistant-guide.test.ts src/lib/notify.test.ts src/lib/booking-deposit.test.ts src/components/features/assistant-fab.test.ts src/components/features/action-cluster.test.ts src/lib/automations/product.test.ts src/automations/packs.test.ts src/lib/roi.test.ts src/lib/referral-rules.test.ts src/lib/automations/trial-sequence.test.ts src/lib/revenue-pricing.test.ts src/lib/revenue-requests-rules.test.ts src/lib/templates-store.test.ts",
+    "test": "tsx --test src/lib/lead-extract.test.ts src/lib/leads.test.ts src/lib/booking-mail.test.ts src/lib/session-cookie.test.ts src/components/brand/logo-options.test.ts src/lib/conversion.test.ts src/components/home/splash.test.ts src/lib/assistant-guide.test.ts src/lib/notify.test.ts src/lib/booking-deposit.test.ts src/components/features/assistant-fab.test.ts src/components/features/action-cluster.test.ts src/lib/automations/product.test.ts src/automations/packs.test.ts src/lib/roi.test.ts src/lib/referral-rules.test.ts src/lib/automations/trial-sequence.test.ts src/lib/revenue-pricing.test.ts src/lib/revenue-requests-rules.test.ts src/lib/templates-store.test.ts src/lib/security-audit.test.ts",
     "db:migrate-files": "tsx scripts/migrate-files.ts",
     "automations:run": "tsx scripts/run-each-automation.ts"
   },
@@ -20,13 +20,13 @@
     "html2canvas": "^1.4.1",
     "jspdf": "^4.2.1",
     "lucide-react": "^0.525.0",
-    "next": "16.2.9",
+    "next": "^16.4.3",
     "pg": "^8.23.1",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "resend": "^6.34.1",
     "tsx": "^4.23.15",
-    "zod": "^3.25.76"
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
@@ -35,7 +35,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "16.2.9",
+    "eslint-config-next": "^16.4.3",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
