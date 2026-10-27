@@ -9,6 +9,8 @@ import { AskGlowPrompt } from "@/components/features/AskGlowPrompt";
 import { StickyProductCTA } from "@/components/features/StickyProductCTA";
 import { ProductVisual } from "@/components/products/ProductVisual";
 import { mailtoHref, trackEmailClick } from "@/lib/contact-actions";
+import { getProductCopy } from "@/data/product-copy";
+import { ProductCopySections } from "@/components/products/ProductCopySections";
 
 export function ProductDetail({
   product,
@@ -20,6 +22,7 @@ export function ProductDetail({
 }) {
   const { openBooking, openNewsletter, openChat } = useFeatures();
   const isOpen = Boolean(product.liveUrl);
+  const copy = getProductCopy(product.id);
 
   return (
     <div className="relative px-6 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-28 lg:px-8 lg:pt-32">
@@ -40,15 +43,36 @@ export function ProductDetail({
             <h1 className="mt-3 font-display text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">
               {product.name}
             </h1>
-            <p className="mt-3 text-lg text-foreground/90">{product.tagline}</p>
+            <p className="mt-3 text-lg text-foreground/90">{copy?.headline ?? product.tagline}</p>
+            {copy ? <p className="mt-2 text-base font-medium text-accent">{copy.promise}</p> : null}
             <p className="mt-6 text-base leading-relaxed text-muted">{product.description}</p>
 
             <h2 className="mt-10 font-display text-lg font-semibold text-foreground">Who it&apos;s for</h2>
-            <p className="mt-3 text-sm leading-relaxed text-muted">{product.audience}</p>
+            {copy ? (
+              <ul className="mt-3 flex flex-wrap gap-2">
+                {copy.audiences.map((a) => (
+                  <li key={a} className="rounded-full bg-surface-elevated/80 px-3 py-1 text-xs font-medium text-foreground">
+                    {a}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="mt-3 text-sm leading-relaxed text-muted">{product.audience}</p>
+            )}
+            {copy?.trial ? (
+              <p className="sleek-card mt-6 rounded-2xl bg-surface px-5 py-4 text-sm leading-relaxed text-foreground">
+                {copy.trial}
+              </p>
+            ) : null}
+            {copy?.disclaimer ? (
+              <p role="note" className="sleek-card mt-6 rounded-2xl bg-surface px-5 py-4 text-sm font-medium leading-relaxed text-foreground">
+                {copy.disclaimer}
+              </p>
+            ) : null}
 
             {!isOpen && (
               <p className="mt-6 rounded-2xl border border-border bg-surface px-5 py-4 text-sm leading-relaxed text-muted">
-                {product.name} is not open yet. Ask us to notify you, or send a message.
+                {product.name} is not open to the public. Ask us to notify you, or send a message.
               </p>
             )}
 
@@ -80,7 +104,7 @@ export function ProductDetail({
                   }
                   className="inline-flex h-12 items-center gap-2 rounded-xl bg-accent px-6 text-sm font-semibold text-background hover:bg-accent-hover"
                 >
-                  Visit site
+                  {copy?.ctaLabel ?? "Visit site"}
                   <ExternalLink className="h-4 w-4" aria-hidden />
                 </a>
               ) : (
@@ -113,7 +137,7 @@ export function ProductDetail({
                 className="inline-flex h-12 items-center gap-2 rounded-xl border border-border bg-surface px-5 text-sm font-semibold text-foreground hover:border-accent/40"
               >
                 <Calendar className="h-4 w-4 text-accent" aria-hidden />
-                Book a call
+                Book a demo
               </button>
 
               <a
@@ -141,6 +165,8 @@ export function ProductDetail({
             />
           </div>
         </div>
+
+        {copy ? <ProductCopySections name={product.name} copy={copy} /> : null}
 
         {related.length > 0 && (
           <div className="mt-20 border-t border-border/70 pt-12">
