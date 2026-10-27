@@ -4,6 +4,7 @@
  */
 import { Resend } from "resend";
 import { siteConfig } from "@/data/site";
+import { senderFor, type MailPurpose } from "@/lib/mail-addresses";
 
 export const DEFAULT_FROM = "The Beacon Studio <hello@thebeaconstudio.co.ke>";
 
@@ -54,6 +55,8 @@ export function replyToAddress(override?: string): string | undefined {
 export async function sendResendEmail(opts: {
   /** Full From header on the verified domain, e.g. "The Beacon Studio <support@…>". */
   from?: string;
+  /** What the email is for. Picks the From and Reply-To mailbox from mail-addresses. */
+  purpose?: MailPurpose;
   to: string | string[];
   subject: string;
   html: string;
@@ -73,11 +76,12 @@ export async function sendResendEmail(opts: {
   const cc = opts.cc
     ? (Array.isArray(opts.cc) ? opts.cc : [opts.cc]).map((v) => v.trim()).filter(Boolean)
     : undefined;
-  const replyTo = replyToAddress(opts.replyTo);
+  const sender = opts.purpose && !opts.from ? senderFor(opts.purpose) : null;
+  const replyTo = sender ? opts.replyTo?.trim() || sender.replyTo : replyToAddress(opts.replyTo);
 
   const { data, error } = await resend.emails.send(
     {
-      from: opts.from || fromHeader(),
+      from: opts.from || sender?.header || fromHeader(),
       to,
       subject: opts.subject,
       html: opts.html,

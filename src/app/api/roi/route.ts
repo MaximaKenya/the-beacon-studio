@@ -1,3 +1,4 @@
+import { notifyAddressFor } from "@/lib/mail-addresses";
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { siteConfig } from "@/data/site";
@@ -59,9 +60,9 @@ export async function POST(request: Request) {
           { label: "Book a call", href: `${site}/book` },
         ],
       });
-      await sendResendEmail({ to: email, subject: `Your automation plan · ${siteConfig.brand.name}`, html: letter.html, text: letter.text });
+      await sendResendEmail({ purpose: "enquiry", to: email, subject: `Your automation plan · ${siteConfig.brand.name}`, html: letter.html, text: letter.text });
       const alert = renderBrandEmail({ heading: "New ROI plan lead", greeting: "Hello,", paragraphs: [`${name || email} (${email}) asked for an automation plan.`, summary] });
-      await sendResendEmail({ to: process.env.ADMIN_EMAIL?.trim() || siteConfig.email, subject: `ROI lead: ${result.pack.name}`, html: alert.html, text: alert.text, replyTo: email });
+      await sendResendEmail({ purpose: "leadAlert", to: notifyAddressFor("leadAlert"), subject: `ROI lead: ${result.pack.name}`, html: alert.html, text: alert.text, replyTo: email });
     }
     return NextResponse.json({ ok: true, message: "Plan saved. Check your inbox." });
   } catch (error) {

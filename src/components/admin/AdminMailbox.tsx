@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Archive, Forward, Loader2, Mail, Paperclip, PenLine, Reply, Search, Send } from "lucide-react";
+import { Archive, Forward, Loader2, Mail, Paperclip, PenLine, Reply, Search, Send, Star, Trash2 } from "lucide-react";
 import { AdminToast, useAdminToast } from "@/components/admin/AdminToast";
 import type {
   MailFolder,
@@ -12,14 +12,15 @@ import type {
 } from "@/lib/mailbox-types";
 import { formatNairobi } from "@/lib/time";
 import { parseResponseJson } from "@/lib/safe-json";
-import { MAILBOX_IDS, MAILBOX_LABELS, mailboxAddress, type MailboxId } from "@/lib/mail-addresses";
+import { MAILBOX_HINTS, MAILBOX_IDS, MAILBOX_LABELS, isMailboxId, mailboxAddress, type MailboxId } from "@/lib/mail-addresses";
+import { FOLDER_LABELS, MAIL_FOLDERS, MOVE_TARGETS, type FolderCounts, type MoveTarget } from "@/lib/mail-folders";
 
-const FOLDERS: { id: MailFolder; label: string }[] = [
-  { id: "inbox", label: "Inbox" },
-  { id: "sent", label: "Sent" },
-  { id: "drafts", label: "Drafts" },
-  { id: "archive", label: "Archive" },
-];
+const FOLDERS: { id: MailFolder; label: string }[] = MAIL_FOLDERS.map((id) => ({ id, label: FOLDER_LABELS[id] }));
+
+const zeroCounts = (): MailboxCounts =>
+  Object.fromEntries(MAIL_FOLDERS.map((id) => [id, 0])) as FolderCounts as MailboxCounts;
+
+type ThreadAction = "archive" | "restore" | "read" | "unread" | "star" | "unstar" | "trash" | "spam" | "delete" | "move";
 
 type LocalFile = { filename: string; contentType: string; contentBase64: string };
 
@@ -36,14 +37,14 @@ type Composer = {
   from: MailboxId;
 };
 
-const emptyComposer = (): Composer => ({
+const emptyComposer = (from: MailboxId = "hello"): Composer => ({
   mode: "new",
   to: "",
   cc: "",
   subject: "",
   text: "",
   files: [],
-  from: "hello",
+  from,
 });
 
 async function fileToAttachment(file: File): Promise<LocalFile | null> {
@@ -60,12 +61,13 @@ async function fileToAttachment(file: File): Promise<LocalFile | null> {
 
 export function AdminMailbox() {
   const [folder, setFolder] = useState<MailFolder>("inbox");
-  const [mailbox, setMailbox] = useState<MailboxId | "all">("all");
+  const [mailbox, setMailbox] = useState<MailboxId>("hello");
+  const [picked, setPicked] = useState<string[]>([]);
   const [confirming, setConfirming] = useState(false);
   const [showImages, setShowImages] = useState(false);
   const [query, setQuery] = useState("");
   const [threads, setThreads] = useState<MailThreadSummary[]>([]);
-  const [counts, setCounts] = useState<MailboxCounts>({ inbox: 0, sent: 0, drafts: 0, archive: 0, unread: 0 });
+  const [counts, setCounts] = useState<MailboxCounts>(zeroCounts);
   const [configured, setConfigured] = useState<boolean | null>(null);
   const [selected, setSelected] = useState<MailThreadDetail | null>(null);
   const [composer, setComposer] = useState<Composer | null>(null);
@@ -79,18 +81,22 @@ export function AdminMailbox() {
 
   async function loadList(nextFolder = folder, nextQuery = query) {
     const params = new URLSearchParams({ folder: nextFolder, q: nextQuery });
-    if (mailbox !== "all") params.set("mailbox", mailbox);
+    params.set("mailbox", mailbox);
     const res = await fetch(`/api/admin/mailbox?${params.toString()}`);
     const data = await parseResponseJson<MailboxListResponse>(res, {
       configured: false,
-      counts: { inbox: 0, sent: 0, drafts: 0, archive: 0, unread: 0 },
+      counts: zeroCounts(),
       threads: [],
     });
     setConfigured(Boolean(data.configured));
-    setCounts(data.counts ?? { inbox: 0, sent: 0, drafts: 0, archive: 0, unread: 0 });
-    setThreads(data.threads ?? []);
+    setCounts(data.counts ?? zeroCounts());
+    const list = data.threads ?? [];
+    setThreads(list);
+    setPicked((current) => current.filter((id) => list.some((thread) => thread.id === id)));
     setLoading(false);
-    const unread = data.counts?.unread ?? 0;
+    // The header badge counts unread across every mailbox.
+    const byMailbox = data.counts?.byMailbox;
+    const unread = byMailbox ? Object.values(byMailbox).reduce((sum, n) => sum + n, 0) : data.counts?.unread ?? 0;
     window.dispatchEvent(new CustomEvent("beacon-mail-unread", { detail: { unread } }));
   }
 
@@ -126,7 +132,7 @@ export function AdminMailbox() {
         setError(null);
         setNote(null);
         setComposer({
-          ...emptyComposer(),
+          ...emptyComposer(mailbox),
           to: detail.compose.to,
           subject: detail.compose.subject || "",
           text: detail.compose.text || "",
@@ -216,32 +222,42 @@ export function AdminMailbox() {
     }
   }
 
-  async function mutate(action: "archive" | "restore" | "read" | "unread", threadId: string) {
+  async function mutate(action: ThreadAction, threadIds: string[], target?: MoveTarget) {
+    if (!threadIds.length) return;
+    if (action === "delete" && !window.confirm(`Delete ${threadIds.length} thread${threadIds.length === 1 ? "" : "s"} forever? This cannot be undone.`)) {
+      return;
+    }
     setBusy(true);
     setError(null);
     try {
       const res = await fetch("/api/admin/mailbox", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action, threadId }),
+        body: JSON.stringify({ action, threadIds, ...(target ? { folder: target } : {}) }),
       });
       if (!res.ok) throw new Error("Could not update the thread.");
-      const saved =
-        action === "archive"
-          ? "Archived."
-          : action === "restore"
-            ? "Restored."
-            : action === "read"
-              ? "Marked read."
-              : "Marked unread.";
-      setNote(saved);
-      flash(saved);
-      if (action === "archive") {
-        setSelected(null);
-        setFolder("archive");
-      }
+      const n = threadIds.length > 1 ? ` ${threadIds.length} threads` : "";
+      const saved: Record<ThreadAction, string> = {
+        archive: `Archived${n}.`,
+        restore: `Restored${n}.`,
+        read: `Marked read${n}.`,
+        unread: `Marked unread${n}.`,
+        star: `Starred${n}.`,
+        unstar: `Unstarred${n}.`,
+        trash: `Moved${n} to Trash.`,
+        spam: `Marked${n} as spam.`,
+        delete: `Deleted${n} forever.`,
+        move: `Moved${n} to ${target ? FOLDER_LABELS[target] : "folder"}.`,
+      };
+      setNote(saved[action]);
+      flash(saved[action]);
+      setPicked([]);
+      const leaves = action !== "read" && action !== "unread" && action !== "star" && action !== "unstar";
       await loadList();
-      if (action !== "archive") await openThread(threadId);
+      if (selected && threadIds.includes(selected.id)) {
+        if (leaves) setSelected(null);
+        else await openThread(selected.id);
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : "Could not update the thread.";
       setError(message);
@@ -251,6 +267,10 @@ export function AdminMailbox() {
     }
   }
 
+  function togglePick(id: string) {
+    setPicked((current) => (current.includes(id) ? current.filter((item) => item !== id) : [...current, id]));
+  }
+
   function startReply(mode: "reply" | "forward", preset?: string) {
     if (!selected) return;
     const last = [...selected.messages].reverse().find((message) => message.direction !== "draft");
@@ -258,10 +278,10 @@ export function AdminMailbox() {
     const subjectBase = last?.subject || selected.subject;
     const prefix = mode === "forward" ? "Fwd: " : "Re: ";
     const subject = subjectBase.toLowerCase().startsWith(prefix.toLowerCase()) ? subjectBase : `${prefix}${subjectBase}`;
-    const arrived = (selected.mailboxes?.[0] as MailboxId | undefined) || "hello";
+    const arrived = isMailboxId(selected.mailbox) ? selected.mailbox : mailbox;
     setComposer({
       mode,
-      from: MAILBOX_IDS.includes(arrived) ? arrived : "hello",
+      from: arrived,
       threadId: selected.id,
       messageId: last?.id,
       to,
@@ -278,9 +298,10 @@ export function AdminMailbox() {
 
   function openDraft(thread: MailThreadDetail) {
     const draft = [...thread.messages].reverse().find((message) => message.direction === "draft");
+    const saved = draft?.from ? MAILBOX_IDS.find((id) => mailboxAddress(id).toLowerCase() === draft.from.toLowerCase()) : undefined;
     setComposer({
       mode: "new",
-      from: "hello",
+      from: saved || (isMailboxId(thread.mailbox) ? thread.mailbox : mailbox),
       threadId: thread.id,
       draftMessageId: draft?.id,
       to: draft?.to.join(", ") || "",
@@ -299,15 +320,11 @@ export function AdminMailbox() {
           <p className="admin-kicker">Email</p>
           <h2 className="mt-1 font-display text-xl font-semibold text-heading">
             Mail
-            {visibleCounts.unread > 0 && (
-              <span className="ml-2 align-middle rounded-full bg-accent px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-background">
-                {visibleCounts.unread} unread
-              </span>
-            )}
+
           </h2>
           <p className="mt-1 max-w-2xl text-sm text-muted">
-            Built-in mail for hello@, support@, billing@ and admin@thebeaconstudio.co.ke. Mail arrives through Resend
-            inbound. Reply, archive, and open a linked lead from the same thread.
+            One tab per address. Inbound mail is filed by the address it was sent to. Compose sends from the open
+            tab.
           </p>
         </div>
         <button
@@ -317,7 +334,7 @@ export function AdminMailbox() {
             setSelected(null);
             setError(null);
             setNote(null);
-            setComposer(emptyComposer());
+            setComposer(emptyComposer(mailbox));
           }}
         >
           <PenLine className="h-4 w-4" />
@@ -334,81 +351,155 @@ export function AdminMailbox() {
         </p>
       )}
 
-      <div className="mt-4 flex flex-wrap items-center gap-2">
-        <div className="admin-tabs">
+      <div className="mt-4 flex flex-wrap gap-2" role="tablist" aria-label="Mailbox">
+        {MAILBOX_IDS.map((id) => {
+          const unread = visibleCounts.byMailbox?.[id] ?? 0;
+          return (
+            <button
+              key={id}
+              type="button"
+              role="tab"
+              aria-selected={mailbox === id}
+              onClick={() => {
+                setMailbox(id);
+                setSelected(null);
+                setComposer(null);
+                setPicked([]);
+              }}
+              className={`rounded-xl px-3 py-1.5 text-sm font-semibold ${
+                mailbox === id ? "bg-accent text-background" : "bg-background/40 text-muted"
+              }`}
+            >
+              {id}@
+              {unread > 0 && <span className="ml-1 font-mono text-[10px]">{unread}</span>}
+            </button>
+          );
+        })}
+      </div>
+      <p className="mt-2 text-xs text-muted">
+        <span className="font-semibold text-foreground">{MAILBOX_LABELS[mailbox]}</span> · {mailboxAddress(mailbox)} ·{" "}
+        {MAILBOX_HINTS[mailbox]}
+      </p>
+
+      <div className="mt-3 flex flex-wrap items-center gap-2">
+        <div className="admin-tabs flex-wrap" role="tablist" aria-label="Folder">
           {FOLDERS.map((item) => (
             <button
               key={item.id}
               type="button"
+              role="tab"
+              aria-selected={folder === item.id}
               onClick={() => {
                 setFolder(item.id);
                 setComposer(null);
+                setPicked([]);
               }}
               className={`rounded-xl px-3 py-1.5 text-sm font-semibold ${
                 folder === item.id ? "bg-accent text-background" : "text-muted"
               }`}
             >
               {item.label}
-              <span className="ml-1 font-mono text-[10px] opacity-80">{visibleCounts[item.id]}</span>
-              {item.id === "inbox" && visibleCounts.unread > 0 && (
-                <span
-                  className={`ml-1 rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${
-                    folder === "inbox" ? "bg-background text-accent" : "bg-accent text-background"
-                  }`}
-                >
-                  {visibleCounts.unread}
-                </span>
-              )}
+              <span className="ml-1 font-mono text-[10px] opacity-80">{visibleCounts[item.id] ?? 0}</span>
             </button>
           ))}
         </div>
         <label className="relative min-w-48 flex-1">
-          <span className="sr-only">Search mail</span>
+          <span className="sr-only">Search {FOLDER_LABELS[folder]}</span>
           <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted" />
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search subject, people, tags, or message"
+            placeholder={`Search ${FOLDER_LABELS[folder]} in ${mailbox}@`}
             className="w-full rounded-xl py-2 pl-9 pr-3 text-sm"
           />
         </label>
       </div>
-      <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label="Mailbox">
-        {(["all", ...MAILBOX_IDS] as const).map((id) => {
-          const unread = id === "all" ? visibleCounts.unread : visibleCounts.byMailbox?.[id] ?? 0;
-          return (
-            <button
-              key={id}
-              type="button"
-              onClick={() => setMailbox(id)}
-              className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                mailbox === id ? "bg-accent text-background" : "bg-background/40 text-muted"
-              }`}
-            >
-              {id === "all" ? "All addresses" : `${id}@`}
-              {unread > 0 && <span className="ml-1 font-mono text-[10px]">{unread}</span>}
-            </button>
-          );
-        })}
-      </div>
+
+      {threads.length > 0 && (
+        <div className="mt-3 flex flex-wrap items-center gap-2 text-xs" role="toolbar" aria-label="Bulk actions">
+          <label className="inline-flex items-center gap-1 text-muted">
+            <input
+              type="checkbox"
+              checked={picked.length > 0 && picked.length === threads.length}
+              onChange={(event) => setPicked(event.target.checked ? threads.map((thread) => thread.id) : [])}
+            />
+            {picked.length ? `${picked.length} selected` : "Select all"}
+          </label>
+          {picked.length > 0 && (
+            <>
+              <button type="button" disabled={busy} className="admin-btn h-8" onClick={() => void mutate("read", picked)}>
+                Mark read
+              </button>
+              <button type="button" disabled={busy} className="admin-btn h-8" onClick={() => void mutate("unread", picked)}>
+                Mark unread
+              </button>
+              <button type="button" disabled={busy} className="admin-btn h-8" onClick={() => void mutate("star", picked)}>
+                <Star className="h-3.5 w-3.5" /> Star
+              </button>
+              <button type="button" disabled={busy} className="admin-btn h-8" onClick={() => void mutate("unstar", picked)}>
+                Unstar
+              </button>
+              <MoveSelect disabled={busy} onMove={(target) => void mutate("move", picked, target)} />
+              {folder === "trash" || folder === "spam" ? (
+                <button type="button" disabled={busy} className="admin-btn h-8" onClick={() => void mutate("restore", picked)}>
+                  Restore
+                </button>
+              ) : (
+                <button type="button" disabled={busy} className="admin-btn h-8" onClick={() => void mutate("trash", picked)}>
+                  <Trash2 className="h-3.5 w-3.5" /> Trash
+                </button>
+              )}
+              {folder === "trash" && (
+                <button
+                  type="button"
+                  disabled={busy}
+                  className="admin-btn h-8 text-accent-warm"
+                  onClick={() => void mutate("delete", picked)}
+                >
+                  Delete forever
+                </button>
+              )}
+            </>
+          )}
+        </div>
+      )}
 
       <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.2fr)]">
         <div className="max-h-[36rem] space-y-2 overflow-y-auto rounded-2xl bg-background/30 p-2">
           {loading && <p className="px-3 py-6 text-sm text-muted">Loading mail…</p>}
           {!loading && threads.length === 0 && (
-            <p className="px-3 py-6 text-sm text-muted">Nothing in {folder}.</p>
+            <p className="px-3 py-6 text-sm text-muted">
+              Nothing in {FOLDER_LABELS[folder]} for {mailbox}@{query ? ` matching “${query}”` : ""}.
+            </p>
           )}
           {threads.map((thread) => (
-            <button
+            <div
               key={thread.id}
-              type="button"
-              onClick={() => void openThread(thread.id)}
-              className={`w-full rounded-2xl px-3 py-3 text-left ${
+              className={`flex w-full gap-2 rounded-2xl px-3 py-3 ${
                 selected?.id === thread.id ? "bg-accent/15" : "bg-background/40 hover:bg-accent/10"
               }`}
             >
+              <span className="flex shrink-0 flex-col items-center gap-2 pt-0.5">
+                <input
+                  type="checkbox"
+                  aria-label={`Select ${thread.subject}`}
+                  checked={picked.includes(thread.id)}
+                  onChange={() => togglePick(thread.id)}
+                />
+                <button
+                  type="button"
+                  aria-label={thread.starred ? "Unstar" : "Star"}
+                  aria-pressed={Boolean(thread.starred)}
+                  disabled={busy}
+                  onClick={() => void mutate(thread.starred ? "unstar" : "star", [thread.id])}
+                  className={thread.starred ? "text-accent" : "text-muted"}
+                >
+                  <Star className="h-3.5 w-3.5" fill={thread.starred ? "currentColor" : "none"} />
+                </button>
+              </span>
+              <button type="button" onClick={() => void openThread(thread.id)} className="min-w-0 flex-1 text-left">
               <span className="flex items-center gap-2">
-                {thread.unread && folder === "inbox" && (
+                {thread.unread && (
                   <span className="h-2 w-2 shrink-0 rounded-full bg-accent" aria-label="Unread" />
                 )}
                 <span className="truncate text-sm font-semibold text-foreground">{thread.subject}</span>
@@ -426,7 +517,8 @@ export function AdminMailbox() {
                   ))}
                 </span>
               )}
-            </button>
+              </button>
+            </div>
           ))}
         </div>
 
@@ -575,22 +667,45 @@ export function AdminMailbox() {
                   <button type="button" className="admin-btn h-9" onClick={() => startReply("forward")}>
                     <Forward className="h-4 w-4" /> Forward
                   </button>
-                  {selected.folder === "archive" ? (
-                    <button type="button" className="admin-btn h-9" onClick={() => void mutate("restore", selected.id)}>
+                  <button
+                    type="button"
+                    className="admin-btn h-9"
+                    aria-pressed={Boolean(selected.starred)}
+                    onClick={() => void mutate(selected.starred ? "unstar" : "star", [selected.id])}
+                  >
+                    <Star className="h-4 w-4" fill={selected.starred ? "currentColor" : "none"} />
+                    {selected.starred ? "Starred" : "Star"}
+                  </button>
+                  {selected.folder === "archive" || selected.folder === "trash" || selected.folder === "spam" ? (
+                    <button type="button" className="admin-btn h-9" onClick={() => void mutate("restore", [selected.id])}>
                       Restore
                     </button>
                   ) : (
-                    <button type="button" className="admin-btn h-9" onClick={() => void mutate("archive", selected.id)}>
+                    <button type="button" className="admin-btn h-9" onClick={() => void mutate("archive", [selected.id])}>
                       <Archive className="h-4 w-4" /> Archive
                     </button>
                   )}
                   <button
                     type="button"
                     className="admin-btn h-9"
-                    onClick={() => void mutate(selected.unread ? "read" : "unread", selected.id)}
+                    onClick={() => void mutate(selected.unread ? "read" : "unread", [selected.id])}
                   >
                     {selected.unread ? "Mark read" : "Mark unread"}
                   </button>
+                  <MoveSelect disabled={busy} onMove={(target) => void mutate("move", [selected.id], target)} />
+                  {selected.folder === "trash" ? (
+                    <button
+                      type="button"
+                      className="admin-btn h-9 text-accent-warm"
+                      onClick={() => void mutate("delete", [selected.id])}
+                    >
+                      Delete forever
+                    </button>
+                  ) : (
+                    <button type="button" className="admin-btn h-9" onClick={() => void mutate("trash", [selected.id])}>
+                      <Trash2 className="h-4 w-4" /> Trash
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -710,5 +825,29 @@ export function AdminMailbox() {
         </div>
       </div>
     </section>
+  );
+}
+
+function MoveSelect({ disabled, onMove }: { disabled?: boolean; onMove: (target: MoveTarget) => void }) {
+  return (
+    <label className="inline-flex items-center text-xs text-muted">
+      <span className="sr-only">Move to folder</span>
+      <select
+        disabled={disabled}
+        value=""
+        onChange={(event) => {
+          const target = event.target.value as MoveTarget;
+          if (MOVE_TARGETS.includes(target)) onMove(target);
+        }}
+        className="h-8 rounded-xl px-2 text-xs"
+      >
+        <option value="">Move to…</option>
+        {MOVE_TARGETS.map((target) => (
+          <option key={target} value={target}>
+            {FOLDER_LABELS[target]}
+          </option>
+        ))}
+      </select>
+    </label>
   );
 }

@@ -40,7 +40,7 @@ Public products: **ConfiRent** (live, soft launch) → **CadenceApp** (beta / ea
 cd c:\Users\MAXIMILLIAN\portfolio
 npm install
 cp .env.example .env.local
-# Edit .env.local: ADMIN_PASSWORD, optional OPENAI_*, Paystack, M-Pesa
+# Edit .env.local: ADMIN_PASSWORD, optional OPENAI_*, Paystack
 # Edit src/data/site.ts: phone, phoneDisplay, email
 npm run dev
 ```
@@ -69,29 +69,7 @@ phoneDisplay: "0706 397 373", // UI
 
 ## Deposits (30%)
 
-Custom software deposits are **`payments.depositPercent = 30`**. That is industry-fair (typical studio range 25–40%): enough to reserve capacity and cover discovery/kickoff without full prepay. Paystack is the primary checkout and charges **tier.fromAmount × 30%** (USD on the page, KES equivalent at checkout). Daraja stays hidden unless its keys are set. Stripe has been removed. See `GO_LIVE.md`.
-
-## M-Pesa Daraja STK Push
-
-1. Create an app at [Safaricom Developer Portal](https://developer.safaricom.co.ke/).
-2. Set in `.env.local`:
-
-```
-MPESA_CONSUMER_KEY=...
-MPESA_CONSUMER_SECRET=...
-MPESA_SHORTCODE=...          # sandbox paybill / till
-MPESA_PASSKEY=...
-MPESA_CALLBACK_URL=https://YOUR_PUBLIC_HOST/api/payments/mpesa/callback
-MPESA_ENV=sandbox            # or production
-# MPESA_KES_RATE=130         # optional USD→KES for STK amount
-```
-
-3. For local testing, expose the callback with ngrok (or similar) and point `MPESA_CALLBACK_URL` at it.
-4. APIs:
-   - `POST /api/payments/mpesa/stk` — `{ tierId, mode, phone }`
-   - `POST /api/payments/mpesa/callback` — Daraja callback (updates `data/payments.json`)
-5. Without keys: UI shows a clear message + **Book a call / Email** fallbacks.
-6. Admin → Payments table reconciles pending / success / failed with CheckoutRequestID + receipt.
+Custom software deposits are **`payments.depositPercent = 30`**. That is industry-fair (typical studio range 25–40%): enough to reserve capacity and cover discovery/kickoff without full prepay. Paystack is the primary checkout and charges **tier.fromAmount × 30%** (USD on the page, KES equivalent at checkout). Paystack is the only payment method (KES M-Pesa and card run through Paystack); Beacon has no paybill of its own. Stripe has been removed. See `GO_LIVE.md`.
 
 ## Admin ops hub & PDF
 
@@ -157,7 +135,7 @@ Email + OTP  → data/portal-codes.json (15 min) → same cookie session
 | Type | When | Filename |
 |------|------|----------|
 | **Quotation** | After intake (and admin “Send quotation”) | `Beacon-Studio-Quotation-{client}-{YYYYMMDD}.pdf` |
-| **Receipt** | Payment success (Paystack webhook, M-Pesa callback, or admin mark-paid) | `Beacon-Studio-Receipt-{ref}-{YYYYMMDD}.pdf` |
+| **Receipt** | Payment success (Paystack webhook or admin mark-paid) | `Beacon-Studio-Receipt-{ref}-{YYYYMMDD}.pdf` |
 | **Analytics** | Admin Download PDF | `Beacon-Studio-Analytics-{stamp}-EAT.pdf` |
 
 All PDFs use Beacon mark / wordmark in the header. Timestamps: **Africa/Nairobi**. Download and Print are separate controls.
@@ -175,7 +153,6 @@ All PDFs use Beacon mark / wordmark in the header. Timestamps: **Africa/Nairobi*
 |-----|---------|
 | `ADMIN_PASSWORD` | `/admin` login (bookmark URL — not linked publicly) |
 | `PORTAL_SECRET` | Portal access token + session signing |
-| `MPESA_*` | Daraja STK Push |
 | `OPENAI_API_KEY` | Optional Glow / brief improver |
 | `RESEND_API_KEY` | Optional portal OTP email (see Client portal) |
 | `RESEND_FROM_EMAIL` | Resend “from” address |
@@ -206,7 +183,7 @@ Hero, four product cards, two services, three-step “How we work”, pricing, a
 - Homepage is a short page: products, services, how we work, pricing, FAQ, contact
 - Product cards use a real ConfiRent login shot and a real CadenceApp home shot. Coming-soon products use a mark, not an old screenshot.
 - Cool blue-slate light theme with mesh depth
-- 30% deposits via Paystack or M-Pesa
+- 30% deposits via Paystack (card or M-Pesa through Paystack)
 - Client portal + admin ops E2E
 
 The Beacon Studio — cloud products & custom software.

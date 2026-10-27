@@ -1,4 +1,4 @@
-import { siteConfig } from "@/data/site";
+import { mailboxAddress } from "@/lib/mail-addresses";
 import { plainTextPdf } from "@/lib/simple-pdf";
 import { formatNairobiDate } from "@/lib/time";
 import { TRIAL_DAYS } from "@/lib/automations/trial";
@@ -89,7 +89,7 @@ function money(amount: number): string {
 export function invoiceText(view: InvoiceView): string[] {
   return [
     BRAND,
-    siteConfig.email,
+    mailboxAddress("billing"),
     "thebeaconstudio.co.ke",
     "",
     view.title,
@@ -147,7 +147,7 @@ export function invoiceHtml(view: InvoiceView, links: { pdf: string; self: strin
       <img src="/email/beacon-mark.png" alt="The Beacon Studio lighthouse" />
       <div>
         <h1>${BRAND}</h1>
-        <p class="muted">hello@thebeaconstudio.co.ke · thebeaconstudio.co.ke</p>
+        <p class="muted">${mailboxAddress("billing")} · thebeaconstudio.co.ke</p>
       </div>
     </header>
     <div class="actions">

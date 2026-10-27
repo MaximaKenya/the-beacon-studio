@@ -1,9 +1,9 @@
-/** Fallback when PAYSTACK_USD_KES_RATE / MPESA_KES_RATE is unset. */
+/** Fallback when PAYSTACK_USD_KES_RATE is unset. */
 export const DEFAULT_USD_KES_RATE = 130;
 
-/** USD → KES rate shared by Paystack checkout display and Daraja STK. */
+/** USD → KES rate shared by Paystack checkout display. */
 export function usdToKesRate(): number {
-  const raw = process.env.PAYSTACK_USD_KES_RATE || process.env.MPESA_KES_RATE || String(DEFAULT_USD_KES_RATE);
+  const raw = process.env.PAYSTACK_USD_KES_RATE || String(DEFAULT_USD_KES_RATE);
   const n = Number(raw);
   return Number.isFinite(n) && n > 0 ? n : DEFAULT_USD_KES_RATE;
 }

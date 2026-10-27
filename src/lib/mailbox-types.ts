@@ -1,4 +1,6 @@
-export type MailFolder = "inbox" | "sent" | "drafts" | "archive";
+import type { FolderCounts, MailFolderId } from "@/lib/mail-folders";
+
+export type MailFolder = MailFolderId;
 
 export type MailAttachmentView = {
   id: string;
@@ -52,8 +54,11 @@ export type MailThreadSummary = {
   suggestedReply?: string;
   tags?: string[];
   messageCount: number;
-  /** Studio mailboxes this thread belongs to (hello, support, billing, admin). */
+  /** Studio mailboxes this thread touches (hello, support, billing, admin). */
   mailboxes?: string[];
+  /** The one mailbox tab this thread is filed under. */
+  mailbox?: string;
+  starred?: boolean;
 };
 
 export type MailThreadDetail = MailThreadSummary & {
@@ -65,10 +70,11 @@ export type MailThreadDetail = MailThreadSummary & {
   };
 };
 
-export type MailboxCounts = Record<MailFolder, number> & {
-  unread: number;
-  /** Unread inbox threads per studio mailbox. */
+export type MailboxCounts = FolderCounts & {
+  /** Unread threads per studio mailbox. */
   byMailbox?: Record<string, number>;
+  /** Folder counts for every mailbox tab. */
+  perMailbox?: Record<string, FolderCounts>;
 };
 
 export type MailboxListResponse = {

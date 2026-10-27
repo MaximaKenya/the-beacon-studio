@@ -28,7 +28,7 @@ export async function POST(request: Request) {
         greeting: "Hi,",
         bodyText: `Your template is ready: ${absoluteUrl(path)}\n\nMore free templates: ${absoluteUrl("/templates")}`,
       });
-      await sendResendEmail({ to: entry.email, subject: `Your template — ${siteConfig.brand.name}`, html: mail.html, text: mail.text }).catch(() => undefined);
+      await sendResendEmail({ purpose: "enquiry", to: entry.email, subject: `Your template — ${siteConfig.brand.name}`, html: mail.html, text: mail.text }).catch(() => undefined);
     }
     return NextResponse.json({ ok: true, url: path });
   } catch (error) {

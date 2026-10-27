@@ -101,7 +101,7 @@ Section: /#pricing
 - Default deposit: ${depositPct}% of tier floor
 - Primary: Paystack (KES M-Pesa or card, USD card when the account allows it). Prices display in USD with a KES equivalent at checkout.
 - Bank transfer / invoice requests are stored for the studio.
-- Daraja M-Pesa STK stays available only when its keys are set.
+- Beacon has no paybill. Paystack is the only checkout.
 
 ## Ways of working
 ${siteConfig.engagementModels

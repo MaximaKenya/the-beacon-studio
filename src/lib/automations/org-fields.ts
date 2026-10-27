@@ -150,11 +150,12 @@ const holidays = f({
   ],
 });
 
-const paybill = text("mpesaPaybill", "M-Pesa paybill or till", "payment-terms", 10, {
-  help: "5 to 7 digits.",
-  placeholder: "522522",
+/** The client's OWN paybill or till for their customers. Optional, never defaulted. Not Beacon's. */
+const paybill = text("mpesaPaybill", "Your own M-Pesa paybill or till (optional)", "payment-terms", 10, {
+  help: "Your business's own paybill or till, shown to your customers. 5 to 7 digits. Leave blank if you do not use one.",
+  placeholder: "Your paybill or till number",
 });
-const accountRef = text("mpesaAccount", "Paybill account reference", "payment-terms", 30, { placeholder: "Your name or invoice number" });
+const accountRef = text("mpesaAccount", "Your paybill account reference (optional)", "payment-terms", 30, { placeholder: "Your name or invoice number" });
 
 /** Every automation gets these. */
 const COMMON: OrgField[] = [

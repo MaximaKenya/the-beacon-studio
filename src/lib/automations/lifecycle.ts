@@ -1,3 +1,4 @@
+import { notifyAddressFor, type MailPurpose } from "@/lib/mail-addresses";
 import { siteConfig } from "@/data/site";
 import { templateById } from "@/automations/templates/public";
 import { renderBrandEmail, publicSiteUrl } from "@/lib/brand-email";
@@ -32,6 +33,8 @@ const TICK_LOCK_MS = 10 * 60 * 1000;
 
 async function ownerLetter(input: {
   to: string;
+  /** Which mailbox sends it (see mail-addresses). Defaults to trial nurture from hello@. */
+  purpose?: MailPurpose;
   subject: string;
   heading: string;
   paragraphs: string[];
@@ -52,7 +55,7 @@ async function ownerLetter(input: {
       ? { unsubscribeUrl: input.unsubscribeUrl, unsubscribeNote: "from trial tips. Trial reminders and receipts still arrive." }
       : {}),
   });
-  const result = await sendResendEmail({ to: input.to, subject: input.subject, text: letter.text, html: letter.html });
+  const result = await sendResendEmail({ purpose: input.purpose || "nurture", to: input.to, subject: input.subject, text: letter.text, html: letter.html });
   return result.sent;
 }
 
@@ -76,6 +79,7 @@ export async function sendTrialWelcome(doc: AutomationDoc, email: string) {
   const names = mine.map((item) => templateById(item.templateId)?.name || item.templateId);
   const sent = await ownerLetter({
     to: email,
+    purpose: "welcome",
     subject: `Your ${TRIAL_DAYS}-day trial is on`,
     heading: `${days} days free`,
     paragraphs: [
@@ -139,6 +143,7 @@ export async function sweepTrials(doc: AutomationDoc, origin: string, now = new 
   for (const [email, bucket] of reminders) {
     const sent = await ownerLetter({
       to: email,
+      purpose: "renewal",
       subject: `${bucket.days} day${bucket.days === 1 ? "" : "s"} left on your trial`,
       heading: `${bucket.days} days remaining`,
       paragraphs: [
@@ -153,6 +158,7 @@ export async function sweepTrials(doc: AutomationDoc, origin: string, now = new 
   for (const [email, names] of ended) {
     await ownerLetter({
       to: email,
+      purpose: "trialEnded",
       subject: "Your trial has ended",
       heading: "Trial ended",
       paragraphs: [
@@ -335,7 +341,8 @@ export async function sendAdminDigest(doc: AutomationDoc, now = new Date()) {
     `Open items: ${actionBadge(items)}.`,
   ];
   const sent = await ownerLetter({
-    to: process.env.ADMIN_EMAIL?.trim() || siteConfig.email,
+    purpose: "digest",
+    to: notifyAddressFor("digest"),
     subject: open.length ? `Beacon admin: ${open.length} thing${open.length === 1 ? "" : "s"} to do` : "Beacon admin: nothing waiting",
     heading: "Daily admin digest",
     paragraphs,

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Building2, CreditCard, Loader2, Smartphone } from "lucide-react";
+import { Building2, CreditCard, Loader2 } from "lucide-react";
 import { carePlans, siteConfig } from "@/data/site";
 import { trackEvent } from "@/lib/analytics";
 import { readStoredAttribution } from "@/lib/attribution-client";
@@ -20,7 +20,6 @@ type PayButtonProps = {
 
 type PayOptions = {
   paystack: boolean;
-  mpesa: boolean;
   usdKesRate: number;
   depositPercent: number;
 };
@@ -29,7 +28,6 @@ type PayCurrency = "KES" | "USD";
 
 /**
  * Deposit checkout. Paystack is the primary path (KES M-Pesa/card, or USD card).
- * Daraja M-Pesa STK stays available only when its env keys are set.
  * Bank transfer always creates an invoice request in admin.
  */
 export function PayButton({
@@ -48,15 +46,13 @@ export function PayButton({
   const [note, setNote] = useState("");
   const [carePlan, setCarePlan] = useState("");
   const [annual, setAnnual] = useState(false);
-  const [phone, setPhone] = useState("");
   const [showBank, setShowBank] = useState(false);
-  const [showMpesa, setShowMpesa] = useState(false);
-  const [loading, setLoading] = useState<"paystack" | "mpesa" | "bank" | null>(null);
+  const [loading, setLoading] = useState<"paystack" | "bank" | null>(null);
   const [message, setMessage] = useState<string | null>(null);
 
   useEffect(() => {
     void fetch("/api/payments/options")
-      .then((res) => parseResponseJson<PayOptions>(res, { paystack: false, mpesa: false, usdKesRate: 130, depositPercent: 30 }))
+      .then((res) => parseResponseJson<PayOptions>(res, { paystack: false, usdKesRate: 130, depositPercent: 30 }))
       .then((data) => setOptions(data))
       .catch(() => setOptions(null));
   }, []);
@@ -134,29 +130,6 @@ export function PayButton({
       setMessage(data.message || "Paystack is not configured yet. Request an invoice instead.");
     } catch {
       setMessage("Paystack is not configured yet. Request an invoice instead.");
-    } finally {
-      setLoading(null);
-    }
-  }
-
-  async function checkoutMpesa() {
-    setLoading("mpesa");
-    setMessage(null);
-    trackEvent("cta_click", { type: "pay_mpesa", tier: tierId, mode });
-    try {
-      const res = await fetch("/api/payments/mpesa/stk", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tierId, mode, phone, ...(projectId ? { projectId } : {}) }),
-      });
-      const data = await parseResponseJson<{ ok?: boolean; message?: string; status?: string }>(res, {});
-      if (data.ok && data.status === "pending") {
-        setMessage(data.message || "Check your phone and enter your M-Pesa PIN.");
-        return;
-      }
-      setMessage(data.message || siteConfig.payments.mpesaComingSoonMessage);
-    } catch {
-      setMessage(siteConfig.payments.mpesaComingSoonMessage);
     } finally {
       setLoading(null);
     }
@@ -306,43 +279,6 @@ export function PayButton({
           </button>
         </div>
       )}
-
-      {options?.mpesa &&
-        (!showMpesa ? (
-          <button
-            type="button"
-            onClick={() => setShowMpesa(true)}
-            disabled={!!loading}
-            className="mt-2 inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-surface-elevated/80 text-sm font-semibold text-foreground disabled:opacity-60"
-          >
-            <Smartphone className="h-4 w-4" />
-            Daraja STK Push
-          </button>
-        ) : (
-          <div className="mt-2 rounded-xl bg-surface/70 p-3">
-            <label htmlFor={`mpesa-${tierId}`} className="mb-1.5 block text-xs text-muted">
-              M-Pesa phone (07… or 2547…)
-            </label>
-            <input
-              id={`mpesa-${tierId}`}
-              type="tel"
-              inputMode="tel"
-              value={phone}
-              onChange={(event) => setPhone(event.target.value)}
-              placeholder="2547XXXXXXXX"
-              className="mb-2 w-full rounded-xl px-3 py-2 text-sm"
-            />
-            <button
-              type="button"
-              onClick={() => void checkoutMpesa()}
-              disabled={!!loading || !phone.trim()}
-              className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-accent text-sm font-semibold text-background disabled:opacity-60"
-            >
-              {loading === "mpesa" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Smartphone className="h-4 w-4" />}
-              Send STK Push · {kesLabel}
-            </button>
-          </div>
-        ))}
 
       {message && (
         <div className="mt-2 rounded-xl bg-surface/80 px-3 py-2 text-xs leading-relaxed text-muted">

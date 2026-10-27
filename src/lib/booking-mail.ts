@@ -205,7 +205,7 @@ export async function sendBookingClientEmail(
     return { emailed: false, emailNote: "Email was not sent — Resend is not configured.", ics: letter.ics };
   }
   const active = kind !== "declined" && kind !== "cancelled";
-  const result = await sendResendEmail({
+  const result = await sendResendEmail({ purpose: "booking",
     to: email,
     subject: letter.subject,
     html: letter.html,

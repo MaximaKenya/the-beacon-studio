@@ -141,3 +141,13 @@ test("values reach messages, stock levels and chart metrics", () => {
   assert.equal(levels({ name: "Flour", qty: 5 }), 10);
   assert.equal(levels({ name: "Rice", qty: 5, reorderAt: 3 }), 3);
 });
+
+test("the client's own paybill is optional, has no default and is left out when blank", () => {
+  const checked = validateOrgInputs("invoice-reminders", { values: { paymentTermsDays: "14" }, custom: [] });
+  assert.ok(checked.ok);
+  if (!checked.ok) return;
+  const config = applyOrgInputs("invoice-reminders", {}, checked.org);
+  assert.ok(!orgTemplateVars("invoice-reminders", config).mpesaPaybill);
+  const out = withOrgInputs({ instance: instance("invoice-reminders", config) }, { email: "c@example.com", subject: "Pay", text: "Please pay." });
+  assert.doesNotMatch(out.text, /paybill/i);
+});

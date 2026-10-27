@@ -364,7 +364,7 @@ export async function replyToInbox(
             greeting: `Hi ${client.name},`,
             bodyText: `${reply}\n\nYou can also read this in your client portal: ${portalUrl}\nSign in with ${item.email}.`,
           });
-          return sendResendEmail({
+          return sendResendEmail({ purpose: "supportReply",
             to: item.email,
             subject: `Reply from ${siteConfig.brand.name}`,
             text: letter.text,

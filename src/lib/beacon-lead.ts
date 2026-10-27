@@ -1,3 +1,4 @@
+import { notifyAddressFor } from "@/lib/mail-addresses";
 import { randomUUID } from "crypto";
 import { siteConfig } from "@/data/site";
 import { extractBeaconLead, type BeaconChatMessage } from "@/lib/beacon-ai";
@@ -181,8 +182,8 @@ async function notifyStudio(input: {
 }): Promise<void> {
   if (!isResendConfigured()) return;
   const who = [input.email, input.phone].filter(Boolean).join(" · ") || "no contact on file";
-  await sendResendEmail({
-    to: siteConfig.email,
+  await sendResendEmail({ purpose: "leadAlert",
+    to: notifyAddressFor("leadAlert"),
     subject: `${siteConfig.assistant.name} lead — ${input.name}`,
     ...(input.email ? { replyTo: input.email } : {}),
     html: `<p><strong>${escapeHtml(input.name)}</strong> (${escapeHtml(who)})</p><p>Source: beacon-ai</p><p>${escapeHtml(input.message).replace(/\n/g, "<br/>")}</p>`,

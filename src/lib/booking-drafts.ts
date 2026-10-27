@@ -137,7 +137,7 @@ export function composeAbandonedEmail(draft: BookingDraft): { html: string; text
 async function sendAbandonedEmail(draft: BookingDraft): Promise<boolean> {
   if (!isValidEmail(draft.email) || !isResendConfigured()) return false;
   const letter = composeAbandonedEmail(draft);
-  const result = await sendResendEmail({
+  const result = await sendResendEmail({ purpose: "booking",
     to: draft.email,
     subject: letter.subject,
     html: letter.html,
