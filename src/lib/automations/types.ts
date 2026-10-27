@@ -96,6 +96,8 @@ export type AutomationJob = {
   step?: number;
   attempts?: number;
   failed?: boolean;
+  /** Which client row this job belongs to, so rows added later get their own jobs once. */
+  entryKey?: string;
 };
 
 export type AutomationLead = {

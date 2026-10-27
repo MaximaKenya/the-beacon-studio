@@ -167,6 +167,7 @@ export function Footer() {
               {[
                 { href: pathname === "/" ? "#faq" : "/#faq", label: "FAQ" },
                 { href: "/book", label: "Free 20-min audit" },
+                { href: "/how-it-works", label: "How automations work" },
                 { href: "/checklist", label: "SME checklist" },
                 { href: "/industries/real-estate", label: "Real estate" },
                 { href: "/industries/schools", label: "Schools" },

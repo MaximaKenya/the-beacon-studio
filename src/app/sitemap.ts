@@ -5,7 +5,7 @@ import { industryPacks, siteConfig } from "@/data/site";
 import { absoluteUrl } from "@/lib/seo";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const staticPaths = ["/", "/automation", "/automations", "/book", "/checklist", "/automation-roi", "/referrals", "/add-ons", "/partners", "/partnerships", "/templates"];
+  const staticPaths = ["/", "/automation", "/automations", "/book", "/checklist", "/automation-roi", "/referrals", "/add-ons", "/partners", "/partnerships", "/templates", "/how-it-works"];
   const landingPaths = [...categoryLandings, ...industryLandings].map((page) => page.path);
   const packPaths = industryPacks.map((pack) => `/packs/${pack.id}`);
   const workPaths = workStudies.map((study) => study.path);

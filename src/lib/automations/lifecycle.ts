@@ -4,7 +4,7 @@ import { renderBrandEmail, publicSiteUrl } from "@/lib/brand-email";
 import { actionBadge, buildActionItems } from "@/lib/automations/action-center";
 import { channelReadiness } from "@/lib/automations/channels";
 import { channelForWaiting } from "@/lib/automations/delivery-plan";
-import { runEngine, schedulePaymentReminders } from "@/lib/automations/engine";
+import { entriesFromConfig, runEngine, scheduleDateRow, schedulePaymentReminders, scheduleSequenceRow } from "@/lib/automations/engine";
 import { entryKey, type InputRow } from "@/lib/automations/inputs";
 import { createChargeLink } from "@/lib/automations/paylinks";
 import { addAdminLog, addLog } from "@/lib/automations/store";
@@ -20,7 +20,7 @@ import {
 import { quoteBundle } from "@/automations/pricing";
 import { markTrialStage, nextTrialStage, type TrialStage } from "@/lib/automations/trial-sequence";
 import { trialOptOutUrl } from "@/lib/automations/trial-optout";
-import type { AutomationCharge, AutomationDoc, AutomationInstance } from "@/lib/automations/types";
+import type { AutomationCharge, AutomationDoc, AutomationInstance, AutomationJob } from "@/lib/automations/types";
 import { sendSms, sendWhatsApp, smsConfigured, whatsAppConfigured } from "@/lib/notify";
 import { listPayments } from "@/lib/payments";
 import { isResendConfigured, sendResendEmail } from "@/lib/resend";
@@ -188,7 +188,43 @@ export async function flushWaitingDeliveries(doc: AutomationDoc) {
   return sent;
 }
 
+/** Key of the client row a job was made for. Older jobs carry the row in their label only. */
+export function jobEntryKey(job: AutomationJob): string | null {
+  if (job.entryKey) return job.entryKey;
+  if (!job.label) return null;
+  try {
+    return entryKey(JSON.parse(job.label) as InputRow);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Rows a client adds in the portal after activation get their own reminders.
+ * Dated rows (birthdays, shifts, expiries, recalls, guests) and sequence rows are
+ * scheduled once per row; rows that already have jobs are left alone.
+ */
+export function syncScheduledRows(doc: AutomationDoc, instance: AutomationInstance, now = new Date()): number {
+  const behavior = templateById(instance.templateId)?.behavior;
+  if (behavior !== "date-reminder" && behavior !== "sequence") return 0;
+  if (instance.status !== "active") return 0;
+  if (behavior === "date-reminder" && String(instance.config.recurrence || "").trim()) return 0;
+  const known = new Set(doc.jobs.filter((job) => job.instanceId === instance.id).map(jobEntryKey).filter(Boolean));
+  let added = 0;
+  for (const row of entriesFromConfig(instance.config)) {
+    const key = entryKey(row as InputRow);
+    if (known.has(key)) continue;
+    known.add(key);
+    if (behavior === "sequence") scheduleSequenceRow(doc, instance, row, now);
+    else scheduleDateRow(doc, instance, row, now);
+    added += 1;
+  }
+  if (added) addLog(doc, instance.id, `Scheduled ${added} new ${added === 1 ? "row" : "rows"}.`);
+  return added;
+}
+
 export async function syncLedger(doc: AutomationDoc, instance: AutomationInstance, origin: string, now = new Date()) {
+  if (syncScheduledRows(doc, instance, now)) return;
   if (templateById(instance.templateId)?.behavior !== "payment-cycle") return;
   if (instance.status !== "active") return;
   const rows = Array.isArray(instance.config.entries) ? (instance.config.entries as InputRow[]) : [];
