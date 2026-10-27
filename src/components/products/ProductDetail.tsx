@@ -11,6 +11,9 @@ import { ProductVisual } from "@/components/products/ProductVisual";
 import { mailtoHref, trackEmailClick } from "@/lib/contact-actions";
 import { getProductCopy } from "@/data/product-copy";
 import { ProductCopySections } from "@/components/products/ProductCopySections";
+import { DeviceTour } from "@/components/gallery/DeviceTour";
+import { Tilt } from "@/components/gallery/Tilt";
+import { shotsFor, tourShots } from "@/data/product-shots";
 
 export function ProductDetail({
   product,
@@ -23,6 +26,8 @@ export function ProductDetail({
   const { openBooking, openNewsletter, openChat } = useFeatures();
   const isOpen = Boolean(product.liveUrl);
   const copy = getProductCopy(product.id);
+  const shots = shotsFor(product.id);
+  const tour = tourShots(product.id);
 
   return (
     <div className="relative px-6 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-28 lg:px-8 lg:pt-32">
@@ -153,9 +158,15 @@ export function ProductDetail({
           </div>
 
           <div className="space-y-6">
-            <div className="overflow-hidden rounded-2xl border border-border">
-              <ProductVisual product={product} frameClassName="aspect-[4/5] sm:aspect-[16/11]" />
-            </div>
+            {shots.length > 0 ? (
+              <Tilt>
+                <DeviceTour name={product.name} desktop={tour.desktop} mobile={tour.mobile} />
+              </Tilt>
+            ) : (
+              <div className="overflow-hidden rounded-2xl border border-border">
+                <ProductVisual product={product} frameClassName="aspect-[4/5] sm:aspect-[16/11]" />
+              </div>
+            )}
             <AskGlowPrompt
               productName={product.name}
               onAsk={(q) => {
@@ -166,7 +177,7 @@ export function ProductDetail({
           </div>
         </div>
 
-        {copy ? <ProductCopySections name={product.name} copy={copy} /> : null}
+        {copy ? <ProductCopySections name={product.name} copy={copy} shots={shots} /> : null}
 
         {related.length > 0 && (
           <div className="mt-20 border-t border-border/70 pt-12">
