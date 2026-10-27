@@ -66,7 +66,7 @@ const empty: AdminView = { mrrKes: 0, active: 0, pending: 0, paused: 0, demos: 0
 
 const MENUS = [
   { id: "now", label: "Action Center" },
-  { id: "revenue", label: "Revenue" },
+  { id: "revenue", label: "Requests" },
   { id: "trials", label: "Trials" },
   { id: "invoices", label: "Invoices" },
   { id: "clients", label: "Clients" },
@@ -75,14 +75,29 @@ const MENUS = [
   { id: "channels", label: "Channels" },
   { id: "scheduler", label: "Scheduler" },
   { id: "health", label: "Health" },
-  { id: "leads", label: "Leads" },
+  { id: "leads", label: "Automation leads" },
   { id: "later", label: "Later" },
-  { id: "test", label: "Test" },
-  { id: "log", label: "Done" },
+  { id: "test", label: "Demo clients" },
+  { id: "log", label: "Activity log" },
 ] as const;
 
-export function AdminAutomations() {
+type RevenueCounts = { list?: { kind: string; status: string }[] };
+
+/** Items waiting on the studio, per menu, outside the action list. */
+export function extraBadges(data: AdminView | null, revenue: RevenueCounts | null): Record<string, number> {
+  const list = revenue?.list || [];
+  const isPartner = (kind: string) => kind === "partner" || kind === "partnership";
+  return {
+    revenue: list.filter((item) => item.status === "new" && !isPartner(item.kind)).length,
+    partners: list.filter((item) => item.status === "new" && isPartner(item.kind)).length,
+    referrals: (data?.referrals || []).filter((item) => item.live && item.status === "earned").length,
+    invoices: (data?.invoices || []).length,
+  };
+}
+
+export function AdminAutomations({ onAttention }: { onAttention?: (count: number) => void } = {}) {
   const [data, setData] = useState<AdminView | null>(null);
+  const [revenue, setRevenue] = useState<RevenueCounts | null>(null);
   const [email, setEmail] = useState("");
   const [menu, setMenu] = useState<(typeof MENUS)[number]["id"]>("now");
   const [notice, setNotice] = useState<string | null>(null);
@@ -92,6 +107,8 @@ export function AdminAutomations() {
     if (!res.ok) return;
     const next = await parseResponseJson<AdminView>(res, empty);
     setData(next);
+    const rev = await fetch("/api/admin/revenue");
+    if (rev.ok) setRevenue(await parseResponseJson<RevenueCounts | null>(rev, null));
     setEmail((current) => current || next.clients[0]?.email || "");
   }, []);
 
@@ -115,12 +132,22 @@ export function AdminAutomations() {
   }
 
   const actions = data?.actions || [];
+  const extra = extraBadges(data, revenue);
   const badge = (id: string) =>
-    actions.filter((item) => item.blocking && item.count > 0 && (id === "now" ? true : item.menu === id)).reduce((sum, item) => sum + item.count, 0);
-  const total = actions.filter((item) => item.blocking && item.count > 0).reduce((sum, item) => sum + item.count, 0);
+    Math.max(
+      actions.filter((item) => item.blocking && item.count > 0 && item.menu === id).reduce((sum, item) => sum + item.count, 0),
+      extra[id] || 0
+    );
+  const total =
+    actions.filter((item) => item.blocking && item.count > 0 && item.menu !== "invoices").reduce((sum, item) => sum + item.count, 0) +
+    extra.revenue + extra.partners + extra.referrals + extra.invoices;
   const visible = menu === "now" ? actions.filter((item) => item.blocking && item.count > 0) : actions.filter((item) => item.menu === menu);
   const selected = data?.clients.find((client) => client.email === email) || null;
   const tickOld = actions.some((item) => item.id === "tick");
+
+  useEffect(() => {
+    if (data) onAttention?.(total);
+  }, [data, total, onAttention]);
 
   return (
     <section id="actions" className="admin-section">
@@ -202,7 +229,7 @@ export function AdminAutomations() {
                   )}
                   {item.action === "open-trials" && (
                     <button type="button" className="admin-btn mt-3" onClick={() => setMenu("clients")}>
-                      Open clients to extend
+                      Open the client to extend
                     </button>
                   )}
                   {item.action === "open-invoices" && (
@@ -217,7 +244,7 @@ export function AdminAutomations() {
                 {(data.trialStages || []).map((column) => (
                   <div key={column.stage} className="sleek-card rounded-2xl p-4">
                     <p className="text-xs text-muted">{column.label}</p>
-                    <p className="mt-1 font-display text-2xl font-semibold text-foreground">{column.clients.length}</p>
+                    <p className="mt-1 font-display text-2xl font-semibold text-heading">{column.clients.length}</p>
                     <ul className="mt-2 space-y-1 text-xs text-muted">
                       {column.clients.slice(0, 8).map((client) => (
                         <li key={client.email} className="truncate">
@@ -315,7 +342,11 @@ export function AdminAutomations() {
                 <p className="text-sm text-muted">
                   Sandbox tools send only to you when you choose “send to me”. Reset demo restores the sample business. It does not message real customers.
                 </p>
-                {data.sandbox && data.sandbox.instances.length > 0 && <DemoSandbox instances={data.sandbox.instances} onChanged={() => void load()} />}
+                {data.sandbox && data.sandbox.instances.length > 0 ? (
+                  <DemoSandbox instances={data.sandbox.instances} onChanged={() => void load()} />
+                ) : (
+                  <p className="text-sm text-muted">The demo sandbox loads on the next refresh.</p>
+                )}
               </div>
             )}
             {menu === "log" && (

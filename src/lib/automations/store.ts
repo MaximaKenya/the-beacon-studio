@@ -44,7 +44,7 @@ export function addLog(doc: AutomationDoc, instanceId: string, message: string, 
   });
 }
 
-export function instancesForEmail(doc: AutomationDoc, email: string): AutomationInstance[] {
+export function instancesForEmail(doc: AutomationDoc, email: string, includeDemo = false): AutomationInstance[] {
   const normalized = email.trim().toLowerCase();
-  return doc.instances.filter((item) => item.ownerEmail === normalized && !item.demo);
+  return doc.instances.filter((item) => item.ownerEmail === normalized && (includeDemo || !item.demo));
 }

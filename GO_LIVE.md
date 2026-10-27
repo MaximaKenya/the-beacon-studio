@@ -250,3 +250,17 @@ curl -X POST https://thebeaconstudio.co.ke/api/automations/tick -H "Authorizatio
 - WhatsApp and M-Pesa add-ons are request-only. Messages stay queued in Notify until `WHATSAPP_TOKEN`/`WHATSAPP_PHONE_ID` or Africa's Talking `AT_*` keys exist.
 - Request alerts go to `ADMIN_EMAIL` through Resend when `RESEND_API_KEY` is set. They always land in the admin mailbox.
 - Placeholder figures to confirm in `src/data/site.ts`: WhatsApp tier prices and allowances, 20% markup, pro add-on prices, partner discounts.
+
+## Audit log — 27 Oct 2026
+
+- **Critical:** The Stripe webhook accepted unsigned POSTs that marked payments paid. It now needs a valid `Stripe-Signature` (`STRIPE_WEBHOOK_SECRET`) or an admin session, and returns 503 when the secret is unset.
+- **High:** The admin cookie was base64 of the password. It is now an HMAC-signed token that expires after 12h (`ADMIN_SESSION_SECRET` is optional and adds to the key). Old cookies log out.
+- **High:** Portal pause and resume now check the owner. Resume only works from paused with a live trial or paid period, so `pending_payment` can't be skipped.
+- **High:** `data/*.json` (contacts, intakes, analytics) was committed to a public repo. Those files are no longer tracked and are now gitignored, but **git history still has them** and needs a purge.
+- **Medium:** Added rate limits on API POSTs (auth: 8 per 10 min) and same-origin checks on `/api/admin/*` and `/api/portal/*`. Tick now only accepts `Authorization: Bearer`. Analytics GET compares safely.
+- **Medium:** M-Pesa callback only changes pending payments. It requires `?token=` when `MPESA_CALLBACK_TOKEN` is set; add the same token to `MPESA_CALLBACK_URL`.
+- **Medium:** Added HSTS, nosniff, Referrer-Policy, Permissions-Policy, X-Frame-Options and frame-ancestors (except the `/a/*` and widget/embed routes). `X-Powered-By` is removed and admin/portal pages are noindex.
+- **Deps:** next 16.4.3, zod 4.6.7 and `npm audit fix` bring the prod audit to 0.
+- **Demo sandbox:** Booking date is now relative and shown in Nairobi time. Previews link to the live site, demo phone numbers are fake (2547000000NN) and the clinic-recall preview works. New "create demo client" in the admin, plus a read-only `/portal/demo` link.
+- **Admin:** Clearer tab names (Requests, Automation leads, Demo clients, Activity log). Requests, Partners, Referrals and Invoices tabs now have badges, and the top nav shows an Action Center badge.
+- **Todo (Max):** set `STRIPE_WEBHOOK_SECRET`, `ADMIN_SESSION_SECRET`, `PORTAL_SECRET` (the code falls back to a weak dev secret if both it and `ADMIN_PASSWORD` are unset) and `MPESA_CALLBACK_TOKEN`. Purge `data/*.json` from git history. Consider a full script CSP.

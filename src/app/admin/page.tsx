@@ -102,6 +102,7 @@ export default function AdminPage() {
   const [kpis, setKpis] = useState<StudioKpis | null>(null);
   const [activeSection, setActiveSection] = useState<string>(ADMIN_NAV[0].id);
   const [mailUnread, setMailUnread] = useState(0);
+  const [actionCount, setActionCount] = useState(0);
 
   const wingLabels = useMemo(() => {
     const map = new Map(siteConfig.products.map((p) => [p.id, p.name]));
@@ -376,6 +377,15 @@ export default function AdminPage() {
               onClick={() => setActiveSection(item.id)}
             >
               {item.label}
+              {item.id === "actions" && actionCount > 0 && (
+                <span
+                  className={`ml-1.5 inline-flex min-w-5 items-center justify-center rounded-full px-1.5 text-[10px] font-semibold ${
+                    activeSection === item.id ? "bg-background text-accent" : "bg-accent text-background"
+                  }`}
+                >
+                  {actionCount}
+                </span>
+              )}
               {item.id === "mailbox" && mailUnread > 0 && (
                 <span
                   className={`ml-1.5 inline-flex min-w-5 items-center justify-center rounded-full px-1.5 text-[10px] font-semibold ${
@@ -407,13 +417,13 @@ export default function AdminPage() {
             </div>
             <div className="mt-6 grid gap-6 lg:grid-cols-2">
               <div className="admin-panel p-5 sm:p-6">
-                <h3 className="font-display text-lg font-semibold text-foreground">Leads by source</h3>
+                <h3 className="font-display text-lg font-semibold text-heading">Leads by source</h3>
                 <div className="mt-4">
                   <AnimatedBarChart data={kpis.leadsBySource} />
                 </div>
               </div>
               <div className="admin-panel p-5 sm:p-6">
-                <h3 className="font-display text-lg font-semibold text-foreground">Leads by campaign</h3>
+                <h3 className="font-display text-lg font-semibold text-heading">Leads by campaign</h3>
                 <p className="mt-1 text-xs text-muted">utm_source on the lead</p>
                 <div className="mt-4">
                   {kpis.leadsByUtm.length > 0 ? (
@@ -425,7 +435,7 @@ export default function AdminPage() {
               </div>
             </div>
             <div className="mt-6 admin-panel p-5 sm:p-6">
-              <h3 className="font-display text-lg font-semibold text-foreground">Conversion funnel</h3>
+              <h3 className="font-display text-lg font-semibold text-heading">Conversion funnel</h3>
               <p className="mt-1 text-xs text-muted">Visitors, leads, audits booked, automations live</p>
               <div className="mt-6">
                 <AnimatedFunnel steps={kpis.funnel} />
@@ -435,7 +445,7 @@ export default function AdminPage() {
         )}
 
         <div className="mb-10 space-y-8">
-          <AdminAutomations />
+          <AdminAutomations onAttention={setActionCount} />
           <AdminMailbox />
           <AdminInbox />
           <AdminLeads />
@@ -482,7 +492,7 @@ export default function AdminPage() {
 
             <div className="mt-6 grid gap-6 lg:grid-cols-2">
               <div className="admin-panel p-5 sm:p-6">
-                <h2 className="font-display text-lg font-semibold text-foreground">
+                <h2 className="font-display text-lg font-semibold text-heading">
                   Impressions over time
                 </h2>
                 <p className="mt-1 text-xs text-muted">Last 14 days · animated line</p>
@@ -492,7 +502,7 @@ export default function AdminPage() {
               </div>
 
               <div className="admin-panel p-5 sm:p-6">
-                <h2 className="font-display text-lg font-semibold text-foreground">
+                <h2 className="font-display text-lg font-semibold text-heading">
                   CTR comparison
                 </h2>
                 <p className="mt-1 text-xs text-muted">Product vs CTA click rates</p>
@@ -509,7 +519,7 @@ export default function AdminPage() {
 
             <div className="mt-6 grid gap-6 lg:grid-cols-2">
               <div className="admin-panel p-5 sm:p-6">
-                <h2 className="font-display text-lg font-semibold text-foreground">Funnel</h2>
+                <h2 className="font-display text-lg font-semibold text-heading">Funnel</h2>
                 <p className="mt-1 text-xs text-muted">Visit → product → intake → convert</p>
                 <div className="mt-6">
                   <AnimatedFunnel
@@ -526,7 +536,7 @@ export default function AdminPage() {
               <div className="admin-panel p-5 sm:p-6">
                 <div className="flex items-center gap-2">
                   <Smile className="h-4 w-4 text-accent" />
-                  <h2 className="font-display text-lg font-semibold text-foreground">
+                  <h2 className="font-display text-lg font-semibold text-heading">
                     Reactions pie
                   </h2>
                 </div>
@@ -576,7 +586,7 @@ export default function AdminPage() {
                       className="rounded-xl border border-border/70 bg-background/40 px-2 py-3"
                     >
                       <Icon className="mx-auto h-3.5 w-3.5 text-muted" />
-                      <p className="mt-1 font-display text-lg font-semibold text-foreground">
+                      <p className="mt-1 font-display text-lg font-semibold text-heading">
                         {value}
                       </p>
                       <p className="font-mono text-[9px] uppercase tracking-wider text-muted">
@@ -590,7 +600,7 @@ export default function AdminPage() {
 
             <div className="mt-6 grid gap-6 lg:grid-cols-2">
               <div className="admin-panel p-5 sm:p-6">
-                <h2 className="font-display text-lg font-semibold text-foreground">Top products</h2>
+                <h2 className="font-display text-lg font-semibold text-heading">Top products</h2>
                 <ul className="mt-5 space-y-3">
                   {summary.topProducts.length === 0 && (
                     <li className="text-sm text-muted">No product clicks yet.</li>
@@ -610,7 +620,7 @@ export default function AdminPage() {
               </div>
 
               <div className="admin-panel p-5 sm:p-6">
-                <h2 className="font-display text-lg font-semibold text-foreground">
+                <h2 className="font-display text-lg font-semibold text-heading">
                   Activity by wing
                 </h2>
                 <div className="mt-4">
@@ -626,7 +636,7 @@ export default function AdminPage() {
             </div>
 
             <div className="mt-6 admin-panel p-5 sm:p-6">
-              <h2 className="font-display text-lg font-semibold text-foreground">
+              <h2 className="font-display text-lg font-semibold text-heading">
                 Recent activity
               </h2>
               <ul className="mt-4 max-h-72 space-y-2 overflow-y-auto">

@@ -349,9 +349,9 @@ function soonestTrial(instances: AutomationInstance[]) {
   };
 }
 
-export async function portalSnapshot(email: string) {
+export async function portalSnapshot(email: string, includeDemo = false) {
   const doc = await loadAutomations();
-  const instances = instancesForEmail(doc, email);
+  const instances = instancesForEmail(doc, email, includeDemo);
   const payments = await listPayments();
   const normalized = normalizeEmail(email);
   const ids = new Set(instances.map((item) => item.id));
@@ -760,4 +760,28 @@ export async function runOwnerHook(email: string, id: string, kind: "inbox" | "n
   instance.config = { ...instance.config, shared };
   await saveAutomations(doc);
   return { ok: result.ok, message: result.message, reply: result.reply };
+}
+
+/** Client may pause or resume only its own automation, and resume only inside a trial or paid period. */
+export function ownerCanResume(instance: { status: string; trial?: { endsAt: string; endedAt?: string; paidUntil?: string }; periodEnd?: string }, now = Date.now()): boolean {
+  if (instance.status !== "paused") return false;
+  const t = instance.trial;
+  if (t?.paidUntil && Date.parse(t.paidUntil) > now) return true;
+  if (t && !t.endedAt && Date.parse(t.endsAt) > now) return true;
+  if (!t && instance.periodEnd && Date.parse(instance.periodEnd) > now) return true;
+  return false;
+}
+
+export async function ownerSetStatus(id: string, status: "active" | "paused", email: string, origin: string) {
+  const doc = await loadAutomations();
+  const instance = doc.instances.find((item) => item.id === id);
+  if (!instance || instance.ownerEmail !== normalizeEmail(email)) return { ok: false, message: "Not your automation." };
+  if (status === "paused") {
+    if (instance.status !== "active") return { ok: false, message: "Only a running automation can be paused." };
+    await setInstanceStatus(id, "paused", origin);
+    return { ok: true };
+  }
+  if (!ownerCanResume(instance)) return { ok: false, message: "Choose a plan or request an invoice to resume." };
+  await setInstanceStatus(id, "active", origin);
+  return { ok: true };
 }
