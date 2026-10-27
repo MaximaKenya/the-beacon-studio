@@ -551,6 +551,106 @@ export const productShots: ProductShot[] = [
     "blurDataURL": "data:image/webp;base64,UklGRpoAAABXRUJQVlA4II4AAACwAwCdASoQACMAPt1apE2opSOiNUgBEBuJQBg5hQo6otDur+mYAAD+79gs2dK4iPd1M8TOJnN2IurU19SrYyTOgXPTgFWoYoOwix/T35d2ea2LZ/mswZfhfSf4BrdaVn1sSy3VcJ85UZn+YO2kKL7t3Wj5gqYAx2JIL+zOdfUxB/ryT1uFkFfCLfT6xEAA"
   },
   {
+    "slug": "cadenceapp",
+    "file": "/products/cadenceapp/dashboard-desktop.webp",
+    "device": "desktop",
+    "width": 1280,
+    "height": 800,
+    "caption": "The organisation command centre: a setup checklist, hours saved by automation, and live totals for collection cases, promises to pay and outstanding balance",
+    "alt": "CadenceApp dashboard screen on desktop: The organisation command centre: a setup checklist, hours saved by automation, and live totals for collection cases, promises to pay and outstanding balance",
+    "blurDataURL": "data:image/webp;base64,UklGRjYAAABXRUJQVlA4ICoAAADQAQCdASoQAAoAA4BaJaQAAu1gwUeaAAD+9xLyAcvEO5IE4d/VcF0RQAA="
+  },
+  {
+    "slug": "cadenceapp",
+    "file": "/products/cadenceapp/dashboard-mobile.webp",
+    "device": "mobile",
+    "width": 600,
+    "height": 1298,
+    "caption": "The organisation command centre: a setup checklist, hours saved by automation, and live totals for collection cases, promises to pay and outstanding balance",
+    "alt": "CadenceApp dashboard screen on a phone: The organisation command centre: a setup checklist, hours saved by automation, and live totals for collection cases, promises to pay and outstanding balance",
+    "blurDataURL": "data:image/webp;base64,UklGRnYAAABXRUJQVlA4IGoAAABQBACdASoQACMAPu1iqk4ppaQiKqwBMB2JZQDO7Babls2u3VSEHkm21AsAAP7v2CX/Mn5Wos+PN2/wVyApimn1nvuAD0BKsYae/0zU03Gl8dkuhZsY69RSkq+0H1id8hY5dvOaZQR0ugAA"
+  },
+  {
+    "slug": "cadenceapp",
+    "file": "/products/cadenceapp/debtors-mobile.webp",
+    "device": "mobile",
+    "width": 600,
+    "height": 1298,
+    "caption": "The live debtor book: search and filter every account by status, aging bucket, agent or portfolio, then add them to a call campaign in one step",
+    "alt": "CadenceApp debtors list screen on a phone: The live debtor book: search and filter every account by status, aging bucket, agent or portfolio, then add them to a call campaign in one step",
+    "blurDataURL": "data:image/webp;base64,UklGRpoAAABXRUJQVlA4II4AAAAwBACdASoQACMAPuFepk2opSOiNUgBEBwJQBibBfTiFZzmM0oLtbCKcQAA/vHhHZFiMxD9DYKELz0WuTz940/uOBa3OnEUCqI+zS5ONVcQ70+kwdjAvS58U53KGstO6PZ+/YiPeyfa7z//2Kq3jSXyhsDtS0IQBOHpqp/MBwtQab6jBqIeQsJ0G+B15QAA"
+  },
+  {
+    "slug": "cadenceapp",
+    "file": "/products/cadenceapp/dialer-desktop.webp",
+    "device": "desktop",
+    "width": 1280,
+    "height": 800,
+    "caption": "The call console: pick a campaign, your own accounts or the whole team queue, and the next debtor comes up automatically after each call",
+    "alt": "CadenceApp dialer screen on desktop: The call console: pick a campaign, your own accounts or the whole team queue, and the next debtor comes up automatically after each call",
+    "blurDataURL": "data:image/webp;base64,UklGRjIAAABXRUJQVlA4ICYAAACwAQCdASoQAAoAA4BaJaQAAuUu9JwAAP73OX6WV9davTvaTwAAAA=="
+  },
+  {
+    "slug": "cadenceapp",
+    "file": "/products/cadenceapp/dialer-mobile.webp",
+    "device": "mobile",
+    "width": 600,
+    "height": 1298,
+    "caption": "The call console: pick a campaign, your own accounts or the whole team queue, and the next debtor comes up automatically after each call",
+    "alt": "CadenceApp dialer screen on a phone: The call console: pick a campaign, your own accounts or the whole team queue, and the next debtor comes up automatically after each call",
+    "blurDataURL": "data:image/webp;base64,UklGRnoAAABXRUJQVlA4IG4AAADwAwCdASoQACMAPu1mqk6ppaOiKqwBMB2JZQDM0CEl02WCiPLUx3SAAP7wT2vxxiSh+2yBHvQghyHYFQ6TOCcyWJwtzyrstbFYgGbjt9+hNtSNCUGtZr8vtgjSDO751/5BY/xHQuYuN8zvU8AAAA=="
+  },
+  {
+    "slug": "cadenceapp",
+    "file": "/products/cadenceapp/promises-mobile.webp",
+    "device": "mobile",
+    "width": 600,
+    "height": 1298,
+    "caption": "The promise tracker: every promise to pay with its live status from real payments, so broken and due-today promises get chased first",
+    "alt": "CadenceApp promise tracker screen on a phone: The promise tracker: every promise to pay with its live status from real payments, so broken and due-today promises get chased first",
+    "blurDataURL": "data:image/webp;base64,UklGRoIAAABXRUJQVlA4IHYAAAAwBACdASoQACMAPuVip02pJiOiNVgIASAciWMAzjhFm+TxyEl3P08/tIAA/vTgGad/fU1X4rBUQF1Od1J7bHjTgJSvRELxv05LAHCkKHVtCaePwb9hskVDSMoAcsl65DJ6hI/kM7n05+QWMyfxGkdJ2QLVHAAA"
+  },
+  {
+    "slug": "cadenceapp",
+    "file": "/products/cadenceapp/recovery-analytics-mobile.webp",
+    "device": "mobile",
+    "width": 600,
+    "height": 1298,
+    "caption": "Recovery analytics: cash collected, promise-kept rate, contact rate and callbacks due, from real payments and call outcomes",
+    "alt": "CadenceApp recovery analytics screen on a phone: Recovery analytics: cash collected, promise-kept rate, contact rate and callbacks due, from real payments and call outcomes",
+    "blurDataURL": "data:image/webp;base64,UklGRpIAAABXRUJQVlA4IIYAAADwAwCdASoQACMAPuVmpk2pJiOiNVgIASAciUrz4AvRQoEL3/rsTFTAAP7w5adGhLwIachhq8u9w4a611bOMYvA0mv4g9F/7HrcIyHmO0B/CaN1QBImuKmZFa9CmzMvs/1aE47jqDigCsX2lCOo0PCRA47wfkYOtC0THd+6LPKNVxpvb55gAA=="
+  },
+  {
+    "slug": "cadenceapp",
+    "file": "/products/cadenceapp/contacts-mobile.webp",
+    "device": "mobile",
+    "width": 600,
+    "height": 1298,
+    "caption": "The CRM contact list, with CSV import templates and a filter, select, add to campaign and dial flow",
+    "alt": "CadenceApp CRM contacts screen on a phone: The CRM contact list, with CSV import templates and a filter, select, add to campaign and dial flow",
+    "blurDataURL": "data:image/webp;base64,UklGRnwAAABXRUJQVlA4IHAAAABQBACdASoQACMAPt1cpE2opSOiNUgBEBuJYwAAehu64W2dqRcMXvndOqzwAP7xzch/kyhh5QdPpQk+6llZ5RRI+oN6Q2EXgAamZjFazgX46gY0T0fkJ2bOBhTacCYnAak2fp613dhL8oEag2fVwgAA"
+  },
+  {
+    "slug": "cadenceapp",
+    "file": "/products/cadenceapp/reports-desktop.webp",
+    "device": "desktop",
+    "width": 1280,
+    "height": 800,
+    "caption": "Sales reports: leads by source, a conversion funnel from lead to won, and the win rate",
+    "alt": "CadenceApp reports screen on desktop: Sales reports: leads by source, a conversion funnel from lead to won, and the win rate",
+    "blurDataURL": "data:image/webp;base64,UklGRkAAAABXRUJQVlA4IDQAAADQAQCdASoQAAoAA4BaJaQAAudpN2laAAD+9zl9UZfrN423kuJQ2mF/TmeleXzTDWz/6BwA"
+  },
+  {
+    "slug": "cadenceapp",
+    "file": "/products/cadenceapp/reports-mobile.webp",
+    "device": "mobile",
+    "width": 600,
+    "height": 1298,
+    "caption": "Sales reports: leads by source, a conversion funnel from lead to won, and the win rate",
+    "alt": "CadenceApp reports screen on a phone: Sales reports: leads by source, a conversion funnel from lead to won, and the win rate",
+    "blurDataURL": "data:image/webp;base64,UklGRpYAAABXRUJQVlA4IIoAAABQBACdASoQACMAPu1cqE2ppKOiNVgIATAdiUAZQA7T+Zqm/hDHnfpXwe+AAP79MZ1sOOaiENCBCpaURtFZjPR5hqfk2ZdkmvWkdsDzQLbTxtelr1kjjVCoEb8bcxf9P7DVNBO8vT8pXqL2Kn/R3Klb2vsAh+7yeEky9eMpFAH1A8vjUU9H7EM4AAA="
+  },
+  {
     "slug": "confilearn",
     "file": "/products/confilearn/home-desktop.webp",
     "device": "desktop",
@@ -569,26 +669,6 @@ export const productShots: ProductShot[] = [
     "caption": "A clean welcome page that points learners to courses, tutors and holiday tuition, free for 30 days",
     "alt": "ConfiLearn home screen on a phone: A clean welcome page that points learners to courses, tutors and holiday tuition, free for 30 days",
     "blurDataURL": "data:image/webp;base64,UklGRoIAAABXRUJQVlA4IHYAAADwAwCdASoQACMAPt1apE2opSOiNUgBEBuJZQAAel+NgHEQW1t5syAAAPff2BGuOxc3qAhrGSqwpJx7VEiiI0WkjE2y/qVuUWJxLDJtMP3Pe932nGRhshtF4J/fpUf/8x0Pw1qfUiT/GisSnRjrttXjq2IlHnAA"
-  },
-  {
-    "slug": "confilearn",
-    "file": "/products/confilearn/course-desktop.webp",
-    "device": "desktop",
-    "width": 1280,
-    "height": 800,
-    "caption": "Each course page shows the lesson, a step-by-step curriculum and your progress toward a certificate",
-    "alt": "ConfiLearn course screen on desktop: Each course page shows the lesson, a step-by-step curriculum and your progress toward a certificate",
-    "blurDataURL": "data:image/webp;base64,UklGRmQAAABXRUJQVlA4IFgAAACwAQCdASoQAAoAA4BaJbACdAENLXxQAP2Pxa9gqluENZhfFHrf58mt2zFEeZwXBGsthkK2nSQ0G3WS3c9gHj7dX7x7NeS4wpl8b9hLa9M2l1VIcyu/kAAA"
-  },
-  {
-    "slug": "confilearn",
-    "file": "/products/confilearn/course-mobile.webp",
-    "device": "mobile",
-    "width": 600,
-    "height": 1298,
-    "caption": "Each course page shows the lesson, a step-by-step curriculum and your progress toward a certificate",
-    "alt": "ConfiLearn course screen on a phone: Each course page shows the lesson, a step-by-step curriculum and your progress toward a certificate",
-    "blurDataURL": "data:image/webp;base64,UklGRrYAAABXRUJQVlA4IKoAAADwAwCdASoQACMAPt1apE2opSOiNUgBEBuJagCo9C4cRnCD3nV5MRYAAPuhnD+PNVvwnWND0A75XkQdyuTPRvyEQpkC4xGUh7mpqe6CeJwKuKzTv97hgZc06WIHgIfGzEAZBWW/uCwR61dfOq83hveBE8RaTWR+TpOpUGCAzt63VwGaWLj/rvmYueWC9ftZaZbUrGUG8WohP1PiqGkn/LTt6zCUCetMXwAAAA=="
   },
   {
     "slug": "confilearn",
@@ -629,26 +709,6 @@ export const productShots: ProductShot[] = [
     "caption": "Levels, XP, streaks and badges keep learners motivated week to week",
     "alt": "ConfiLearn progress xp screen on a phone: Levels, XP, streaks and badges keep learners motivated week to week",
     "blurDataURL": "data:image/webp;base64,UklGRoYAAABXRUJQVlA4IHoAAAAwBACdASoQACMAPtlcpE2oJSOiNUgBABsJZQAAUFfwPqY9CwV9NyuFfegA/haKuk0fBCurZvCdr6AzxOI7FAksrB7MLHJogBy3yA1nJA2CyMMA/S+JIGgb8ZP0f3DAcDk3+sGfO5+PcWm/XeNpgKTxlP+lpt8EUStUAA=="
-  },
-  {
-    "slug": "confilearn",
-    "file": "/products/confilearn/catalog-desktop.webp",
-    "device": "desktop",
-    "width": 1280,
-    "height": 800,
-    "caption": "Browse trending courses across business, design, health and languages, with clear prices in shillings",
-    "alt": "ConfiLearn catalog screen on desktop: Browse trending courses across business, design, health and languages, with clear prices in shillings",
-    "blurDataURL": "data:image/webp;base64,UklGRloAAABXRUJQVlA4IE4AAADQAQCdASoQAAoAA4BaJYwAAudCPJtLgAD1nMDC0jhQ1+/pKxO/qVB2wTUdgoQD7EarkVGwkfSJaBUnRtL12BBauN4RXXOSNt6iM72RjgA="
-  },
-  {
-    "slug": "confilearn",
-    "file": "/products/confilearn/catalog-mobile.webp",
-    "device": "mobile",
-    "width": 600,
-    "height": 1298,
-    "caption": "Browse trending courses across business, design, health and languages, with clear prices in shillings",
-    "alt": "ConfiLearn catalog screen on a phone: Browse trending courses across business, design, health and languages, with clear prices in shillings",
-    "blurDataURL": "data:image/webp;base64,UklGRrgAAABXRUJQVlA4IKwAAACwBACdASoQACMAPt1Yo02opSMiNUgBEBuJQBkTBXuz0XJFVLr6nRoUJpo44gzQAP4RF1n7OMf7t125YCLW9hMvna65s1mvF9HKraSoG1RmKhrJCFEQUZrolbdL/2pHc4yISUOndxOM2DO8k0St2HegEChN/WfkRP1NdwP3gX95RqONHeODT2ffmCn8aJphNB+FMBpHULTeB7/5yXJDER+7rs1PZL0HxCA4WsAA"
   },
   {
     "slug": "confilearn",
