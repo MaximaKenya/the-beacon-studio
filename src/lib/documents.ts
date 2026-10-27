@@ -187,7 +187,7 @@ export async function createReceiptFromPayment(input: {
 }): Promise<ReceiptRecord> {
   const { payment, project, client } = input;
   const amountPaid =
-    payment.provider === "stripe" ? payment.amount / 100 : payment.amount;
+    payment.amount;
   const currency = payment.currency || "USD";
   const totalQuoted = project?.costFrom ?? amountPaid / 0.3;
   const remaining = Math.max(0, Math.round((totalQuoted - amountPaid) * 100) / 100);
@@ -211,9 +211,7 @@ export async function createReceiptFromPayment(input: {
         ? "M-Pesa"
         : payment.provider === "paystack"
           ? "Paystack"
-          : payment.provider === "bank"
-            ? "Bank transfer"
-            : "Stripe",
+          : "Bank transfer",
     reference: ref,
     remainingBalance: remaining,
     totalQuoted,

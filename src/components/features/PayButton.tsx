@@ -20,7 +20,6 @@ type PayButtonProps = {
 
 type PayOptions = {
   paystack: boolean;
-  stripe: boolean;
   mpesa: boolean;
   usdKesRate: number;
   depositPercent: number;
@@ -30,7 +29,7 @@ type PayCurrency = "KES" | "USD";
 
 /**
  * Deposit checkout. Paystack is the primary path (KES M-Pesa/card, or USD card).
- * Stripe and Daraja stay available only when their env keys are set.
+ * Daraja M-Pesa STK stays available only when its env keys are set.
  * Bank transfer always creates an invoice request in admin.
  */
 export function PayButton({
@@ -52,12 +51,12 @@ export function PayButton({
   const [phone, setPhone] = useState("");
   const [showBank, setShowBank] = useState(false);
   const [showMpesa, setShowMpesa] = useState(false);
-  const [loading, setLoading] = useState<"paystack" | "stripe" | "mpesa" | "bank" | null>(null);
+  const [loading, setLoading] = useState<"paystack" | "mpesa" | "bank" | null>(null);
   const [message, setMessage] = useState<string | null>(null);
 
   useEffect(() => {
     void fetch("/api/payments/options")
-      .then((res) => parseResponseJson<PayOptions>(res, { paystack: false, stripe: false, mpesa: false, usdKesRate: 130, depositPercent: 30 }))
+      .then((res) => parseResponseJson<PayOptions>(res, { paystack: false, mpesa: false, usdKesRate: 130, depositPercent: 30 }))
       .then((data) => setOptions(data))
       .catch(() => setOptions(null));
   }, []);
@@ -135,29 +134,6 @@ export function PayButton({
       setMessage(data.message || "Paystack is not configured yet. Request an invoice instead.");
     } catch {
       setMessage("Paystack is not configured yet. Request an invoice instead.");
-    } finally {
-      setLoading(null);
-    }
-  }
-
-  async function checkoutStripe() {
-    setLoading("stripe");
-    setMessage(null);
-    trackEvent("cta_click", { type: "pay_stripe", tier: tierId, mode });
-    try {
-      const res = await fetch("/api/payments/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tierId, mode, ...(projectId ? { projectId } : {}) }),
-      });
-      const data = await parseResponseJson<{ ok?: boolean; url?: string; message?: string }>(res, {});
-      if (data.ok && data.url) {
-        window.location.href = data.url;
-        return;
-      }
-      setMessage(data.message || siteConfig.payments.comingSoonMessage);
-    } catch {
-      setMessage(siteConfig.payments.comingSoonMessage);
     } finally {
       setLoading(null);
     }
@@ -329,18 +305,6 @@ export function PayButton({
             Request invoice · {usdLabel}
           </button>
         </div>
-      )}
-
-      {options?.stripe && (
-        <button
-          type="button"
-          onClick={() => void checkoutStripe()}
-          disabled={!!loading}
-          className="mt-2 inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-surface-elevated/80 text-sm font-semibold text-foreground disabled:opacity-60"
-        >
-          {loading === "stripe" ? <Loader2 className="h-4 w-4 animate-spin" /> : <CreditCard className="h-4 w-4" />}
-          Pay with Stripe
-        </button>
       )}
 
       {options?.mpesa &&

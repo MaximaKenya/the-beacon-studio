@@ -3,7 +3,8 @@ import { createHmac } from "node:crypto";
 import { describe, it } from "node:test";
 import { adminPasswordMatches, createAdminToken, safeEqual, verifyAdminToken } from "./admin-auth";
 import { crossOriginBlocked, postLimitFor, rateLimit } from "./rate-limit";
-import { verifyStripeSignature } from "./stripe-signature";
+import { beaconPaymentIdFromReference, beaconPaystackMetadata, beaconPaystackReference, verifyPaystackSignature } from "./paystack";
+import { routePaystackEvent } from "./paystack-router";
 import { ownerCanResume } from "./automations/runtime";
 import { SANDBOX_ORIGIN, demoOwnerEmail, formatNairobi, isDemoPhone, nairobiTenAm } from "./automations/sandbox";
 
@@ -47,16 +48,34 @@ describe("rate limit and origin", () => {
   });
 });
 
-describe("stripe signature", () => {
-  const secret = "whsec_test";
-  const raw = '{"type":"checkout.session.completed"}';
-  const t = Math.floor(Date.now() / 1000);
-  const sig = createHmac("sha256", secret).update(`${t}.${raw}`).digest("hex");
-  it("accepts a valid one", () => assert.ok(verifyStripeSignature(raw, `t=${t},v1=${sig}`, secret)));
-  it("rejects forged, stale or missing", () => {
-    assert.equal(verifyStripeSignature(raw + " ", `t=${t},v1=${sig}`, secret), false);
-    assert.equal(verifyStripeSignature(raw, `t=${t - 1000},v1=${sig}`, secret), false);
-    assert.equal(verifyStripeSignature(raw, null, secret), false);
+describe("paystack webhook", () => {
+  const raw = '{"event":"charge.success","data":{"reference":"BS-abc"}}';
+  it("accepts a valid sha512 signature only", () => {
+    const prev = process.env.PAYSTACK_SECRET_KEY;
+    process.env.PAYSTACK_SECRET_KEY = "sk_test_unit";
+    try {
+      const sig = createHmac("sha512", "sk_test_unit").update(raw).digest("hex");
+      assert.ok(verifyPaystackSignature(raw, sig));
+      assert.equal(verifyPaystackSignature(raw + " ", sig), false);
+      assert.equal(verifyPaystackSignature(raw, sig.slice(0, -2) + "00"), false);
+      assert.equal(verifyPaystackSignature(raw, null), false);
+      delete process.env.PAYSTACK_SECRET_KEY;
+      assert.equal(verifyPaystackSignature(raw, sig), false);
+    } finally {
+      if (prev === undefined) delete process.env.PAYSTACK_SECRET_KEY;
+      else process.env.PAYSTACK_SECRET_KEY = prev;
+    }
+  });
+  it("keeps the BS reference prefix and beacon metadata", () => {
+    assert.equal(beaconPaystackReference("abc"), "BS-abc");
+    assert.equal(beaconPaystackReference("BS-abc"), "BS-abc");
+    assert.equal(beaconPaymentIdFromReference("BS-abc"), "abc");
+    assert.equal(beaconPaystackMetadata({ tierId: "x" }).app, "beacon-studio");
+  });
+  it("routes BS- and metadata.app=beacon to Beacon Studio", () => {
+    assert.equal(routePaystackEvent({ data: { reference: "BS-1" } })?.route.app, "beacon-studio");
+    assert.equal(routePaystackEvent({ data: { reference: "CR-1", metadata: { app: "beacon" } } })?.route.local, true);
+    assert.equal(routePaystackEvent({ data: { reference: "CR-1" } })?.route.local, false);
   });
 });
 

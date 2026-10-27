@@ -23,7 +23,7 @@ export function clientIp(headers: Headers): string {
 
 /** Limits for POST /api/* by path. Webhooks are signed and skipped. */
 export function postLimitFor(pathname: string): { limit: number; windowMs: number } | null {
-  if (/^\/api\/(paystack\/webhook|paystack\/callback|email\/inbound|payments\/(mpesa\/callback|stripe\/webhook)|whatsapp\/webhook|sms\/inbound|automations\/tick)/.test(pathname)) return null;
+  if (/^\/api\/(paystack\/webhook|paystack\/callback|email\/inbound|payments\/mpesa\/callback|whatsapp\/webhook|sms\/inbound|automations\/tick)/.test(pathname)) return null;
   if (pathname === "/api/admin/auth" || pathname.startsWith("/api/portal/auth") || pathname.startsWith("/api/portal/magic")) {
     return { limit: 8, windowMs: 10 * 60_000 };
   }

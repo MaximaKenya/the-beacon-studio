@@ -481,7 +481,7 @@ export function AdminOpsHub({
             <div className="flex items-center gap-2">
               <CreditCard className="h-4 w-4 text-accent" />
               <h3 className="font-display text-lg font-semibold text-foreground">
-                Payments (Stripe / M-Pesa)
+                Payments (Paystack / M-Pesa)
               </h3>
               <Badge count={ops.badges.payments} />
             </div>
@@ -536,9 +536,7 @@ export function AdminOpsHub({
                       </td>
                       <td className="py-2">{p.tierName}</td>
                       <td className="py-2 font-mono text-xs">
-                        {p.provider === "stripe"
-                          ? `$${(p.amount / 100).toFixed(2)}`
-                          : p.currency === "USD"
+                        {p.currency === "USD"
                             ? `$${Number(p.amount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                             : `${Number(p.amount).toLocaleString("en-KE")} ${p.currency}`}
                       </td>
@@ -997,9 +995,7 @@ export function AdminOpsHub({
                   {drawer.item.provider} · {drawer.item.status} · {drawer.item.tierName}
                 </p>
                 <p className="font-mono text-xs">
-                  {drawer.item.provider === "stripe"
-                    ? `$${(drawer.item.amount / 100).toFixed(2)}`
-                    : drawer.item.currency === "USD"
+                  {drawer.item.currency === "USD"
                       ? `$${Number(drawer.item.amount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                       : `${Number(drawer.item.amount).toLocaleString("en-KE")} ${drawer.item.currency}`}
                 </p>

@@ -12,7 +12,6 @@ Copy `.env.example` → `.env.local` and fill values for your environment.
 | Integration | Used for | Required? |
 |---|---|---|
 | **Resend** | Contact notify + ack, subscribe confirm, booking confirm, portal OTP | Optional |
-| **Stripe** | Checkout deposits / invoices (pricing, intake, portal) | Optional |
 | **M-Pesa Daraja** | STK Push deposits / invoices (pricing, intake, portal) | Optional |
 | **OpenAI** | Glow assistant + brief improver | Optional |
 | **ADMIN_PASSWORD** | `/admin` login | **Required** |
@@ -52,37 +51,16 @@ Helper: `src/lib/resend.ts`.
 
 ---
 
-## 2. Stripe (card / Checkout)
+## 2. Payments
 
-**Env**
+Paystack is the only online payment gateway (`PAYSTACK_SECRET_KEY`; webhook `POST /api/paystack/webhook`, HMAC-SHA512 verified, `BS-` references, `metadata.app=beacon-studio`). Without the key, checkout falls back to bank transfer / invoice. Stripe was removed.
 
-```bash
-STRIPE_SECRET_KEY=sk_...
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_...
-# Optional Price IDs (should match 30% deposit of tier floor)
-STRIPE_PRICE_SPRINT_DEPOSIT=
-STRIPE_PRICE_PRODUCT_DEPOSIT=
-STRIPE_PRICE_RETAINER_DEPOSIT=
-```
-
-**Endpoints**
-
-- `POST /api/payments/checkout` — create Checkout Session (deposit or invoice)
-- `POST /api/payments/stripe/webhook` — mark payment success on `checkout.session.completed`
-
-**UI surfaces (Stripe + M-Pesa both offered)**
+**UI surfaces**
 
 - Pricing cards → `PayButton`
 - Project intake wizard → `PayButton`
 - Client portal “Next payment” → `PayButton` (`projectId` attached)
 - Admin → **Mark paid** creates a receipt (`payment.mark-paid`)
-
-**Setup**
-
-1. Create a Stripe account → Developers → API keys.
-2. Set `STRIPE_SECRET_KEY` (and optional publishable key).
-3. Point webhook to `https://YOUR_DOMAIN/api/payments/stripe/webhook`.
-4. Without `STRIPE_SECRET_KEY`: API returns `coming_soon` + mailto / book fallbacks.
 
 Deposit amount = tier floor × `siteConfig.payments.depositPercent` (default **30%**).
 
@@ -225,15 +203,15 @@ flowchart TD
   D --> I[/admin Bookings panel]
 ```
 
-### Pay → Stripe / M-Pesa → receipt
+### Pay → Paystack / M-Pesa → receipt
 
 ```mermaid
 flowchart LR
   UI[PayButton pricing / intake / portal] --> S{Provider}
-  S -->|Card| ST[POST /api/payments/checkout]
+  S -->|Paystack| ST[POST /api/paystack/initialize]
   S -->|M-Pesa| MP[POST /api/payments/mpesa/stk]
-  ST --> SS[Stripe Checkout]
-  SS --> WH[stripe webhook]
+  ST --> SS[Paystack checkout]
+  SS --> WH[paystack webhook]
   MP --> PH[Phone PIN]
   PH --> CB[mpesa callback]
   WH --> PJ[payments.json success]
@@ -266,7 +244,7 @@ sequenceDiagram
 
 ## Payment path audit
 
-| Surface | Stripe | M-Pesa STK | Fallback without keys |
+| Surface | Paystack | M-Pesa STK | Fallback without keys |
 |---|---|---|---|
 | Pricing deposit | ✅ | ✅ | coming_soon + mailto / book |
 | Intake wizard | ✅ | ✅ | same |

@@ -198,8 +198,6 @@ export type PricingTier = {
   cta: string;
   ctaAction: "intake" | "booking" | "access";
   featured?: boolean;
-  /** Optional Stripe Price id env key hint (see .env.example) */
-  stripePriceEnv?: string;
   /** Studio builds vs AI automation offer ladder */
   group?: "studio" | "automation" | "it" | "package";
   /** Fixed-price packages: what is not included. */
@@ -780,7 +778,7 @@ export const siteConfig = {
    * Paystack is the primary checkout (PAYSTACK_SECRET_KEY).
    * USD tiers convert to KES at PAYSTACK_USD_KES_RATE. Tiers with kesAmount charge that shilling floor.
    * Checkout can charge KES (M-Pesa or card) or a USD card.
-   * Stripe stays hidden unless STRIPE_SECRET_KEY is set. Daraja STK stays hidden
+   * Paystack is the only card/online gateway. Daraja STK stays hidden
    * unless the MPESA_* keys are set. Bank transfer / invoice is always available.
    *
    * Deposit rationale (depositPercent = 30):

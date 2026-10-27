@@ -3,7 +3,7 @@ import { siteConfig } from "@/data/site";
 import { usdToKesRate } from "@/lib/fx";
 import { getMpesaConfig } from "@/lib/mpesa";
 import { bookingDepositOffer } from "@/lib/booking-deposit";
-import { isPaystackConfigured, isStripeConfigured } from "@/lib/paystack";
+import { isPaystackConfigured } from "@/lib/paystack";
 
 export const runtime = "nodejs";
 
@@ -12,7 +12,6 @@ export async function GET() {
   const depositPercent = siteConfig.payments.depositPercent ?? siteConfig.payments.defaultDepositPercent ?? 30;
   return NextResponse.json({
     paystack: isPaystackConfigured(),
-    stripe: isStripeConfigured(),
     mpesa: Boolean(getMpesaConfig()),
     bankTransfer: true,
     usdKesRate: usdToKesRate(),

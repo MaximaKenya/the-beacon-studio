@@ -30,11 +30,10 @@ Client and admin steps live in `AUTOMATIONS.md`. Short version:
 |---|---|---|
 | **Resend** (mailbox, form confirmations, portal OTP, inbox replies) | `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `RESEND_REPLY_TO`, `RESEND_WEBHOOK_SECRET` | Forms still save. Admin mailbox shows **Email not configured**. No confirmation email |
 | **Paystack** (primary deposits) | `PAYSTACK_SECRET_KEY`, `PAYSTACK_PUBLIC_KEY`, optional `PAYSTACK_USD_KES_RATE` | Checkout explains Paystack is not configured. Bank transfer / invoice still works |
-| **Stripe** (hidden unless configured) | `STRIPE_SECRET_KEY` (+ optional Price IDs / publishable key) | Button is not shown |
 | **M-Pesa Daraja** (hidden unless configured) | `MPESA_*` | Button is not shown. Paystack KES still covers M-Pesa when Paystack is live |
 | **OpenAI** (Glow + brief helper) | `OPENAI_API_KEY` | On-site knowledge base only |
 | **Groq** (Beacon AI chat, `POST /api/ai/chat`) | `GROQ_API_KEY`, optional `GROQ_MODEL` | Widget still opens. Replies fall back to WhatsApp. Default model is `llama-3.3-70b-versatile`. Free and developer Groq tiers retired that id on 2026-08-16; the route then retries `openai/gpt-oss-120b`. Set `GROQ_MODEL` to pin one model. |
-| Stripe webhook / M-Pesa callback | Point at your domain `/api/payments/...` | Needed once keys are live |
+| Paystack webhook / M-Pesa callback | Point at your domain `/api/payments/...` | Needed once keys are live |
 
 ## Product suite
 
@@ -232,7 +231,7 @@ curl -X POST https://thebeaconstudio.co.ke/api/automations/tick -H "Authorizatio
 
 **Bank transfer / invoice** is always on the checkout panel. It writes a pending payment (`provider: bank`), a lead in the admin inbox, and a mailbox thread. No bank account number is invented in the email — you reply with details.
 
-**Stripe** (`STRIPE_SECRET_KEY`) and **Daraja** (full `MPESA_*` set) keep their existing routes. Their buttons render only when those keys exist.
+**Daraja** (full `MPESA_*` set) keeps its existing routes; its button renders only when those keys exist. Stripe has been removed — Paystack is the only online gateway.
 
 ## Revenue features (packs, trial nurture, ROI, packages, referrals)
 
@@ -253,7 +252,7 @@ curl -X POST https://thebeaconstudio.co.ke/api/automations/tick -H "Authorizatio
 
 ## Audit log — 27 Oct 2026
 
-- **Critical:** The Stripe webhook accepted unsigned POSTs that marked payments paid. It now needs a valid `Stripe-Signature` (`STRIPE_WEBHOOK_SECRET`) or an admin session, and returns 503 when the secret is unset.
+- **Critical:** The (since removed) Stripe webhook accepted unsigned POSTs that marked payments paid. Stripe is now gone entirely; the Paystack webhook verifies `x-paystack-signature`.
 - **High:** The admin cookie was base64 of the password. It is now an HMAC-signed token that expires after 12h (`ADMIN_SESSION_SECRET` is optional and adds to the key). Old cookies log out.
 - **High:** Portal pause and resume now check the owner. Resume only works from paused with a live trial or paid period, so `pending_payment` can't be skipped.
 - **High:** `data/*.json` (contacts, intakes, analytics) was committed to a public repo. Those files are no longer tracked and are now gitignored, but **git history still has them** and needs a purge.
@@ -263,4 +262,4 @@ curl -X POST https://thebeaconstudio.co.ke/api/automations/tick -H "Authorizatio
 - **Deps:** next 16.4.3, zod 4.6.7 and `npm audit fix` bring the prod audit to 0.
 - **Demo sandbox:** Booking date is now relative and shown in Nairobi time. Previews link to the live site, demo phone numbers are fake (2547000000NN) and the clinic-recall preview works. New "create demo client" in the admin, plus a read-only `/portal/demo` link.
 - **Admin:** Clearer tab names (Requests, Automation leads, Demo clients, Activity log). Requests, Partners, Referrals and Invoices tabs now have badges, and the top nav shows an Action Center badge.
-- **Todo (Max):** set `STRIPE_WEBHOOK_SECRET`, `ADMIN_SESSION_SECRET`, `PORTAL_SECRET` (the code falls back to a weak dev secret if both it and `ADMIN_PASSWORD` are unset) and `MPESA_CALLBACK_TOKEN`. Purge `data/*.json` from git history. Consider a full script CSP.
+- **Todo (Max):** set `ADMIN_SESSION_SECRET`, `PORTAL_SECRET` (the code falls back to a weak dev secret if both it and `ADMIN_PASSWORD` are unset) and `MPESA_CALLBACK_TOKEN`. Purge `data/*.json` from git history. Consider a full script CSP.

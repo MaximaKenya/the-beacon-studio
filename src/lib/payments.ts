@@ -2,7 +2,7 @@ import { siteConfig } from "@/data/site";
 import { readJsonFile, writeJsonFile } from "@/lib/storage";
 import { randomUUID } from "crypto";
 
-export type PaymentProvider = "stripe" | "mpesa" | "paystack" | "bank";
+export type PaymentProvider = "mpesa" | "paystack" | "bank";
 export type PaymentStatus = "pending" | "success" | "failed" | "cancelled";
 
 export type PaymentRecord = {
@@ -31,7 +31,7 @@ export type PaymentRecord = {
   automationChargeId?: string;
   /** Studio booking this deposit reserves. */
   bookingId?: string;
-  /** Stripe session id, Paystack reference, or M-Pesa CheckoutRequestID */
+  /** Paystack reference, or M-Pesa CheckoutRequestID */
   checkoutRequestID?: string;
   merchantRequestID?: string;
   receipt?: string;
