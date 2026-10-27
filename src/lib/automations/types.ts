@@ -1,3 +1,5 @@
+import type { TrialStage } from "@/lib/automations/trial-sequence";
+
 export type InstanceStatus = "pending_payment" | "active" | "paused";
 export type BillingInterval = "monthly" | "annual";
 
@@ -17,6 +19,10 @@ export type InstanceTrial = {
   endedAt?: string;
   paidUntil?: string;
   welcomed?: boolean;
+  /** Trial-to-paid nurture stages already sent (see trial-sequence.ts). */
+  stagesSent?: TrialStage[];
+  /** Extra free days granted by a referral code. */
+  referralBonusDays?: number;
 };
 
 export type AutomationNote = {
@@ -184,6 +190,8 @@ export type AutomationDoc = {
   deliveries: AutomationDelivery[];
   adminLog: AdminLogEntry[];
   ops: AutomationOps;
+  /** Owner emails that opted out of trial nurture emails. Reminders and receipts still send. */
+  trialOptOuts?: string[];
 };
 
 export function emptyDoc(): AutomationDoc {

@@ -11,7 +11,9 @@ import { SANDBOX_EMAIL } from "@/lib/automations/setup-guides";
 import { markChargePaid, recordReview, runEngine } from "@/lib/automations/engine";
 import { activateOnTrial, applyBundlePayment, endInstanceTrial, extendInstanceTrial, sendTrialWelcome, syncLedger } from "@/lib/automations/lifecycle";
 import { addAdminLog, addLog, instancesForEmail, loadAutomations, saveAutomations } from "@/lib/automations/store";
-import { TRIAL_DAYS, trialDaysRemaining } from "@/lib/automations/trial";
+import { extendTrialEnd, TRIAL_DAYS, trialDaysRemaining } from "@/lib/automations/trial";
+import { adminReferrals, portalReferral, recordReferralSignup, settleReferralsForPayment } from "@/lib/referrals";
+import { TRIAL_STAGE_LABEL, trialPortalStage } from "@/lib/automations/trial-sequence";
 import { emptyDoc, type AutomationDoc, type AutomationInstance } from "@/lib/automations/types";
 import { mutateJsonFile } from "@/lib/storage";
 import { jobClaimable } from "@/lib/tick-claim";
@@ -69,6 +71,7 @@ export async function fulfillAutomationPayment(payment: PaymentRecord, origin: s
     const paid = await loadAutomations();
     applyBundlePayment(paid, payment.automationInstanceIds);
     await saveAutomations(paid);
+    if (payment.payerEmail) await settleReferralsForPayment(payment.payerEmail);
   }
 }
 
@@ -173,6 +176,8 @@ type CheckoutInput = {
   businessName: string;
   pay: "paystack" | "invoice" | "trial";
   origin: string;
+  /** Referral code from the ?ref= cookie. */
+  refCode?: string;
 };
 
 export async function startBundleCheckout(input: CheckoutInput): Promise<
@@ -200,6 +205,7 @@ export async function startBundleCheckout(input: CheckoutInput): Promise<
   );
   const client = await upsertClient({ email, name: input.ownerName.trim(), company: input.businessName.trim() });
   const doc = await loadAutomations();
+  const isNewClient = !doc.instances.some((item) => item.ownerEmail === email && !item.demo);
   const bundleId = randomUUID();
   const now = new Date().toISOString();
   const created: AutomationInstance[] = [];
@@ -229,6 +235,16 @@ export async function startBundleCheckout(input: CheckoutInput): Promise<
   });
   const started = new Date();
   for (const instance of created) await activateOnTrial(doc, instance, input.origin, started);
+  const bonusDays = input.refCode ? await recordReferralSignup({ code: input.refCode, email, isNewClient }) : 0;
+  if (bonusDays > 0) {
+    for (const instance of created) {
+      if (!instance.trial) continue;
+      instance.trial.endsAt = extendTrialEnd(instance.trial.endsAt, bonusDays, started);
+      instance.trial.referralBonusDays = bonusDays;
+      instance.periodEnd = instance.trial.endsAt;
+    }
+    addAdminLog(doc, "automated", "Referral applied", `${email} · +${bonusDays} free days`);
+  }
   await sendTrialWelcome(doc, email);
   await saveAutomations(doc);
 
@@ -316,12 +332,18 @@ export async function startBundleCheckout(input: CheckoutInput): Promise<
 function soonestTrial(instances: AutomationInstance[]) {
   const trials = instances.map((item) => item.trial).filter((trial): trial is NonNullable<AutomationInstance["trial"]> => Boolean(trial));
   if (trials.length === 0) return null;
-  const endsAt = [...trials].sort((a, b) => a.endsAt.localeCompare(b.endsAt))[0]?.endsAt;
+  const first = [...trials].sort((a, b) => a.endsAt.localeCompare(b.endsAt))[0];
+  const endsAt = first?.endsAt;
   if (!endsAt) return null;
+  const ended = trials.every((trial) => Boolean(trial.endedAt));
+  const stage = trialPortalStage({ ...first, endedAt: ended ? first.endedAt || endsAt : undefined }, new Date());
   return {
     endsAt,
     days: trialDaysRemaining(endsAt),
-    ended: trials.every((trial) => Boolean(trial.endedAt)),
+    ended,
+    stage,
+    stageLabel: TRIAL_STAGE_LABEL[stage],
+    bonusDays: first.referralBonusDays || 0,
   };
 }
 
@@ -335,6 +357,7 @@ export async function portalSnapshot(email: string) {
     ...snapshotFor(doc, instances),
     analytics: analyticsFor(doc, instances),
     trial: soonestTrial(instances),
+    referral: instances.length ? await portalReferral(normalized) : null,
     paystack: isPaystackConfigured(),
     invoices: payments
       .filter((payment) => payment.payerEmail === normalized && (payment.tierId === "automation-bundle" || payment.automationInstanceIds?.some((id) => ids.has(id))))
@@ -382,7 +405,16 @@ export async function adminSnapshot() {
     waiting: (doc.deliveries || []).filter((item) => item.status === "waiting").length,
     lastTickAt: doc.ops?.lastTickAt,
   });
+  const trialStages = (["setup", "running", "ending", "ended", "paid"] as const).map((stage) => ({
+    stage,
+    label: TRIAL_STAGE_LABEL[stage],
+    clients: clients
+      .filter((client) => client.trial?.stage === stage)
+      .map((client) => ({ email: client.email, businessName: client.businessName, days: client.trial?.days ?? 0 })),
+  }));
   return {
+    trialStages,
+    referrals: await adminReferrals(),
     mrrKes: active.reduce((sum, item) => sum + item.monthlyKes, 0),
     active: active.length,
     pending: live.filter((item) => item.status === "pending_payment").length,
@@ -620,6 +652,7 @@ export async function markBundleInvoicePaid(paymentId: string) {
     const doc = await loadAutomations();
     applyBundlePayment(doc, payment.automationInstanceIds, new Date(), "done");
     await saveAutomations(doc);
+    if (payment.payerEmail) await settleReferralsForPayment(payment.payerEmail);
   }
   return { ok: true, message: "Invoice marked paid. The paid period starts when the trial ends." };
 }

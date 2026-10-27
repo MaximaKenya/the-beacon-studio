@@ -1,4 +1,6 @@
 import { siteConfig } from "@/data/site";
+import { packForIndustry, packQuote } from "@/automations/packs";
+import { TRIAL_DAYS } from "@/lib/automations/trial";
 import { extractBeaconLead, type BeaconChatMessage } from "@/lib/beacon-ai";
 import {
   durationForMeeting,
@@ -132,6 +134,13 @@ function catalogRange(): { low: number; high: number } {
   return { low: Math.min(...prices), high: Math.max(...prices) };
 }
 
+/** One-line industry pack suggestion with exact published KES prices. */
+export function packSentence(industry: string): string {
+  const pack = packForIndustry(industry);
+  const quote = packQuote(pack);
+  return `For ${industry}, the ${pack.name} fits: ${quote.count} automations at ${formatKes(quote.recurringMonthlyKes)} a month after a ${TRIAL_DAYS}-day free trial. Details: /packs/${pack.id}.`;
+}
+
 /** Quote copy taken from the published tiers and automation catalog. */
 export function quoteForNeed(needs: VisitorNeed): string {
   if (needs === "software") {
@@ -245,6 +254,8 @@ export function scriptedAssistantReply(messages: BeaconChatMessage[], slots: Off
   const showQuote = Boolean(qualification.needs) && (asksPrice(last) || missing[0] !== "needs");
   if (showQuote && qualification.needs) parts.push(quoteForNeed(qualification.needs));
   else if (!qualification.needs && asksPrice(last)) parts.push(quoteForNeed("automation"));
+
+  if (qualification.needs === "automation" && qualification.industry) parts.push(packSentence(qualification.industry));
 
   const next = missing[0];
   if (next === "needs") {

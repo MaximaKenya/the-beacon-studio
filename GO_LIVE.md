@@ -233,3 +233,11 @@ curl -X POST https://thebeaconstudio.co.ke/api/automations/tick -H "Authorizatio
 **Bank transfer / invoice** is always on the checkout panel. It writes a pending payment (`provider: bank`), a lead in the admin inbox, and a mailbox thread. No bank account number is invented in the email — you reply with details.
 
 **Stripe** (`STRIPE_SECRET_KEY`) and **Daraja** (full `MPESA_*` set) keep their existing routes. Their buttons render only when those keys exist.
+
+## Revenue features (packs, trial nurture, ROI, packages, referrals)
+
+- Industry packs: `/packs/{clinic,school,sacco,landlord,retail,services}`; `/automations?pack=ID` pre-selects. Prices come from `quoteBundle`.
+- ROI calculator: `/automation-roi`. "Email me this plan" saves a lead (`kind: roi`) and emails the user and `ADMIN_EMAIL` when `RESEND_API_KEY` is set.
+- Fixed-price packages live in `site.ts` (`group: "package"`). Payment uses the 30% deposit or invoice path. Paystack stays off until `PAYSTACK_SECRET_KEY` is set.
+- Referrals: `?ref=CODE` sets the `bs_ref` cookie (60 days). New client gets +30 trial days; the referrer earns 1 free month after the first paid month. Data lives in `referrals.json`. Terms are at `/referrals`.
+- Trial opt-out links are signed with `PORTAL_SECRET` (falls back to `ADMIN_PASSWORD`). Set one of them before go-live.

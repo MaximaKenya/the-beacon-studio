@@ -48,6 +48,7 @@ export function Pricing() {
   const automationTiers = siteConfig.pricingTiers.filter((tier) => tier.group === "automation");
   const customTiers = siteConfig.pricingTiers.filter((tier) => tier.group === "studio" || !tier.group);
   const itTiers = siteConfig.pricingTiers.filter((tier) => tier.group === "it");
+  const packageTiers = siteConfig.pricingTiers.filter((tier) => tier.group === "package");
 
   return (
     <section id="pricing" className="relative py-20 lg:py-28">
@@ -146,6 +147,23 @@ export function Pricing() {
             ))}
           </ul>
         </article>
+
+        {packageTiers.length > 0 && (
+          <div id="packages" className="mt-12">
+            <h3 className="font-display text-2xl font-semibold text-foreground">Fixed-price packages</h3>
+            <p className="mt-2 max-w-2xl text-sm text-muted">
+              Set scope, set price. 30% deposit or request an invoice.{" "}
+              <Link href="/automation-roi" className="text-accent hover:underline">
+                Not sure? Run the ROI calculator.
+              </Link>
+            </p>
+            <div className="mt-6 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+              {packageTiers.map((tier) => (
+                <TierCard key={tier.id} tier={tier} rate={rate} onCta={handleCta} />
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="mt-8 grid gap-6">
           {[...customTiers, ...itTiers].map((tier) => (
@@ -249,6 +267,16 @@ function TierCard({
             </li>
           ))}
         </ul>
+        {tier.excludes && tier.excludes.length > 0 && (
+          <ul className="mt-4 space-y-1">
+            {tier.excludes.map((item) => (
+              <li key={item} className="text-xs leading-relaxed text-muted">
+                Not included: {item}
+              </li>
+            ))}
+          </ul>
+        )}
+        {tier.revisions && <p className="mt-3 text-xs text-muted">Revisions: {tier.revisions}</p>}
         <div className="mt-6 space-y-2">
           <button
             type="button"
