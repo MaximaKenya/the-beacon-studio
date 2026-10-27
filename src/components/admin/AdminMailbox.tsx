@@ -12,6 +12,7 @@ import type {
 } from "@/lib/mailbox-types";
 import { formatNairobi } from "@/lib/time";
 import { parseResponseJson } from "@/lib/safe-json";
+import { MAILBOX_IDS, MAILBOX_LABELS, mailboxAddress, type MailboxId } from "@/lib/mail-addresses";
 
 const FOLDERS: { id: MailFolder; label: string }[] = [
   { id: "inbox", label: "Inbox" },
@@ -32,6 +33,7 @@ type Composer = {
   subject: string;
   text: string;
   files: LocalFile[];
+  from: MailboxId;
 };
 
 const emptyComposer = (): Composer => ({
@@ -41,6 +43,7 @@ const emptyComposer = (): Composer => ({
   subject: "",
   text: "",
   files: [],
+  from: "hello",
 });
 
 async function fileToAttachment(file: File): Promise<LocalFile | null> {
@@ -57,6 +60,9 @@ async function fileToAttachment(file: File): Promise<LocalFile | null> {
 
 export function AdminMailbox() {
   const [folder, setFolder] = useState<MailFolder>("inbox");
+  const [mailbox, setMailbox] = useState<MailboxId | "all">("all");
+  const [confirming, setConfirming] = useState(false);
+  const [showImages, setShowImages] = useState(false);
   const [query, setQuery] = useState("");
   const [threads, setThreads] = useState<MailThreadSummary[]>([]);
   const [counts, setCounts] = useState<MailboxCounts>({ inbox: 0, sent: 0, drafts: 0, archive: 0, unread: 0 });
@@ -73,6 +79,7 @@ export function AdminMailbox() {
 
   async function loadList(nextFolder = folder, nextQuery = query) {
     const params = new URLSearchParams({ folder: nextFolder, q: nextQuery });
+    if (mailbox !== "all") params.set("mailbox", mailbox);
     const res = await fetch(`/api/admin/mailbox?${params.toString()}`);
     const data = await parseResponseJson<MailboxListResponse>(res, {
       configured: false,
@@ -87,11 +94,13 @@ export function AdminMailbox() {
     window.dispatchEvent(new CustomEvent("beacon-mail-unread", { detail: { unread } }));
   }
 
-  async function openThread(id: string) {
+  async function openThread(id: string, images = false) {
     setComposer(null);
+    setConfirming(false);
+    setShowImages(images);
     setError(null);
     setNote(null);
-    const res = await fetch(`/api/admin/mailbox?id=${encodeURIComponent(id)}`);
+    const res = await fetch(`/api/admin/mailbox?id=${encodeURIComponent(id)}${images ? "&images=1" : ""}`);
     const data = await parseResponseJson<{ thread?: MailThreadDetail; configured?: boolean }>(res, {});
     if (data.thread) {
       setSelected(data.thread);
@@ -105,9 +114,9 @@ export function AdminMailbox() {
       void loadList(folder, query);
     }, 0);
     return () => window.clearTimeout(handle);
-    // Reload when the folder or search changes.
+    // Reload when the folder, mailbox, or search changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [folder, query]);
+  }, [folder, query, mailbox]);
 
   useEffect(() => {
     function onOpen(event: Event) {
@@ -150,6 +159,7 @@ export function AdminMailbox() {
 
   async function submit(action: "send" | "draft") {
     if (!composer) return;
+    setConfirming(false);
     setBusy(true);
     setError(null);
     setNote(null);
@@ -167,6 +177,8 @@ export function AdminMailbox() {
           cc: composer.cc,
           subject: composer.subject,
           text: composer.text,
+          from: composer.from,
+          confirm: action === "send",
           ...(composer.files.length ? { attachments: composer.files } : {}),
         }),
       });
@@ -246,8 +258,10 @@ export function AdminMailbox() {
     const subjectBase = last?.subject || selected.subject;
     const prefix = mode === "forward" ? "Fwd: " : "Re: ";
     const subject = subjectBase.toLowerCase().startsWith(prefix.toLowerCase()) ? subjectBase : `${prefix}${subjectBase}`;
+    const arrived = (selected.mailboxes?.[0] as MailboxId | undefined) || "hello";
     setComposer({
       mode,
+      from: MAILBOX_IDS.includes(arrived) ? arrived : "hello",
       threadId: selected.id,
       messageId: last?.id,
       to,
@@ -266,6 +280,7 @@ export function AdminMailbox() {
     const draft = [...thread.messages].reverse().find((message) => message.direction === "draft");
     setComposer({
       mode: "new",
+      from: "hello",
       threadId: thread.id,
       draftMessageId: draft?.id,
       to: draft?.to.join(", ") || "",
@@ -291,7 +306,8 @@ export function AdminMailbox() {
             )}
           </h2>
           <p className="mt-1 max-w-2xl text-sm text-muted">
-            Inbox for hello@thebeaconstudio.co.ke. Reply, archive, and open a linked lead from the same thread.
+            Built-in mail for hello@, support@, billing@ and admin@thebeaconstudio.co.ke. Mail arrives through Resend
+            inbound. Reply, archive, and open a linked lead from the same thread.
           </p>
         </div>
         <button
@@ -357,6 +373,24 @@ export function AdminMailbox() {
           />
         </label>
       </div>
+      <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label="Mailbox">
+        {(["all", ...MAILBOX_IDS] as const).map((id) => {
+          const unread = id === "all" ? visibleCounts.unread : visibleCounts.byMailbox?.[id] ?? 0;
+          return (
+            <button
+              key={id}
+              type="button"
+              onClick={() => setMailbox(id)}
+              className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                mailbox === id ? "bg-accent text-background" : "bg-background/40 text-muted"
+              }`}
+            >
+              {id === "all" ? "All addresses" : `${id}@`}
+              {unread > 0 && <span className="ml-1 font-mono text-[10px]">{unread}</span>}
+            </button>
+          );
+        })}
+      </div>
 
       <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.2fr)]">
         <div className="max-h-[36rem] space-y-2 overflow-y-auto rounded-2xl bg-background/30 p-2">
@@ -402,10 +436,28 @@ export function AdminMailbox() {
               className="space-y-3"
               onSubmit={(event) => {
                 event.preventDefault();
+                if (!confirming) {
+                  setConfirming(true);
+                  return;
+                }
                 void submit("send");
               }}
             >
               <p className="admin-kicker">{composer.mode === "new" ? "New message" : composer.mode}</p>
+              <label className="block text-xs text-muted">
+                From
+                <select
+                  value={composer.from}
+                  onChange={(event) => setComposer({ ...composer, from: event.target.value as MailboxId })}
+                  className="mt-1 w-full rounded-xl px-3 py-2 text-sm"
+                >
+                  {MAILBOX_IDS.map((id) => (
+                    <option key={id} value={id}>
+                      {MAILBOX_LABELS[id]} · {mailboxAddress(id)}
+                    </option>
+                  ))}
+                </select>
+              </label>
               <input
                 required
                 value={composer.to}
@@ -456,6 +508,12 @@ export function AdminMailbox() {
                 </p>
               )}
               {note && <p className="text-sm text-muted">{note}</p>}
+              {confirming && (
+                <p className="rounded-2xl bg-accent/10 px-3 py-2 text-sm text-foreground" role="status">
+                  Send from {mailboxAddress(composer.from)} to {composer.to}
+                  {composer.cc ? ` (cc ${composer.cc})` : ""}? Press Confirm send to send it.
+                </p>
+              )}
               <div className="flex flex-wrap gap-2">
                 <button
                   type="submit"
@@ -463,12 +521,19 @@ export function AdminMailbox() {
                   className="inline-flex h-10 items-center gap-2 rounded-xl bg-accent px-4 text-sm font-semibold text-background disabled:opacity-60"
                 >
                   {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                  Send
+                  {confirming ? "Confirm send" : "Send"}
                 </button>
                 <button type="button" disabled={busy} onClick={() => void submit("draft")} className="admin-btn">
                   Save draft
                 </button>
-                <button type="button" onClick={() => setComposer(null)} className="admin-btn text-muted">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (confirming) setConfirming(false);
+                    else setComposer(null);
+                  }}
+                  className="admin-btn text-muted"
+                >
                   Cancel
                 </button>
               </div>
@@ -484,6 +549,15 @@ export function AdminMailbox() {
                 <div>
                   <h3 className="font-display text-lg font-semibold text-heading">{selected.subject}</h3>
                   <p className="text-xs text-muted">{selected.participants.join(", ") || "No address yet"}</p>
+                  {selected.mailboxes && selected.mailboxes.length > 0 && (
+                    <p className="mt-1 flex flex-wrap gap-1">
+                      {selected.mailboxes.map((id) => (
+                        <span key={id} className="rounded-full bg-background/50 px-2 py-0.5 text-[10px] font-semibold text-muted">
+                          {id}@
+                        </span>
+                      ))}
+                    </p>
+                  )}
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <button type="button" className="admin-btn h-9" onClick={() => startReply("reply")}>
@@ -569,6 +643,14 @@ export function AdminMailbox() {
                 </div>
               )}
 
+              {!showImages && selected.messages.some((message) => (message.remoteImagesBlocked ?? 0) > 0) && (
+                <p className="rounded-2xl bg-background/50 px-3 py-2 text-xs text-muted">
+                  Remote images are blocked to stop tracking.{" "}
+                  <button type="button" className="text-accent underline" onClick={() => void openThread(selected.id, true)}>
+                    Load images
+                  </button>
+                </p>
+              )}
               <div className="max-h-80 space-y-3 overflow-y-auto">
                 {selected.messages.map((message) => (
                   <article

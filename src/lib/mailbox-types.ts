@@ -19,6 +19,8 @@ export type MailMessageView = {
   html?: string;
   createdAt: string;
   attachments: MailAttachmentView[];
+  /** Remote images removed from html until the reader loads them. */
+  remoteImagesBlocked?: number;
 };
 
 export type MailLeadLink = {
@@ -50,6 +52,8 @@ export type MailThreadSummary = {
   suggestedReply?: string;
   tags?: string[];
   messageCount: number;
+  /** Studio mailboxes this thread belongs to (hello, support, billing, admin). */
+  mailboxes?: string[];
 };
 
 export type MailThreadDetail = MailThreadSummary & {
@@ -61,7 +65,11 @@ export type MailThreadDetail = MailThreadSummary & {
   };
 };
 
-export type MailboxCounts = Record<MailFolder, number> & { unread: number };
+export type MailboxCounts = Record<MailFolder, number> & {
+  unread: number;
+  /** Unread inbox threads per studio mailbox. */
+  byMailbox?: Record<string, number>;
+};
 
 export type MailboxListResponse = {
   configured: boolean;

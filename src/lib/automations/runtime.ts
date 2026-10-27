@@ -1,4 +1,5 @@
 import { entryKey, type InputRow } from "@/lib/automations/inputs";
+import { applyOrgInputs, orgCompleteness, validateOrgInputs } from "@/lib/automations/org-fields";
 import { randomBytes, randomUUID } from "crypto";
 import { allocateMonthly, quoteBundle, type BillingInterval } from "@/automations/pricing";
 import { templateById } from "@/automations/templates/public";
@@ -9,7 +10,7 @@ import { buildAnalytics } from "@/lib/automations/analytics";
 import { buildActionItems } from "@/lib/automations/action-center";
 import { channelReadiness, deliver, rememberDeliveries } from "@/lib/automations/channels";
 import { SANDBOX_EMAIL } from "@/lib/automations/setup-guides";
-import { markChargePaid, recordReview, runEngine } from "@/lib/automations/engine";
+import { markChargePaid, recordReview, runEngine, withOrgInputs } from "@/lib/automations/engine";
 import { activateOnTrial, applyBundlePayment, endInstanceTrial, extendInstanceTrial, jobEntryKey, sendTrialWelcome, syncLedger } from "@/lib/automations/lifecycle";
 import { addAdminLog, addLog, instancesForEmail, loadAutomations, saveAutomations } from "@/lib/automations/store";
 import { extendTrialEnd, TRIAL_DAYS, trialDaysRemaining } from "@/lib/automations/trial";
@@ -119,10 +120,11 @@ export async function runDueJobs(origin: string): Promise<{ ran: number }> {
       if (booking) {
         const sent = await deliver({
           instance,
-          email: booking.email,
           phone: booking.phone,
-          subject: `Reminder — ${instance.businessName}`,
-          text: `Hello ${booking.name}, this is your ${job.label || ""} reminder for ${formatBookingWhen(booking.start)}.`,
+          ...withOrgInputs(
+            { instance },
+            { email: booking.email, subject: `Reminder — ${instance.businessName}`, text: `Hello ${booking.name}, this is your ${job.label || ""} reminder for ${formatBookingWhen(booking.start)}.` }
+          ),
           idempotencyKey: `automation-reminder/${job.id}`,
         });
         rememberDeliveries(doc, instance.id, sent, now);
@@ -549,6 +551,10 @@ export async function saveInstanceConfig(id: string, config: unknown, email?: st
       return { ...record, id: known.has(key) ? key : randomUUID() };
     });
   }
+  // Organization inputs change only through saveOrgInputs (validated, money in cents).
+  // A Setup save keeps whatever is stored, so older clients and the JSON editor cannot corrupt them.
+  if (instance.config && instance.config.org !== undefined) parsed.config.org = instance.config.org;
+  else delete parsed.config.org;
   instance.config = parsed.config;
   instance.inputsUpdatedAt = new Date().toISOString();
   instance.updatedAt = instance.inputsUpdatedAt;
@@ -556,6 +562,23 @@ export async function saveInstanceConfig(id: string, config: unknown, email?: st
   await syncLedger(doc, instance, origin || "https://thebeaconstudio.co.ke");
   await saveAutomations(doc);
   return { ok: true, message: "Saved." };
+}
+
+/** Save the client's Organization inputs after validating every field. */
+export async function saveOrgInputs(id: string, org: unknown, email?: string, origin = "") {
+  const doc = await loadAutomations();
+  const instance = doc.instances.find((item) => item.id === id);
+  if (!instance) return { ok: false, message: "Not found." };
+  if (email && instance.ownerEmail !== normalizeEmail(email)) return { ok: false, message: "Not your automation." };
+  const checked = validateOrgInputs(instance.templateId, org);
+  if (!checked.ok) return { ok: false, message: checked.message, errors: checked.errors };
+  instance.config = applyOrgInputs(instance.templateId, instance.config || {}, checked.org);
+  instance.updatedAt = new Date().toISOString();
+  const completeness = orgCompleteness(instance.templateId, checked.org);
+  addLog(doc, id, `Organization inputs updated (${completeness.percent}% complete).`);
+  await syncLedger(doc, instance, origin || "https://thebeaconstudio.co.ke");
+  await saveAutomations(doc);
+  return { ok: true, message: completeness.ready ? "Saved." : `Saved. Still needed to activate: ${completeness.requiredMissing.map((item) => item.label).join(", ")}.`, completeness };
 }
 
 export async function addInstanceNote(id: string, text: string, author: "client" | "studio", email?: string) {
@@ -618,10 +641,15 @@ export async function bookSlot(slug: string, input: { start: string; name: strin
   }
   const sent = await deliver({
     instance,
-    email: booking.email,
     phone: booking.phone,
-    subject: `Booked — ${instance.businessName}`,
-    text: `Hello ${booking.name}, you are booked for ${formatBookingWhen(start)}. We will remind you 24 hours and 1 hour before. Calendar: ${origin}/api/automations/bookings/${booking.id}/ics`,
+    ...withOrgInputs(
+      { instance },
+      {
+        email: booking.email,
+        subject: `Booked — ${instance.businessName}`,
+        text: `Hello ${booking.name}, you are booked for ${formatBookingWhen(start)}. We will remind you 24 hours and 1 hour before. Calendar: ${origin}/api/automations/bookings/${booking.id}/ics`,
+      }
+    ),
   });
   rememberDeliveries(doc, instance.id, sent);
   instance.stats.runs += 1;

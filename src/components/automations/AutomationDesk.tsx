@@ -15,6 +15,7 @@ import { parseResponseJson } from "@/lib/safe-json";
 import { HowItWorksCard } from "@/components/automations/HowItWorksCard";
 import { InputsEditor } from "@/components/automations/InputsEditor";
 import { ProgressRing } from "@/components/automations/Charts";
+import { OrgInputs } from "@/components/automations/OrgInputs";
 
 export type DeskInstance = {
   id: string;
@@ -276,6 +277,13 @@ function InstanceDetail({
       </div>
       <TrialLine instance={instance} onAct={onAct} />
       <HowItWorksCard templateId={instance.templateId} />
+      <OrgInputs
+        key={`${instance.id}-${JSON.stringify(instance.config?.org ?? null)}`}
+        templateId={instance.templateId}
+        config={instance.config || {}}
+        busy={busy}
+        onSave={(org) => onAct("org", { org })}
+      />
       <Checklist instance={instance} onAct={onAct} />
       <ShareLinks instance={instance} onAct={onAct} />
       <CaptureTools instance={instance} busy={busy} onAct={onAct} />

@@ -10,6 +10,8 @@
  *   4. runs the schedule        (moves that client's due jobs to "now", then POST /api/automations/tick)
  *   5. checks the results       (logs, Notify queue deliveries, portal metrics, admin Action Center)
  *   6. pauses and resumes it from the portal
+ * It also saves Organization inputs: wrong formats must be rejected, and the saved
+ * values (+254 phone, KES amounts, opt-out text) must reach messages and portal metrics.
  *
  * Safety: it starts its own `next start` with DATABASE_URL, RESEND_API_KEY, GROQ_API_KEY,
  * Africa's Talking, WhatsApp and Paystack keys removed, and a throwaway data directory.
@@ -22,6 +24,7 @@ import { cpSync, existsSync, mkdtempSync, readFileSync, rmSync, symlinkSync, wri
 import { tmpdir } from "os";
 import path from "path";
 import { TEMPLATE_DEFS } from "../src/automations/templates/public";
+import { ORG_INTERNAL_TEMPLATES, orgFieldsFor, type OrgField } from "../src/lib/automations/org-fields";
 
 type Json = Record<string, unknown>;
 type Doc = {
@@ -238,6 +241,74 @@ function addedRow(id: string): Json | null {
   }
 }
 
+const ORG_OPT_OUT = "Reply STOP to opt out.";
+
+/** A valid sample for each field type (money in KES, as a client types it). */
+function sampleOrg(field: OrgField): unknown {
+  switch (field.type) {
+    case "money":
+      return "1,500";
+    case "percent":
+      return String(Math.min(field.max ?? 100, 10));
+    case "integer":
+      return String(Math.max(field.min ?? 0, Math.min(field.max ?? 10, 3)));
+    case "date":
+      return soon(30);
+    case "time":
+      return "08:30";
+    case "phone":
+      return "0712 345 678";
+    case "email":
+      return owner("org");
+    case "url":
+      return "https://thebeaconstudio.co.ke/review";
+    case "select":
+      return field.options?.[0]?.value;
+    case "multiselect":
+      return [field.options?.[0]?.value];
+    case "boolean":
+      return true;
+    case "text":
+      return field.key === "mpesaPaybill" ? "522522" : field.key === "optOutText" ? ORG_OPT_OUT : "E2E value";
+    case "rows":
+      return [Object.fromEntries((field.columns || []).map((c) => [c.key, sampleOrg({ ...c, section: "custom" } as OrgField)]))];
+  }
+}
+
+async function orgInputs(ctx: Ctx) {
+  const fields = orgFieldsFor(ctx.id);
+  const save = (org: Json) => ctx.portal.call("POST", "/api/automations/portal", { action: "org", id: ctx.instanceId, org });
+  const firstMoney = fields.find((f) => f.type === "money" || f.type === "percent" || f.type === "integer");
+  const bads: [string, unknown][] = [
+    ["contactPhone", "12345"],
+    ["contactEmail", "not-an-email"],
+    ["website", "javascript:alert(1)"],
+    ["openTime", "25:00"],
+  ];
+  if (firstMoney) bads.push([firstMoney.key, "abc"]);
+  for (const [key, value] of bads) {
+    const res = await save({ values: { [key]: value } });
+    expect(ctx, res.status === 400 && res.json.ok === false && String(res.json.message || "").length > 5, `Organization input ${key}=${String(value)} was not rejected (${res.status})`);
+  }
+  const badCustom = await save({ values: {}, custom: [{ label: "Tier", type: "percent", value: "150" }] });
+  expect(ctx, badCustom.status === 400, "custom percent 150 was not rejected");
+
+  const values = Object.fromEntries(fields.filter((f) => f.required || ["contactPhone", "optOutText", "signOff"].includes(f.key)).map((f) => [f.key, sampleOrg(f)]));
+  values.contactPhone = "0712 345 678";
+  values.optOutText = ORG_OPT_OUT;
+  values.signOff = "Asante, the E2E team";
+  const ok = await save({ values, custom: [{ label: "Loyalty tier", type: "text", value: "Gold" }] });
+  expect(ctx, ok.status === 200 && ok.json.ok, `Organization inputs save failed: ${String(ok.json.message || "")}`);
+  expect(ctx, (ok.json.completeness as Json)?.ready === true, "required Organization inputs still reported missing");
+  const stored = (readDoc().instances.find((item) => item.id === ctx.instanceId)?.config as Json)?.org as { values: Json; custom: Json[] } | undefined;
+  expect(ctx, stored?.values.contactPhone === "+254712345678", `phone not normalised to +254 (${String(stored?.values.contactPhone)})`);
+  const money = fields.find((f) => f.type === "money" && values[f.key] !== undefined);
+  if (money) expect(ctx, stored?.values[money.key] === 150000, `money ${money.key} not stored as integer cents (${String(stored?.values[money.key])})`);
+  expect(ctx, stored?.custom.some((c) => c.id === "loyalty_tier" && c.value === "Gold"), "custom field not stored");
+  const snap = await ctx.portal.call("GET", "/api/automations/portal");
+  ctx.instance = ((snap.json.instances as Json[]) || [])[0] || ctx.instance;
+}
+
 function countFor(doc: Doc, key: keyof Doc, instanceId: string) {
   return (doc[key] as Json[]).filter((row) => row.instanceId === instanceId).length;
 }
@@ -273,6 +344,9 @@ async function runOne(id: string, admin: Client): Promise<{ id: string; ok: bool
   const before = readDoc();
   const jobsAfterSignup = countFor(before, "jobs", ctx.instanceId);
   const chargesAfterSignup = countFor(before, "charges", ctx.instanceId);
+
+  // 2b. Organization inputs: wrong formats are rejected, good values are normalised and stored
+  await orgInputs(ctx);
 
   // 3. client data entry
   const row = addedRow(id);
@@ -332,7 +406,15 @@ async function runOne(id: string, admin: Client): Promise<{ id: string; ok: bool
     expect(ctx, doc.jobs.some((j) => j.instanceId === ctx.instanceId && j.status === "due" && j.kind !== "renewal"), "next run not rescheduled");
   }
 
+  const customerMessages = deliveries.filter((d) => !String(d.to || "").startsWith("owner-"));
+  if (customerMessages.length && !ORG_INTERNAL_TEMPLATES.has(id)) {
+    expect(ctx, customerMessages.some((d) => String(d.text || "").includes(ORG_OPT_OUT)), "opt-out text from Organization inputs did not reach the customer message");
+    expect(ctx, customerMessages.some((d) => String(d.text || "").includes("+254712345678")), "contact phone (+254) from Organization inputs did not reach the message");
+  }
+
   const portal = await ctx.portal.call("GET", "/api/automations/portal");
+  const savedOrg = ((((portal.json.instances as Json[]) || [])[0]?.config as Json)?.org as Json) || {};
+  expect(ctx, (savedOrg.values as Json)?.contactPhone === "+254712345678", "portal does not return saved Organization inputs");
   const view = ((portal.json.instances as Json[]) || [])[0] || {};
   expect(ctx, Number((view.stats as Json)?.runs) > 0, "portal does not show runs");
   expect(ctx, ((portal.json.logs as Json[]) || []).length > 0, "portal shows no activity log");

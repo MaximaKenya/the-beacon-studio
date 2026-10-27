@@ -106,3 +106,26 @@ Opt-out (`/api/automations/trial-optout`) stops the digests only. Reminders and 
 ## Revenue overview (admin)
 
 Admin → Revenue lists trials, referrals, add-on and partner requests, open invoices, care subscriptions, founders locks, Notify queue counts per channel, and template downloads. Admin → Partners lists partner and partnership requests. From the portal, clients see their price lock, pro add-ons, and WhatsApp/SMS queue placeholders, with a link to `/add-ons`.
+
+## Organization inputs
+
+Every automation (all 29) has an **Organization inputs** panel in the portal and in Admin → Automations. It covers commissions & rates, discounts & promotions, payment terms, thresholds & stock levels, working hours & holidays, contacts & recipients, branding & tone, compliance (opt-out text) and custom fields.
+
+- **One definition file.** `src/lib/automations/org-fields.ts` lists the typed fields for each automation: common fields plus fields specific to that automation. Types are money (KES, stored as integer cents), percent, integer, date, time, phone (Kenyan, stored as `+254…`), email, URL, select, multi-select, boolean, text with a max length, and lists of rows.
+- **Server validation.** The portal action `org` (`saveOrgInputs`) rejects wrong formats with a message naming the field, and drops keys it does not know. Clients can add up to 20 custom fields, each with its own type, stored per instance.
+- **Storage.** Inputs are saved in `instance.config.org = { values, custom, updatedAt }`. Older configs keep working, and fields with a `legacyKey` (for example `lowScoreMax`, `recallDays`, `leadDays`, `googleReviewUrl`, `notifyEmail`) read from and write back to the original key. A Setup or Inputs save never overwrites `org`.
+- **Engine.** Every outgoing message can use `{{key}}` placeholders, such as `{{lateFee}}` (shows "KES 500"), `{{lateFeeKes}}` (shows 500), `{{commission}}` or a custom field id.
+- **Customer footer.** Customer messages get the client's paybill, late-fee and discount terms, sign-off, contact details and opt-out text. Owner digests do not.
+- **Engine rules.**
+  - Low stock uses each item's own level first, then the per-item reorder levels, then the default level.
+  - Lead reply passes the SLA hours and minimum budget to the qualifier.
+- **Portal.** A completeness meter shows how many fields are filled and which required fields are still missing before activation. A "Your numbers" chart plots the numeric values.
+- **Tests.** `org-fields.test.ts` covers the validators. `scripts/e2e-automations.ts` checks that wrong formats get a 400, that saved values are normalised, and that the opt-out text and the +254 contact reach customer messages.
+
+## Mail tab (admin)
+
+Admin → Mail is a mailbox fed by the Resend inbound webhook.
+
+- **Folders.** Mail is labelled by address (hello@, support@, billing@ and admin@; other or plus-tagged local parts count as hello@). Folders are inbox, sent, drafts and archive, with search, read/unread and archive.
+- **Sending.** You can compose, reply or forward from a chosen address. Each send needs a confirmation step, a same-origin Origin or Referer header and the admin session. Sends are limited to 20 per 10 minutes per session, with caps on size, recipients and text length.
+- **Content.** HTML is sanitised when it arrives, and remote images stay blocked until you choose Load images.
