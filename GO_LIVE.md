@@ -289,3 +289,16 @@ Beacon has no paybill: the Daraja STK routes were removed. Stripe has been remov
 - **Demo sandbox:** Booking date is now relative and shown in Nairobi time. Previews link to the live site, demo phone numbers are fake (2547000000NN) and the clinic-recall preview works. New "create demo client" in the admin, plus a read-only `/portal/demo` link.
 - **Admin:** Clearer tab names (Requests, Automation leads, Demo clients, Activity log). Requests, Partners, Referrals and Invoices tabs now have badges, and the top nav shows an Action Center badge.
 - **Todo (Max):** set `ADMIN_SESSION_SECRET`, `PORTAL_SECRET` (the code falls back to a weak dev secret if both it and `ADMIN_PASSWORD` are unset). Purge `data/*.json` from git history. Consider a full script CSP.
+
+## Messaging hub (v0, queue-only)
+
+See `docs/MESSAGING_HUB.md`. Nothing is sent until providers are chosen.
+
+Hub (Beacon, Heroku + Vercel):
+- `HUB_APP_KEYS` — JSON `{app: {key, secret, callbackUrl}}`, **or** per app `HUB_KEY_<APP>`, `HUB_SECRET_<APP>`, `HUB_CALLBACK_<APP>` (APP = CADENCEAPP, CONFIRENT, LOOKFINESSE, CONFILEARN, CONVORIA, CONFITRADE, BEACON_STUDIO). Keys can also be generated in Admin › Messaging hub.
+- `HUB_SENDING_ENABLED` — leave unset/`false` until a provider adapter is implemented.
+- `HUB_SMS_PROVIDER`, `HUB_WHATSAPP_PROVIDER` — adapter names (stubs today).
+- `HUB_INBOUND_TOKEN` — shared token for the stub inbound STOP route.
+- `CRON_SECRET` — schedule `/api/hub/tick` (dispatch + callback retries) every 5 minutes.
+
+Each sister app: `BEACON_HUB_URL=https://thebeaconstudio.co.ke`, `BEACON_HUB_KEY`, `BEACON_HUB_SECRET`.
