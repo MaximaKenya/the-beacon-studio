@@ -241,3 +241,12 @@ curl -X POST https://thebeaconstudio.co.ke/api/automations/tick -H "Authorizatio
 - Fixed-price packages live in `site.ts` (`group: "package"`). Payment uses the 30% deposit or invoice path. Paystack stays off until `PAYSTACK_SECRET_KEY` is set.
 - Referrals: `?ref=CODE` sets the `bs_ref` cookie (60 days). New client gets +30 trial days; the referrer earns 1 free month after the first paid month. Data lives in `referrals.json`. Terms are at `/referrals`.
 - Trial opt-out links are signed with `PORTAL_SECRET` (falls back to `ADMIN_PASSWORD`). Set one of them before go-live.
+
+## Revenue batch 2 (care plans, add-ons, partners, templates)
+
+- Pages: `/add-ons`, `/partners`, `/partnerships`, `/templates`, `/case-studies` (placeholder, not in sitemap).
+- Care plans and the 15% annual discount bill by bank invoice until `PAYSTACK_SECRET_KEY` is set. Admin issues care invoices by hand in Admin → Revenue. There is no monthly cron yet.
+- Founders price lock: set per client in Admin → Revenue. It shows in the portal and on invoices.
+- WhatsApp and M-Pesa add-ons are request-only. Messages stay queued in Notify until `WHATSAPP_TOKEN`/`WHATSAPP_PHONE_ID` or Africa's Talking `AT_*` keys exist.
+- Request alerts go to `ADMIN_EMAIL` through Resend when `RESEND_API_KEY` is set. They always land in the admin mailbox.
+- Placeholder figures to confirm in `src/data/site.ts`: WhatsApp tier prices and allowances, 20% markup, pro add-on prices, partner discounts.

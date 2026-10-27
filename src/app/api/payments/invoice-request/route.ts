@@ -1,6 +1,7 @@
 import { randomUUID } from "crypto";
 import { NextResponse } from "next/server";
 import { siteConfig } from "@/data/site";
+import { carePlanById } from "@/lib/revenue-pricing";
 import { upsertClient } from "@/lib/clients";
 import { recordSiteForm } from "@/lib/mailbox";
 import { computeCheckoutAmount, createPayment } from "@/lib/payments";
@@ -30,7 +31,14 @@ export async function POST(request: Request) {
     const mode = body.mode === "invoice" ? "invoice" : "deposit";
     const name = typeof body.name === "string" ? body.name.trim() : "";
     const email = typeof body.email === "string" ? normalizeEmail(body.email) : "";
-    const note = typeof body.note === "string" ? body.note.trim().slice(0, 2000) : "";
+    const care = carePlanById(body.carePlan);
+    const yearly = body.billing === "annual";
+    const extras = [
+      care ? `Care plan: ${care.name} ($${care.monthlyUsd}/month, recurring invoice).` : "",
+      yearly ? `Billing: yearly (${siteConfig.automationCatalog.annualDiscountPercent}% off).` : "",
+    ].filter(Boolean);
+    const userNote = typeof body.note === "string" ? body.note.trim().slice(0, 2000) : "";
+    const note = [userNote, ...extras].filter(Boolean).join(" ");
     const projectId = typeof body.projectId === "string" ? body.projectId : undefined;
 
     if (!name || !isValidEmail(email)) {

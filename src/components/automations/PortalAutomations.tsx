@@ -16,6 +16,9 @@ import type { ChannelReadiness } from "@/lib/automations/channels";
 import { formatNairobi, nairobiDateKey } from "@/lib/time";
 import { formatKes } from "@/lib/fx";
 import { parseResponseJson } from "@/lib/safe-json";
+import type { QueueCounts } from "@/lib/notify-usage";
+import { foundersLock as foundersTerms, proAddons, whatsappAddon } from "@/data/site";
+import { WorksWithApps } from "@/components/revenue/WorksWithApps";
 
 type Snapshot = {
   instances: DeskInstance[];
@@ -27,6 +30,8 @@ type Snapshot = {
   trial?: { endsAt: string; days: number; ended: boolean; stage?: string; stageLabel?: string; bonusDays?: number } | null;
   referral?: { code: string; link: string; pending: number; earned: number; redeemed: number; expired: number } | null;
   paystack?: boolean;
+  foundersLock?: { lockedAt: string; until: string; note?: string } | null;
+  usage?: { whatsapp: QueueCounts; sms: QueueCounts };
   invoices?: { id: string; status: string; amount: number; currency: string; tierName: string }[];
 };
 
@@ -141,6 +146,10 @@ export function PortalAutomations() {
           {data.channels && <ChannelStatus channels={data.channels} />}
 
           {data.referral && <ReferralCard referral={data.referral} />}
+
+          <UpgradesCard lock={data.foundersLock || null} usage={data.usage} />
+
+          <WorksWithApps />
 
           <div className="flex flex-wrap items-center gap-2">
             {([7, 30, 90] as const).map((item) => (
@@ -312,6 +321,40 @@ function ReferralCard({ referral }: { referral: NonNullable<Snapshot["referral"]
       <p className="mt-3 text-xs text-muted">
         <Link href="/referrals" className="text-accent">Terms</Link>: new clients only, no self-referrals, credits expire after 12 months, no cash payouts.
       </p>
+    </div>
+  );
+}
+
+function UpgradesCard({ lock, usage }: { lock: Snapshot["foundersLock"]; usage?: Snapshot["usage"] }) {
+  return (
+    <div className="sleek-card rounded-2xl p-5">
+      <h3 className="font-display text-base font-semibold text-heading">Upgrades</h3>
+      {lock && (
+        <p className="mt-2 rounded-xl bg-accent/10 px-3 py-2 text-sm text-foreground">
+          {foundersTerms.title}: your price is kept until {formatNairobi(lock.until)}.
+        </p>
+      )}
+      <ul className="mt-3 grid gap-2 sm:grid-cols-2">
+        {proAddons.slice(0, 4).map((addon) => (
+          <li key={addon.id} className="text-sm text-muted">
+            <span className="font-semibold text-foreground">{addon.name}</span> · {formatKes(addon.priceKes)} {addon.unit}
+          </li>
+        ))}
+      </ul>
+      <div className="mt-3 grid grid-cols-2 gap-3 text-xs text-muted">
+        <div>
+          <p className="font-semibold text-foreground">WhatsApp</p>
+          <p>{whatsappAddon.status}.</p>
+          <p>Queued {usage?.whatsapp.waiting ?? 0} · sent {usage?.whatsapp.sent ?? 0}</p>
+        </div>
+        <div>
+          <p className="font-semibold text-foreground">SMS</p>
+          <p>Queued {usage?.sms.waiting ?? 0} · sent {usage?.sms.sent ?? 0}</p>
+        </div>
+      </div>
+      <Link href="/add-ons" className="mt-4 inline-flex h-10 items-center justify-center rounded-2xl bg-accent px-4 text-sm font-semibold text-background">
+        Request invoice for an add-on
+      </Link>
     </div>
   );
 }

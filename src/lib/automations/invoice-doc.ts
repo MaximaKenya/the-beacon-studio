@@ -31,10 +31,12 @@ export function studioInvoice(input: {
   status: string;
   due?: string;
   trial?: boolean;
+  /** Founders price lock end date (ISO). Adds a line to the note. */
+  priceLockUntil?: string;
 }): InvoiceView {
   const lines: InvoiceLine[] = [{ label: input.tierName || "Automations", amountKes: input.amountKes }];
   if (input.trial) lines.push({ label: `Trial discount · ${TRIAL_DAYS} days free`, amountKes: 0 });
-  return {
+  const view: InvoiceView = {
     number: `BS-${input.id.replace(/-/g, "").slice(0, 8).toUpperCase()}`,
     title: input.status === "success" ? "Receipt" : "Invoice",
     businessName: input.businessName,
@@ -49,6 +51,10 @@ export function studioInvoice(input: {
       : "Thank you.",
     status: input.status === "success" ? "Paid" : "Awaiting payment",
   };
+  if (input.priceLockUntil) {
+    view.note = `${view.note} Founders price lock: this price is kept until ${formatNairobiDate(input.priceLockUntil)}.`;
+  }
+  return view;
 }
 
 export function chargeInvoice(input: {

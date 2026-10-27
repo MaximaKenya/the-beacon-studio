@@ -5,6 +5,7 @@ import { loadAutomations } from "@/lib/automations/store";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { listPayments } from "@/lib/payments";
 import { getPortalSession } from "@/lib/portal-auth";
+import { foundersLockFor } from "@/lib/revenue-requests";
 
 export const runtime = "nodejs";
 
@@ -14,7 +15,7 @@ export async function GET(request: Request, { params }: Params) {
   const { id } = await params;
   const payments = await listPayments();
   const payment = payments.find((item) => item.id === id);
-  if (!payment || (payment.tierId !== "automation-bundle" && !payment.automationInstanceIds?.length)) {
+  if (!payment || (payment.tierId !== "automation-bundle" && !payment.tierId.startsWith("care-") && !payment.automationInstanceIds?.length)) {
     return NextResponse.json({ error: "Invoice not found" }, { status: 404 });
   }
   const url = new URL(request.url);
@@ -37,6 +38,7 @@ export async function GET(request: Request, { params }: Params) {
     status: payment.status,
     due: instances[0]?.trial?.endsAt,
     trial,
+    priceLockUntil: payment.payerEmail ? (await foundersLockFor(payment.payerEmail))?.until : undefined,
   });
   const share = shareToken("invoice", id);
   const self = `${url.origin}/api/automations/invoice/${id}?t=${share}`;
