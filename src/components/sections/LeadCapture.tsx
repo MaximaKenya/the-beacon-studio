@@ -226,6 +226,7 @@ export function LeadCapture() {
                   Send
                 </button>
               )}
+            <p className="text-[11px] leading-relaxed text-muted">We use your details only to reply. <a href="/privacy" className="text-accent">Privacy policy</a></p>
             </form>
           )}
         </div>

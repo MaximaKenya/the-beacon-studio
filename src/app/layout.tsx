@@ -7,6 +7,7 @@ import { Footer } from "@/components/layout/Footer";
 import dynamic from "next/dynamic";
 import { OrganizationJsonLd } from "@/components/seo/OrganizationJsonLd";
 import { Providers } from "@/providers/Providers";
+import { headers } from "next/headers";
 import "./globals.css";
 
 const WaveField = dynamic(() => import("@/components/ui/WaveField").then((mod) => mod.WaveField), {
@@ -70,11 +71,13 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Reading headers renders per request so Next can stamp the CSP nonce on its scripts.
+  await headers();
   return (
     <html
       lang="en"

@@ -261,6 +261,7 @@ export function NewsletterPopup() {
                       siteConfig.newsletter.ctaText
                     )}
                   </button>
+            <p className="text-[11px] leading-relaxed text-muted">We use your details only to reply. <a href="/privacy" className="text-accent">Privacy policy</a></p>
                 </form>
 
                 <label className="mt-4 flex cursor-pointer items-center gap-2 text-xs text-muted">

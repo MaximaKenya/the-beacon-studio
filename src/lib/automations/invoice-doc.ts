@@ -93,7 +93,7 @@ export function invoiceText(view: InvoiceView): string[] {
     BRAND,
     head.contactStrip,
     `Billing: ${mailboxAddress("billing")}`,
-    head.registration + (head.kraPin ? ` · ${head.kraPin}` : ""),
+    ...([head.registration, head.kraPin].filter(Boolean).length ? [[head.registration, head.kraPin].filter(Boolean).join(" · ")] : []),
     "",
     view.title,
     `Number ${view.number}`,

@@ -176,6 +176,8 @@ export function Footer() {
                 { href: "/industries/retail", label: "Retail" },
                 { href: "/industries/restaurants", label: "Restaurants" },
                 { href: "/portal/login", label: "Client portal" },
+                { href: "/privacy", label: "Privacy" },
+                { href: "/terms", label: "Terms" },
               ].map((link) => (
                 <li key={link.href}>
                   <a

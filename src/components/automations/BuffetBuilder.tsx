@@ -257,7 +257,7 @@ export function BuffetBuilder({ templates, initialPack }: { templates: PricedTem
               <button type="button" disabled={!!loading} onClick={() => void checkout("trial")} className="inline-flex h-11 w-full items-center justify-center rounded-2xl bg-accent text-sm font-semibold text-background disabled:opacity-50">
                 {loading === "trial" ? "Starting…" : `Start ${trialDays} days free`}
               </button>
-              <p className="text-center text-xs text-muted">Free for {trialDays} days, no card needed.</p>
+              <p className="text-center text-xs text-muted">Free for {trialDays} days, no card needed. See our <Link href="/privacy" className="text-accent">privacy policy</Link>.</p>
               {paystackOn && (
                 <button type="button" disabled={!!loading} onClick={() => void checkout("paystack")} className="inline-flex h-11 w-full items-center justify-center rounded-2xl bg-surface-elevated/80 text-sm font-semibold text-foreground disabled:opacity-50">
                   {loading === "paystack" ? "Starting Paystack…" : "Pay with Paystack"}

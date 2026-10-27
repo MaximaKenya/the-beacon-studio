@@ -474,7 +474,7 @@ export const siteConfig = {
   seo: {
     siteUrl: "https://thebeaconstudio.co.ke",
     ogImage: "/opengraph-image",
-    twitterHandle: "@yourusername",
+    twitterHandle: "" as string,
     title: "The Beacon Studio — Products and custom software",
     description:
       "Nairobi studio for AI automation, custom software, and managed IT. ConfiRent is live. CadenceApp is in early access.",
@@ -527,11 +527,10 @@ export const siteConfig = {
   stats: [] as Stat[],
 
   social: [
-    {
-      name: "LinkedIn",
-      href: "https://linkedin.com/in/yourusername",
-      icon: "linkedin" as const,
-    },
+    // LinkedIn is added from NEXT_PUBLIC_BRAND_LINKEDIN_URL / BRAND_LINKEDIN_URL when set.
+    ...(process.env.NEXT_PUBLIC_BRAND_LINKEDIN_URL || process.env.BRAND_LINKEDIN_URL
+      ? [{ name: "LinkedIn", href: String(process.env.NEXT_PUBLIC_BRAND_LINKEDIN_URL || process.env.BRAND_LINKEDIN_URL), icon: "linkedin" as const }]
+      : []),
     {
       name: "Email",
       href: "mailto:hello@thebeaconstudio.co.ke",

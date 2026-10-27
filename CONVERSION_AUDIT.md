@@ -34,4 +34,4 @@ Already in the product, so not rebuilt: weekday slot picker on `/book` and in th
 
 - A fake logo wall or invented testimonials.
 - A ticking countdown on the free audit.
-- Publishing the placeholder LinkedIn URL. It is still `yourusername` and stays off the site and the email footer.
+- Publishing the placeholder LinkedIn URL. It has been removed; LinkedIn stays off the site and the email footer.

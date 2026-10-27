@@ -114,7 +114,7 @@ Import existing JSON once:
 npm run db:migrate-files
 ```
 
-`GET /api/health` reports `"storage": "postgres"` or `"storage": "file"`. The admin screen shows the same indicator.
+`GET /api/health` (admin session or `Authorization: Bearer $CRON_SECRET`; public callers get only `{"ok":true}`) reports `"storage": "postgres"` or `"storage": "file"`. The admin screen shows the same indicator.
 
 ---
 
