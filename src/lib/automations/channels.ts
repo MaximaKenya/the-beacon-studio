@@ -1,5 +1,6 @@
 import { randomUUID } from "crypto";
 import { renderBrandEmail, publicSiteUrl } from "@/lib/brand-email";
+import { clientBrandFromConfig, withSmsSignoff, withWhatsappSignoff, type ClientBrand } from "@/lib/brand-comms";
 import { groqConfigured } from "@/lib/automations/groq";
 import { planChannels, type OutboundChannel } from "@/lib/automations/delivery-plan";
 import { sendSms, sendWhatsApp, smsConfigured, whatsAppConfigured } from "@/lib/notify";
@@ -48,14 +49,27 @@ export type DeliverResult = {
   records: DeliveryRecord[];
 };
 
-function letter(subject: string, text: string): { html: string; text: string } {
+function letter(subject: string, text: string, client?: ClientBrand): { html: string; text: string } {
   const origin = publicSiteUrl();
   return renderBrandEmail({
     heading: subject,
     greeting: "Hello,",
     paragraphs: text.split(/\n{2,}/).filter((part) => part.trim()),
-    actions: [{ label: "Open your portal", href: `${origin}/portal` }],
+    // Messages to a client's own customers carry the client's branding and a small
+    // "Powered by The Beacon Studio" line. Studio tests to the owner keep the portal link.
+    ...(client ? { client } : { actions: [{ label: "Open your portal", href: `${origin}/portal` }] }),
   });
+}
+
+/** The client's branding for one automation (name from the instance; optional brand* config keys). */
+export function instanceBrand(instance: AutomationInstance): ClientBrand {
+  return clientBrandFromConfig(instance.businessName, instance.config || {});
+}
+
+/** SMS / WhatsApp text with the client's regards line. Idempotent. */
+export function brandPhoneText(channel: "sms" | "whatsapp", text: string, instance: AutomationInstance): string {
+  const client = instanceBrand(instance);
+  return channel === "sms" ? withSmsSignoff(text, { client }) : withWhatsappSignoff(text, { client });
 }
 
 export async function deliver(input: {
@@ -137,7 +151,7 @@ export async function deliver(input: {
         records.push({ channel: "email", status: "failed", to: plan.email, subject: input.subject, text: input.text, note: "RESEND_API_KEY is not set." });
         return;
       }
-      const branded = letter(input.subject, input.text);
+      const branded = letter(input.subject, input.text, instanceBrand(input.instance));
       const result = await sendResendEmail({
         to: plan.email,
         subject: input.subject,
@@ -152,7 +166,7 @@ export async function deliver(input: {
       return;
     }
     const sender = channel === "sms" ? sendSms : sendWhatsApp;
-    const result = await sender(plan.phone, input.text);
+    const result = await sender(plan.phone, brandPhoneText(channel, input.text, input.instance));
     const note = result.sent ? `${channel === "sms" ? "SMS" : "WhatsApp"} sent.` : result.detail || `${channel} not sent.`;
     notes.push(note);
     if (channel === "sms") sms = result.sent;
