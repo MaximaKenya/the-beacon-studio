@@ -10,6 +10,7 @@ import {
   type DeskLog,
 } from "@/components/automations/AutomationDesk";
 import { DemoSandbox } from "@/components/automations/DemoSandbox";
+import { SANDBOX_BUSINESS } from "@/lib/automations/setup-guides";
 import { AdminRevenue } from "@/components/revenue/AdminRevenue";
 import type { ChannelReadiness } from "@/lib/automations/channels";
 import { formatNairobi } from "@/lib/time";
@@ -52,6 +53,7 @@ type AdminView = {
   demos: number;
   clients: ClientView[];
   sandbox?: { instances: DeskInstance[] };
+  demoClients?: { email: string; name: string; automations: number }[];
   channels?: ChannelReadiness;
   actions?: ActionItem[];
   ops?: { lastTickAt?: string; lastTickOk?: boolean; lastTickError?: string };
@@ -101,10 +103,19 @@ export function AdminAutomations({ onAttention }: { onAttention?: (count: number
   const [email, setEmail] = useState("");
   const [menu, setMenu] = useState<(typeof MENUS)[number]["id"]>("now");
   const [notice, setNotice] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
-    const res = await fetch("/api/admin/automations");
-    if (!res.ok) return;
+    const res = await fetch("/api/admin/automations", { cache: "no-store" });
+    if (!res.ok) {
+      setLoadError(
+        res.status === 401
+          ? "Your admin session expired. Log out and sign in again."
+          : `The action center could not load (HTTP ${res.status}).`
+      );
+      return;
+    }
+    setLoadError(null);
     const next = await parseResponseJson<AdminView>(res, empty);
     setData(next);
     const rev = await fetch("/api/admin/revenue");
@@ -159,7 +170,9 @@ export function AdminAutomations({ onAttention }: { onAttention?: (count: number
         {total > 0 && <span className="rounded-full bg-accent px-3 py-1 text-xs font-semibold text-background">{total} open</span>}
       </div>
       {!data ? (
-        <p className="text-sm text-muted">Loading the action center…</p>
+        <p className="text-sm text-muted" role={loadError ? "alert" : undefined}>
+          {loadError || "Loading the action center…"}
+        </p>
       ) : (
         <div className="grid gap-4 lg:grid-cols-[220px_minmax(0,1fr)]">
           <nav aria-label="Automation admin" className="flex gap-2 overflow-auto lg:flex-col">
@@ -183,6 +196,17 @@ export function AdminAutomations({ onAttention }: { onAttention?: (count: number
           </nav>
           <div className="min-w-0 space-y-4">
             {notice && <p className="text-sm text-muted">{notice}</p>}
+            {menu === "now" && (
+              <div className={`sleek-card rounded-2xl p-4 ${tickOld ? "ring-2 ring-accent" : ""}`} data-testid="tick-health">
+                <p className="text-sm font-medium text-foreground">
+                  Tick health: {tickOld ? (data.ops?.lastTickAt ? "late" : "no successful tick yet") : "healthy"}
+                </p>
+                <p className="mt-1 text-sm text-muted">
+                  {data.ops?.lastTickAt ? `Last success ${formatNairobi(data.ops.lastTickAt)}.` : "The hourly tick has not succeeded yet."}
+                  {tickOld ? " See “Scheduler needs a look” below." : ""}
+                </p>
+              </div>
+            )}
             {menu === "now" && (
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 <Summary label="Active" value={String(data.active)} />
@@ -281,6 +305,9 @@ export function AdminAutomations({ onAttention }: { onAttention?: (count: number
               </div>
             )}
             {menu === "now" && visible.length === 0 && <p className="text-sm text-muted">Nothing is waiting. The hourly tick keeps going.</p>}
+            {menu === "now" && (
+              <DemoClients data={data} compact onShowAll={() => setMenu("test")} onChanged={() => void load()} />
+            )}
             {menu === "invoices" && (
               <div className="space-y-3">
                 {(data.invoices || []).length === 0 && <p className="text-sm text-muted">No invoices are waiting.</p>}
@@ -342,11 +369,7 @@ export function AdminAutomations({ onAttention }: { onAttention?: (count: number
                 <p className="text-sm text-muted">
                   Sandbox tools send only to you when you choose “send to me”. Reset demo restores the sample business. It does not message real customers.
                 </p>
-                {data.sandbox && data.sandbox.instances.length > 0 ? (
-                  <DemoSandbox instances={data.sandbox.instances} onChanged={() => void load()} />
-                ) : (
-                  <p className="text-sm text-muted">The demo sandbox loads on the next refresh.</p>
-                )}
+                <DemoClients data={data} onChanged={() => void load()} />
               </div>
             )}
             {menu === "log" && (
@@ -366,6 +389,45 @@ export function AdminAutomations({ onAttention }: { onAttention?: (count: number
           </div>
         </div>
       )}
+    </section>
+  );
+}
+
+function DemoClients({
+  data,
+  compact,
+  onShowAll,
+  onChanged,
+}: {
+  data: AdminView;
+  compact?: boolean;
+  onShowAll?: () => void;
+  onChanged: () => void;
+}) {
+  const instances = data.sandbox?.instances || [];
+  const named = data.demoClients || [];
+  return (
+    <section id="demo-clients" aria-labelledby="demo-clients-title" className="space-y-3 pt-2">
+      <div className="flex flex-wrap items-end justify-between gap-2">
+        <div>
+          <h3 id="demo-clients-title" className="font-display text-lg font-semibold text-heading">
+            Demo clients
+          </h3>
+          <p className="text-sm text-muted">
+            {SANDBOX_BUSINESS} ({instances.length} automations)
+            {named.length > 0 ? ` · ${named.map((item) => `${item.name} (${item.automations})`).join(" · ")}` : ""}. Sample data only.
+          </p>
+        </div>
+        {compact && onShowAll && instances.length > 3 && (
+          <button type="button" className="admin-btn" onClick={onShowAll}>
+            All {instances.length} demo automations
+          </button>
+        )}
+      </div>
+      {instances.length === 0 && (
+        <p className="text-sm text-muted">{SANDBOX_BUSINESS} has no automations yet. Reset demo seeds it again.</p>
+      )}
+      <DemoSandbox instances={compact ? instances.slice(0, 3) : instances} onChanged={onChanged} />
     </section>
   );
 }

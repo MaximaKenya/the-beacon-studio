@@ -376,6 +376,18 @@ export async function portalSnapshot(email: string, includeDemo = false) {
   };
 }
 
+/** Named demo clients (created with "Create demo"), grouped by owner. Jamii Traders is the sandbox. */
+export function namedDemoClients(instances: AutomationInstance[]): { email: string; name: string; automations: number }[] {
+  const map = new Map<string, { email: string; name: string; automations: number }>();
+  for (const item of instances) {
+    if (!item.demo || item.ownerEmail === SANDBOX_EMAIL) continue;
+    const row = map.get(item.ownerEmail) || { email: item.ownerEmail, name: item.businessName || item.ownerName || item.ownerEmail, automations: 0 };
+    row.automations += 1;
+    map.set(item.ownerEmail, row);
+  }
+  return [...map.values()];
+}
+
 export async function adminSnapshot() {
   const doc = await loadAutomations();
   const live = doc.instances.filter((item) => !item.demo);
@@ -427,6 +439,7 @@ export async function adminSnapshot() {
     channels,
     clients,
     sandbox: snapshotFor(doc, doc.instances.filter((item) => item.ownerEmail === SANDBOX_EMAIL)),
+    demoClients: namedDemoClients(doc.instances),
     actions,
     ops: doc.ops || {},
     adminLog: (doc.adminLog || []).slice(-60).reverse(),

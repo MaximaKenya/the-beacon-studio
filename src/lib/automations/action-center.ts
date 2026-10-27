@@ -49,6 +49,10 @@ export function buildActionItems(input: {
 }): ActionItem[] {
   const now = input.now ?? new Date();
   const live = input.instances.filter((item) => !item.demo);
+  // Demo clients (Jamii Traders, named demos) use sample leads and jobs. They never need the studio.
+  const demoIds = new Set(input.instances.filter((item) => item.demo).map((item) => item.id));
+  const isLive = (row: { instanceId: string }) => !demoIds.has(row.instanceId);
+  input = { ...input, leads: input.leads.filter(isLive), jobs: input.jobs.filter(isLive), charges: input.charges.filter(isLive) };
   const items: ActionItem[] = [];
 
   const fresh = live.filter((item) => {
