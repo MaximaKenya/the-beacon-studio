@@ -101,7 +101,7 @@ Section: /#pricing
 - Default deposit: ${depositPct}% of tier floor
 - Primary: Paystack (KES M-Pesa or card, USD card when the account allows it). Prices display in USD with a KES equivalent at checkout.
 - Bank transfer / invoice requests are stored for the studio.
-- Stripe and Daraja STK stay available only when their keys are set.
+- Daraja M-Pesa STK stays available only when its keys are set.
 
 ## Ways of working
 ${siteConfig.engagementModels

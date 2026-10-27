@@ -137,7 +137,7 @@ export async function POST(request: Request) {
           message:
             err instanceof Error
               ? err.message
-              : "M-Pesa request failed. Book a call or try Stripe.",
+              : "M-Pesa request failed. Book a call or pay with Paystack.",
           fallbacks: {
             mailto: `mailto:${siteConfig.email}`,
             book: "#book",

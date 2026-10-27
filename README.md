@@ -40,7 +40,7 @@ Public products: **ConfiRent** (live, soft launch) → **CadenceApp** (beta / ea
 cd c:\Users\MAXIMILLIAN\portfolio
 npm install
 cp .env.example .env.local
-# Edit .env.local: ADMIN_PASSWORD, optional OPENAI_*, Stripe, M-Pesa
+# Edit .env.local: ADMIN_PASSWORD, optional OPENAI_*, Paystack, M-Pesa
 # Edit src/data/site.ts: phone, phoneDisplay, email
 npm run dev
 ```
@@ -69,23 +69,7 @@ phoneDisplay: "0706 397 373", // UI
 
 ## Deposits (30%)
 
-Custom software deposits are **`payments.depositPercent = 30`**. That is industry-fair (typical studio range 25–40%): enough to reserve capacity and cover discovery/kickoff without full prepay. Paystack is the primary checkout and charges **tier.fromAmount × 30%** (USD on the page, KES equivalent at checkout). Stripe and Daraja stay hidden unless their keys are set. See `GO_LIVE.md`.
-
-## Stripe direct pay
-
-1. Create products/prices in Stripe Dashboard (or rely on ad-hoc `price_data` amounts = 30% deposits).
-2. Set in `.env.local`:
-
-```
-STRIPE_SECRET_KEY=sk_test_...
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...
-STRIPE_PRICE_SPRINT_DEPOSIT=price_...      # optional — must match 30% of floor
-STRIPE_PRICE_PRODUCT_DEPOSIT=price_...
-STRIPE_PRICE_RETAINER_DEPOSIT=price_...
-```
-
-3. UI: **Pay deposit · Stripe** / **Pay with M-Pesa** on pricing cards.
-4. API: `POST /api/payments/checkout` with `{ tierId, mode: "deposit" | "invoice" }`.
+Custom software deposits are **`payments.depositPercent = 30`**. That is industry-fair (typical studio range 25–40%): enough to reserve capacity and cover discovery/kickoff without full prepay. Paystack is the primary checkout and charges **tier.fromAmount × 30%** (USD on the page, KES equivalent at checkout). Daraja stays hidden unless its keys are set. Stripe has been removed. See `GO_LIVE.md`.
 
 ## M-Pesa Daraja STK Push
 
@@ -173,7 +157,7 @@ Email + OTP  → data/portal-codes.json (15 min) → same cookie session
 | Type | When | Filename |
 |------|------|----------|
 | **Quotation** | After intake (and admin “Send quotation”) | `Beacon-Studio-Quotation-{client}-{YYYYMMDD}.pdf` |
-| **Receipt** | Payment success (M-Pesa callback, Stripe webhook, or admin mark-paid) | `Beacon-Studio-Receipt-{ref}-{YYYYMMDD}.pdf` |
+| **Receipt** | Payment success (Paystack webhook, M-Pesa callback, or admin mark-paid) | `Beacon-Studio-Receipt-{ref}-{YYYYMMDD}.pdf` |
 | **Analytics** | Admin Download PDF | `Beacon-Studio-Analytics-{stamp}-EAT.pdf` |
 
 All PDFs use Beacon mark / wordmark in the header. Timestamps: **Africa/Nairobi**. Download and Print are separate controls.
@@ -191,7 +175,6 @@ All PDFs use Beacon mark / wordmark in the header. Timestamps: **Africa/Nairobi*
 |-----|---------|
 | `ADMIN_PASSWORD` | `/admin` login (bookmark URL — not linked publicly) |
 | `PORTAL_SECRET` | Portal access token + session signing |
-| `STRIPE_SECRET_KEY` (+ optional price IDs) | Stripe Checkout deposits |
 | `MPESA_*` | Daraja STK Push |
 | `OPENAI_API_KEY` | Optional Glow / brief improver |
 | `RESEND_API_KEY` | Optional portal OTP email (see Client portal) |
@@ -223,7 +206,7 @@ Hero, four product cards, two services, three-step “How we work”, pricing, a
 - Homepage is a short page: products, services, how we work, pricing, FAQ, contact
 - Product cards use a real ConfiRent login shot and a real CadenceApp home shot. Coming-soon products use a mark, not an old screenshot.
 - Cool blue-slate light theme with mesh depth
-- 30% deposits via Stripe or M-Pesa
+- 30% deposits via Paystack or M-Pesa
 - Client portal + admin ops E2E
 
 The Beacon Studio — cloud products & custom software.

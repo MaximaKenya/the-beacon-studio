@@ -52,10 +52,6 @@ export function isPaystackConfigured(): boolean {
   return Boolean(paystackSecret());
 }
 
-export function isStripeConfigured(): boolean {
-  return Boolean(process.env.STRIPE_SECRET_KEY?.trim());
-}
-
 type InitializeResult =
   | { ok: true; authorizationUrl: string; reference: string; paymentId: string; amountMajor: number; currency: PaystackCurrency; kes: number; usd: number }
   | { ok: false; status: number; message: string };

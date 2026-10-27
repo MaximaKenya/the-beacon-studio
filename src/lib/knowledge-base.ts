@@ -191,7 +191,7 @@ const INTENT_RULES: IntentRule[] = [
   },
   {
     intent: "deposits",
-    keywords: ["deposit", "stripe", "paystack", "m-pesa", "mpesa", "payment", "checkout", "pay", "invoice"],
+    keywords: ["deposit", "paystack", "m-pesa", "mpesa", "payment", "checkout", "pay", "invoice"],
     patterns: [/30%|thirty percent/i, /pay (a )?deposit/i],
     weight: 1.45,
   },
