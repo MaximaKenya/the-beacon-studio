@@ -18,7 +18,7 @@ export function ProductSuite() {
       <div className="mx-auto max-w-6xl px-6 lg:px-8">
         <SectionHeading
           label="Products"
-          title="Our products"
+          title="Five products"
           description="Built in Nairobi. Most start with a 30-day free trial, no card needed."
         />
 

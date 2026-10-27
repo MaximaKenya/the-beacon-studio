@@ -10,7 +10,7 @@ export function SelectedWork() {
         <SectionHeading
           label="Work"
           title="Two products, in the open"
-          description="ConfiRent is in soft launch. CadenceApp is in early access. Results stay blank until we can publish them."
+          description="ConfiRent and CadenceApp are live. Results stay blank until we can publish them."
         />
         <div className="grid gap-6 md:grid-cols-2">
           {workStudies.map((study) => {

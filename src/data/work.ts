@@ -28,17 +28,17 @@ export const workStudies: WorkStudy[] = [
     productId: "confirent",
     title: "ConfiRent",
     description:
-      "How ConfiRent helps people find a home in Kenya and lets landlords collect rent by M-Pesa or card, with 0% taken from the rent.",
+      "How ConfiRent helps people find a home in Kenya and lets landlords request rent by M-Pesa, with 0% commission on rent.",
     problem:
       "A renter has to trust a listing, then pay outside the place they found it. A landlord has to chase who has paid and who still owes.",
     solution:
-      "ConfiRent is the place to find, rent, buy, and manage property in Kenya. Rent is collected by M-Pesa or card and paid to the landlord. ConfiRent takes 0% of rent.",
+      "ConfiRent is the place to find, rent, buy, and manage property in Kenya. Tenants pay rent by M-Pesa in the app, with 0% commission on rent.",
     stack: [
       "Public website at confirent.co.ke",
       "Installable phone app",
-      "M-Pesa STK and card payments, paid to the landlord",
+      "M-Pesa STK rent requests",
       "In-app messaging",
-      "ID, selfie, and KRA PIN checks for listers",
+      "Phone-verified and KYC-verified badges, plus scam warnings in chat",
     ],
     stackNote: "This is the public surface. The internal engineering stack is not published here.",
     resultsNote: "Measured results are not published yet. Add them here when they are real.",

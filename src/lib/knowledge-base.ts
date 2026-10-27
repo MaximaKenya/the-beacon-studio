@@ -496,7 +496,7 @@ export function getKnowledgeResponse(userMessage: string): KnowledgeResponse {
     return { reply: assistant.greeting, confidence: 1, intent: "greeting", source: "knowledge-base" };
   }
 
-  if (/\btrivia\s*yard\b|\btriviayard\b/i.test(trimmed)) {
+  if (/\btrivia\s*yard\b|\btriviayard\b|\bconfi\s*trade\b|\bconfitrade\b/i.test(trimmed)) {
     return {
       reply: `Those are not products we offer. Our products are ${formatProductPageLinks()}.`,
       confidence: 0.95,

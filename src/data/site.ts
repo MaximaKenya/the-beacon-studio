@@ -305,32 +305,60 @@ const products: Product[] = [
     name: "ConfiRent",
     tagline: "Property management with confidence",
     description:
-      "Find, rent, buy, and manage property in Kenya. Landlords collect rent by M-Pesa or card. ConfiRent takes 0% of rent.",
+      "Verified rentals, homes for sale, short stays and new developments across Kenya. Landlords request rent by M-Pesa with 0% commission, and scam warnings protect every chat.",
     tags: ["Property", "M-Pesa", "Kenya"],
     status: "live" as ProductStatus,
-    statusLabel: "Live · soft launch",
+    statusLabel: "Live · 30-day free trial",
     operationalStatus: "operational" as OperationalStatus,
-    audience:
-      "People looking for a home, landlords, agents and agencies, developers, and short-stay guests.",
+    audience: "Landlords, agents and agencies, developers, and tenants and buyers.",
     features: [
-      "Rent goes by M-Pesa or card to the landlord. ConfiRent takes 0%.",
-      "See who has paid, who owes, and pull statements.",
-      "Listers are checked with an ID, a selfie, and a KRA PIN.",
-      "Free one-to-one messaging, plus an assistant for rent and listings.",
+      "0% commission on rent, paid by M-Pesa in the app.",
+      "Batch rent requests, reminders and an unpaid-tenants list.",
+      "Scam warnings in chat, verified badges and listing reports.",
+      "Viewings, enquiries and offers in one place.",
     ],
     keyFeatures: [
-      "Rent is collected by M-Pesa (STK prompt) or card and paid straight to the landlord's payout account. ConfiRent takes 0% of rent.",
-      "Each payment is matched to the tenancy. See who has paid and who owes, with statements, receipts, and landlord-approved payment plans.",
-      "Verified listers: ID, selfie, and KRA PIN, reviewed by an admin, to stop fake listings and scams.",
-      "Free 1:1 in-app messaging on every plan. Landlords also get group chat and broadcast notices.",
-      "A ConfiRent AI assistant for questions about rent, payment plans, and listings. You can install it as a phone app.",
-      "Agents and agencies get team seats. Developers get project pages. Short-stay guests can book without an account. Privacy follows Kenya's Data Protection Act.",
+      "0% commission on rent. Tenants pay in the app by M-Pesa.",
+      "One-off and batch rent requests, reminders, unpaid tenants, and a rent overview with analytics.",
+      "Reports with CSV and PDF export, plus scheduled reports. Maintenance tickets.",
+      "Viewing slots, enquiries logged as leads, and offers in chat.",
+      "Chats are scanned for common rental-scam patterns. Phone-verified and KYC-verified badges.",
+      "Plans for landlords, agents, agencies and developers, each with a free tier.",
     ],
     pricing:
-      "Landlords start free; paid plans from KES 2,999/month. Agents free for 3 listings. Featured listings from KES 300/week.",
+      "Free for 30 days, no card needed. Landlords: Starter free; Growth KES 2,999, Pro KES 7,999, Enterprise KES 14,999 a month. Checkout opens when live payments launch.",
     liveUrl: "https://www.confirent.co.ke",
     image: "/images/products/confirent-desktop.jpg",
     imageAlt: "ConfiRent homepage on a desktop, with search and a featured listing",
+  },
+  {
+    id: "convoria",
+    name: "Convoria",
+    tagline: "Speak the world, one conversation at a time.",
+    description:
+      "Language app with 12 languages up to C2, an AI tutor you can talk to, and lessons that work offline. Android and web.",
+    tags: ["Languages", "AI tutor", "Offline"],
+    status: "live" as ProductStatus,
+    statusLabel: "Live · Android and web",
+    operationalStatus: "operational" as OperationalStatus,
+    audience: "Language learners, travellers, job seekers, exam takers and families.",
+    features: [
+      "12 languages, including Kiswahili, each to C2.",
+      "Talk to an AI tutor and get scored corrections.",
+      "Works offline, with a low-data mode.",
+      "Kids mode with a parent PIN.",
+    ],
+    keyFeatures: [
+      "English, Kiswahili, French, German, Spanish, Arabic, Japanese, Korean, Mandarin, Italian, Zulu and Kinyarwanda.",
+      "Placement test and test-outs, so you skip what you know.",
+      "Hold-to-talk voice calls with an AI tutor, role-plays and fluency scores.",
+      "Bundled narration, offline packs and low-data mode.",
+      "Android APK and web today. Google Play and the iOS App Store are rolling out.",
+    ],
+    pricing: "Free for 30 days, no card needed.",
+    liveUrl: CONVORIA_URL,
+    image: "",
+    imageAlt: "",
   },
   {
     id: "cadenceapp",
@@ -339,8 +367,8 @@ const products: Product[] = [
     description:
       "One workspace for calling, collections, messages, and AI replies. Replaces a separate dialer, spreadsheet, WhatsApp, email, and CRM.",
     tags: ["Collections", "Calling", "Messaging"],
-    status: "beta" as ProductStatus,
-    statusLabel: "Beta / early access",
+    status: "live" as ProductStatus,
+    statusLabel: "Live · 30-day free trial",
     operationalStatus: "operational" as OperationalStatus,
     audience:
       "Customer teams that currently split work across a dialer, spreadsheets, WhatsApp, email, and a CRM.",
@@ -425,56 +453,6 @@ const products: Product[] = [
     image: "",
     imageAlt: "",
   },
-  {
-    id: "convoria",
-    name: "Convoria",
-    tagline: "Speak the world, one conversation at a time.",
-    description:
-      "Language app with 12 languages up to C2, an AI tutor you can talk to, and lessons that work offline. Android and web.",
-    tags: ["Languages", "AI tutor", "Offline"],
-    status: "live" as ProductStatus,
-    statusLabel: "Live · Android and web",
-    operationalStatus: "operational" as OperationalStatus,
-    audience: "Language learners, travellers, job seekers, exam takers and families.",
-    features: [
-      "12 languages, including Kiswahili, each to C2.",
-      "Talk to an AI tutor and get scored corrections.",
-      "Works offline, with a low-data mode.",
-      "Kids mode with a parent PIN.",
-    ],
-    keyFeatures: [
-      "English, Kiswahili, French, German, Spanish, Arabic, Japanese, Korean, Mandarin, Italian, Zulu and Kinyarwanda.",
-      "Placement test and test-outs, so you skip what you know.",
-      "Hold-to-talk voice calls with an AI tutor, role-plays and fluency scores.",
-      "Bundled narration, offline packs and low-data mode.",
-      "Google Play and the iOS App Store are coming soon.",
-    ],
-    pricing: "Free for 30 days, no card needed. Paid plans are coming soon.",
-    liveUrl: CONVORIA_URL,
-    image: "",
-    imageAlt: "",
-  },
-  {
-    id: "confitrade",
-    name: "ConfiTrade",
-    tagline: "Trading discipline, enforced in code.",
-    description:
-      "A safety-first MetaTrader 5 bot for demo accounts, with hard risk limits, a kill switch and an audit trail. Private tool; not for sale. Trading carries a high risk of loss.",
-    tags: ["Trading", "Risk limits", "Demo"],
-    status: "coming-soon" as ProductStatus,
-    statusLabel: "Private · demo accounts only",
-    operationalStatus: "building" as OperationalStatus,
-    audience: "Demo-account traders who want strict, automatic risk rules.",
-    features: [
-      "0.5% max risk per trade.",
-      "Daily-loss and drawdown halts.",
-      "One-tap kill switch and phone alerts.",
-      "No profit promises. Not financial advice.",
-    ],
-    liveUrl: "",
-    image: "",
-    imageAlt: "",
-  },
 ];
 
 export const siteConfig = {
@@ -548,7 +526,7 @@ export const siteConfig = {
     twitterHandle: "" as string,
     title: "The Beacon Studio — Products and custom software",
     description:
-      "Nairobi studio for AI automation, custom software, and managed IT. ConfiRent, CadenceApp, ConfiLearn, LookFinesse and Convoria are live.",
+      "Nairobi studio for AI automation, custom software, and managed IT. ConfiRent, Convoria, CadenceApp, ConfiLearn and LookFinesse are live.",
     keywords: [
       "The Beacon Studio",
       "Beacon",
@@ -591,7 +569,7 @@ export const siteConfig = {
   currently: {
     status: "Taking on automation and custom software",
     statusType: "available" as "available" | "busy" | "building",
-    building: "ConfiRent, CadenceApp, ConfiLearn, LookFinesse and Convoria are live.",
+    building: "ConfiRent, Convoria, CadenceApp, ConfiLearn and LookFinesse are live.",
     focus: ["Products", "AI automation", "Custom software", "Managed IT"],
   },
 
@@ -1072,7 +1050,7 @@ export const siteConfig = {
       id: "faq-1",
       question: "What do you offer?",
       answer:
-        "Our own products — ConfiRent, CadenceApp, ConfiLearn, LookFinesse, Convoria, and ConfiTrade (private, demo only) — and three kinds of client work: AI automation, custom software, and outsourced IT.",
+        "Our own products — ConfiRent, CadenceApp, ConfiLearn, LookFinesse, and Convoria — and three kinds of client work: AI automation, custom software, and outsourced IT.",
     },
     {
       id: "faq-2",
@@ -1089,13 +1067,13 @@ export const siteConfig = {
       id: "faq-4",
       question: "Which products can I use now?",
       answer:
-        "ConfiRent is live (soft launch) at confirent.co.ke. CadenceApp is at cadenceapp.co.ke. ConfiLearn is at confilearn.co.ke. LookFinesse and Convoria are live with a 30-day free trial. ConfiTrade is a private demo-account tool, not for sale.",
+        "ConfiRent is live at confirent.co.ke. CadenceApp is at cadenceapp.co.ke. ConfiLearn is at confilearn.co.ke. LookFinesse and Convoria are live with a 30-day free trial. ",
     },
     {
       id: "faq-7",
       question: "What is ConfiRent?",
       answer:
-        "A Kenyan platform to find, rent, buy, and manage property. Soft launch at confirent.co.ke. Rent by M-Pesa or card, and ConfiRent takes 0%. Listers are ID-checked. Landlords start free; paid plans from KES 2,999/month.",
+        "A Kenyan platform to find, rent, buy, and manage property, at confirent.co.ke. Rent by M-Pesa with 0% commission. Scam warnings in chat and KYC-verified badges. 30-day free trial; landlords keep a free Starter plan after it.",
     },
     {
       id: "faq-8",
@@ -1494,8 +1472,8 @@ export const siteConfig = {
   achievements: [] as string[],
 
   nowPlaying: [
-    { id: "np-1", type: "Live", label: "ConfiRent is in soft launch" },
-    { id: "np-2", type: "Beta", label: "CadenceApp is in early access" },
+    { id: "np-1", type: "Live", label: "ConfiRent is live" },
+    { id: "np-2", type: "Live", label: "CadenceApp is live" },
     { id: "np-3", type: "Open", label: "Automation and custom software" },
   ],
 

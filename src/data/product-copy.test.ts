@@ -13,7 +13,7 @@ test("every product has slug, name, url, selling points and FAQs", () => {
     assert.ok(p.name);
     const copy = productCopy[p.id];
     assert.ok(copy, `${p.id} has copy`);
-    if (p.status !== "coming-soon") assert.match(p.liveUrl, /^https:\/\//, `${p.id} url`);
+    assert.match(p.liveUrl, /^https:\/\//, `${p.id} url`);
     const points = copy.sellingPoints.flatMap((g) => g.points);
     assert.ok(points.length >= 8 && points.length <= 15, `${p.id} has 8-15 selling points (${points.length})`);
     assert.equal(copy.faqs.length, 5, `${p.id} has 5 FAQs`);
@@ -29,14 +29,30 @@ test("no placeholder text in product copy", () => {
   }
 });
 
-test("TriviaYard is not promoted and ConfiTrade has a risk disclaimer and no trial", () => {
-  assert.ok(!siteConfig.products.some((p) => /trivia/i.test(p.id)));
-  const ct = productCopy.confitrade;
-  assert.match(ct.disclaimer ?? "", /risk of loss/i);
-  assert.equal(ct.trial, undefined);
-  assert.doesNotMatch(all(ct).join(" "), /guarantee(d)? (profit|return)/i);
+test("exactly the five live products are shown, with Convoria near the top", () => {
+  const ids = siteConfig.products.map((p) => p.id);
+  assert.deepEqual([...ids].sort(), ["cadenceapp", "confilearn", "confirent", "convoria", "lookfinesse"]);
+  assert.ok(ids.indexOf("convoria") <= 1, "Convoria is featured in the first two");
+  assert.deepEqual(Object.keys(productCopy).sort(), [...ids].sort());
+  for (const p of siteConfig.products) {
+    assert.equal(p.status, "live", `${p.id} is live`);
+    assert.doesNotMatch(p.statusLabel, /coming soon|private|demo|beta/i);
+  }
+  const text = all([productCopy, siteConfig.products]).join(" ");
+  assert.doesNotMatch(text, /trivia\s*yard|confi\s*trade|coming soon/i);
 });
 
 test("LookFinesse uses the single URL constant", () => {
   assert.equal(siteConfig.products.find((p) => p.id === "lookfinesse")?.liveUrl, LOOKFINESSE_URL);
+});
+
+test("shared strip contact details match site config", () => {
+  const support = EVERY_APP_INCLUDES.find((i) => i.title === "Kenya-based support")?.detail ?? "";
+  assert.ok(support.includes(siteConfig.phoneDisplay));
+  assert.ok(support.includes(siteConfig.email));
+});
+
+test("ConfiRent copy says M-Pesa only for rent and publishes no featured or badge prices", () => {
+  const text = all([productCopy.confirent, siteConfig.products.find((p) => p.id === "confirent")]).join(" ");
+  assert.doesNotMatch(text, /M-Pesa or card|card or bank|1,999|KES 300|KES 500 for/);
 });

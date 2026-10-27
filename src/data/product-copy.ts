@@ -31,7 +31,7 @@ export type ProductCopy = {
   trial?: string;
   /** Label for the main button to the app. */
   ctaLabel: string;
-  /** Risk or status notice shown prominently. */
+  /** Status notice shown prominently. */
   disclaimer?: string;
 };
 
@@ -41,71 +41,75 @@ export const TRIAL_30_DAY =
 
 /** Shared strip: what every Beacon app includes. */
 export const EVERY_APP_INCLUDES: { title: string; detail: string }[] = [
-  { title: "One company behind it", detail: "Every app is built and run by The Beacon Studio, with one support team." },
-  { title: "Paystack payments", detail: "M-Pesa and card through Paystack. Checkout opens per app when it goes live." },
-  { title: "Branded messages", detail: "SMS, WhatsApp and email go out under the app's own name, by The Beacon Studio." },
-  { title: "In-app communication", detail: "Talk to people inside the app instead of scattered chats." },
-  { title: "Security practices", detail: "Access controls, audit logs and privacy that follows Kenya's Data Protection Act." },
+  { title: "Built by one Kenyan studio", detail: "Every app is built and supported by The Beacon Studio in Nairobi." },
+  { title: "Paystack-ready payments", detail: "Payments are set up for Paystack and M-Pesa. Checkout opens app by app as it goes live." },
+  { title: "Branded email", detail: "Email under each app's own name. SMS and WhatsApp are rolling out." },
+  { title: "Kenya Data Protection Act aligned", detail: "Privacy is written for Kenya's Data Protection Act, 2019." },
+  { title: "Security hardening", detail: "Access controls and ongoing security fixes across the apps." },
   { title: "Kenya-based support", detail: "Call or WhatsApp 0706 397 373, or email hello@thebeaconstudio.co.ke." },
 ];
 
 export const productCopy: Record<string, ProductCopy> = {
   confirent: {
-    headline: "Find a home or fill your units, and get rent paid straight to you.",
-    promise: "Verified listings across Kenya, and rent by M-Pesa or card with 0% taken from it.",
-    audiences: ["Tenants and home seekers", "Landlords", "Agents and agencies", "Developers", "Short-stay guests"],
+    headline: "Rent, list and manage property in Kenya, without the scams.",
+    promise: "Collect rent by M-Pesa with 0% commission, and keep every enquiry, viewing and offer in one place.",
+    audiences: ["Landlords", "Agents and agencies", "Developers", "Tenants and buyers"],
     sellingPoints: [
       {
         title: "Money you keep",
         points: [
-          "Rent goes by M-Pesa (STK prompt) or card straight to the landlord's payout account. ConfiRent takes 0% of rent.",
-          "Landlords start free. Agents list up to 3 properties free.",
-          "Landlord-approved payment plans for tenants.",
+          "0% commission on rent.",
+          "A free Starter plan for landlords that keeps going after the trial: up to 3 active listings, M-Pesa rent requests, a rent ledger and receipts.",
+          "Free plans for agents (3 listings), agencies (5 listings, 1 seat) and developers (1 project).",
+          "Annual billing gives you 2 months free.",
         ],
       },
       {
         title: "Time saved",
         points: [
-          "Each payment is matched to its tenancy, so you see who has paid and who owes without a spreadsheet.",
-          "Statements and receipts are ready when you need them.",
-          "Group chat and broadcast notices reach every tenant at once.",
+          "Send one-off or batch M-Pesa rent requests and reminders, and see who hasn't paid.",
+          "A rent overview with analytics, and reports you can export to CSV or PDF or schedule.",
+          "Tenants raise maintenance tickets and you update the status.",
+          "Renters and buyers book viewing slots, and you manage them from one dashboard.",
+          "Every enquiry is logged as a lead, and offers arrive in chat with an amount and a note.",
         ],
       },
       {
         title: "Trust and security",
         points: [
-          "Listers are checked with an ID, a selfie and a KRA PIN, reviewed by an admin, to stop fake listings and scams.",
-          "Privacy follows Kenya's Data Protection Act.",
+          "Chats are scanned for common Kenyan rental-scam patterns, such as paying before viewing or off-platform M-Pesa, and a safety tip appears.",
+          "Phone-verified and KYC-verified badges on profiles.",
+          "Anyone can report a suspicious listing in one tap.",
         ],
       },
       {
-        title: "Built for Kenya, on your phone",
+        title: "Built for Kenya",
         points: [
-          "Free one-to-one in-app messaging on every plan.",
-          "An AI assistant answers questions about rent, payment plans and listings.",
-          "Install it as a phone app. Short-stay guests can book without an account.",
-          "Agencies get team seats. Developers get project pages.",
+          "Tenants pay rent in the app by M-Pesa.",
+          "Verified rentals, homes for sale, short stays and new developments across Kenya.",
         ],
       },
     ],
     howItWorks: [
-      "Search verified rentals, homes for sale and new developments.",
-      "Message the lister in the app and agree the tenancy.",
-      "Pay rent by M-Pesa or card. It goes straight to the landlord.",
-      "Landlords track payments, statements and notices in one place.",
+      "Sign up free. Your 30-day trial of every paid feature starts at sign-up.",
+      "List your property or project, or search as a tenant or buyer.",
+      "Handle enquiries, viewings and offers in the in-app chat.",
+      "Request rent by M-Pesa and track who has paid.",
     ],
     outcomes: [
-      { before: "Rent arrives by M-Pesa with no reference and has to be matched by hand.", after: "Each payment is matched to the tenancy, with receipts and statements." },
-      { before: "Fake listings and deposit scams make searching risky.", after: "Listers are ID, selfie and KRA PIN checked before they list." },
-      { before: "Notices go out one WhatsApp at a time.", after: "Group chat and broadcast notices reach every tenant at once." },
+      { before: "Chasing tenants one by one by phone on rent day.", after: "Batch rent requests and reminders, with a live list of who hasn't paid." },
+      { before: "Leads scattered across calls and texts.", after: "Every enquiry and offer lands in chat and on a leads board." },
+      { before: "Renters can't tell a real listing from a scam.", after: "Verified badges, scam warnings in chat, and one-tap listing reports." },
     ],
     faqs: [
-      { question: "Does ConfiRent take a cut of rent?", answer: "No. Rent is paid straight to the landlord. ConfiRent takes 0% of rent." },
-      { question: "How do tenants pay?", answer: "By M-Pesa (an STK prompt on the phone) or by card." },
-      { question: "How are listers verified?", answer: "With an ID, a selfie and a KRA PIN, reviewed by an admin before listing." },
-      { question: "What does it cost landlords?", answer: "Landlords start free. Paid plans are from KES 2,999 a month. Agents list up to 3 properties free, and featured listings are from KES 300 a week." },
-      { question: "Can I use it on my phone?", answer: "Yes. It works in the browser and installs as a phone app." },
+      { question: "Is there a free trial?", answer: "Yes. Landlord, agent, agency, developer and owner accounts get 30 days of all paid features from sign-up, no card needed. Then you drop to your Free plan and nothing is unpublished." },
+      { question: "Does ConfiRent take a cut of my rent?", answer: "No. There is 0% commission on rent." },
+      { question: "Can I pay for a plan today?", answer: "Not yet. Checkout is paused until live payments launch. Until then, the trial gives you the paid features." },
+      { question: "How does ConfiRent help me avoid scams?", answer: "Chats are scanned for known rental-scam patterns, flagged messages show a safety tip, and any listing can be reported. Landlords can also earn a KYC-verified badge." },
+      { question: "What do landlord plans cost?", answer: "Starter is free. Growth is KES 2,999, Pro KES 7,999 and Enterprise KES 14,999 a month. Annual billing gives you 2 months free." },
     ],
+    trial:
+      "Free for 30 days from sign-up, all paid features, no card needed. Checkout stays paused until live payments launch.",
     ctaLabel: "Open ConfiRent",
   },
 
@@ -146,7 +150,7 @@ export const productCopy: Record<string, ProductCopy> = {
         points: [
           "Works on the office PBX with MicroSIP, the agent's mobile, or Twilio.",
           "Supervisors watch calls, promises and recoveries per agent on a live wallboard.",
-          "Coming soon: supervisor listen-in, whisper and barge, and an SMS/WhatsApp reply inbox.",
+          "Rolling out: supervisor listen-in, whisper and barge, and an SMS/WhatsApp reply inbox.",
         ],
       },
     ],
@@ -288,7 +292,7 @@ export const productCopy: Record<string, ProductCopy> = {
     faqs: [
       { question: "How does the free trial work?", answer: "30 days free, no card needed, with every feature open." },
       { question: "How do I pay?", answer: "Paid plans are not on sale yet. Checkout stays off until Paystack goes live, so nobody can be charged now. Prices are in KES." },
-      { question: "Will it message my clients without asking me?", answer: "No. Every automation is off until you switch it on, and opted-out clients are never contacted. Email works today; SMS and WhatsApp are coming soon." },
+      { question: "Will it message my clients without asking me?", answer: "No. Every automation is off until you switch it on, and opted-out clients are never contacted. Email works today; SMS and WhatsApp are rolling out." },
       { question: "Can my whole team use it?", answer: "Yes. Vendor Pro is KES 1,500 a month with extra staff seats at KES 500. Studio & Gym is KES 5,000 a month with 10 seats." },
       { question: "Is there a student price?", answer: "Yes. Students get 50% off Premium." },
     ],
@@ -348,71 +352,14 @@ export const productCopy: Record<string, ProductCopy> = {
       { before: "Expensive data breaks your routine.", after: "Offline packs and low-data mode keep your streak going on the matatu." },
     ],
     faqs: [
-      { question: "Is Convoria free to try?", answer: "Yes. 30 days free, no card, with AI and premium tools. Reminders come at 7, 3 and 1 days left. Paid plans are coming soon." },
+      { question: "Is Convoria free to try?", answer: "Yes. 30 days free, no card, with AI and premium tools. Reminders come at 7, 3 and 1 days left. Paid plans are rolling out." },
       { question: "Which languages, and how far?", answer: "12 languages, each up to C2/Mastery. Zulu and Kinyarwanda are still being reviewed by native speakers." },
       { question: "Do I start from zero?", answer: "No. Take the placement test or test out of a level." },
       { question: "Does it work offline?", answer: "Yes. Narration, offline packs and progress work offline. AI tutors need a connection." },
-      { question: "Is it on Google Play or iOS?", answer: "Not yet. Android is a free APK download today. Google Play and the iOS App Store are coming soon." },
+      { question: "Is it on Google Play or iOS?", answer: "Android is a free APK download today, and it works on the web. Google Play and the iOS App Store are rolling out." },
     ],
     trial: TRIAL_30_DAY,
     ctaLabel: "Try Convoria",
-  },
-
-  confitrade: {
-    headline: "Trading discipline, enforced in code.",
-    promise: "A safety-first MetaTrader 5 bot for demo accounts, with hard risk limits, a kill switch and an audit trail.",
-    audiences: ["Demo-account traders who want strict rules", "People studying systematic risk control"],
-    sellingPoints: [
-      {
-        title: "Risk limits you cannot skip",
-        points: [
-          "Each trade risks at most 0.5% of equity, with a 1.2 minimum reward-to-risk.",
-          "New entries stop after a 2% daily loss or a 6% drawdown. The drawdown halt stays on until reviewed.",
-          "At most 2 open positions, 1 per symbol, 12 trades a day, and a cooldown after 3 losses in a row.",
-          "Risk multipliers can only scale risk down, never up.",
-          "Stays out of new entries around high-impact news.",
-        ],
-      },
-      {
-        title: "Safety by default",
-        points: [
-          "Demo-only by default. Live mode needs two separate, deliberate confirmations.",
-          "A preflight check refuses demo orders on a real account.",
-          "Stop-loss and take-profit are sent with each order to the broker.",
-        ],
-      },
-      {
-        title: "Control and transparency",
-        points: [
-          "A one-tap kill switch on the dashboard or your phone pauses new entries.",
-          "A tamper-evident, hash-chained audit log of every halt and resume.",
-          "Phone alerts for trades, halts and daily summaries.",
-          "A positions view with the entry reason and distance to stop and target.",
-          "New strategies are paper-traded in shadow mode and must pass a fixed promotion rule.",
-        ],
-      },
-    ],
-    howItWorks: [
-      "Connect an Exness MetaTrader 5 demo account.",
-      "The preflight check confirms it is a demo account.",
-      "The bot trades only inside its hard limits, and alerts your phone.",
-      "Pause any time with the kill switch, and review the audit log.",
-    ],
-    outcomes: [
-      { before: "One bad day could wipe out weeks of demo progress.", after: "A 2% daily-loss halt stops new entries for the day." },
-      { before: "Revenge trading after a losing streak.", after: "A 90-minute cooldown after 3 losses in a row." },
-      { before: "No record of when the bot was paused or resumed.", after: "An append-only audit log that shows any edit." },
-    ],
-    faqs: [
-      { question: "Can I buy or try ConfiTrade?", answer: "Not yet. It is a private tool run on an Exness demo account, with no public pricing or trial. Contact us to hear when that changes." },
-      { question: "Will it make me money?", answer: "We make no profit claims. Trading carries a high risk of loss, and demo or backtest results do not predict future results." },
-      { question: "Does it trade real money?", answer: "Not by default. Live mode needs two deliberate confirmations, and the preflight check refuses demo mode on a real account." },
-      { question: "What stops large losses?", answer: "Hard limits on risk per trade, positions, daily loss and drawdown, plus a kill switch. They reduce risk but cannot prevent losses such as gaps or slippage." },
-      { question: "Is this financial advice?", answer: "No. ConfiTrade is software, not advice or a signals service. Only trade money you can afford to lose." },
-    ],
-    ctaLabel: "Ask about ConfiTrade",
-    disclaimer:
-      "Risk warning: trading forex, gold and indices carries a high risk of loss. ConfiTrade makes no promise of profit. Demo and backtest results do not predict future results. Not financial advice.",
   },
 };
 
