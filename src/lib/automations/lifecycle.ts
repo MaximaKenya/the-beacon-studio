@@ -82,6 +82,7 @@ export async function sendTrialWelcome(doc: AutomationDoc, email: string) {
       `${mine[0].businessName} is live on The Beacon Studio.`,
       `Included: ${names.join(", ")}.`,
       `You have ${days} days left. No card is needed. When the trial ends the automations pause until you choose a plan or request an invoice.`,
+      annualLine(mine),
       "Setup checklist: 1) Open the portal and fill in each automation's settings. 2) Add your customer list or connect your form. 3) Run a test and check the preview. 4) Connect SMS or WhatsApp when you are ready.",
     ],
     action: { label: "Open your portal", href: `${publicSiteUrl()}/portal` },
@@ -389,6 +390,15 @@ export function annualSavingKes(instances: AutomationInstance[]) {
   };
 }
 
+/** One line about the annual discount. Uses real quote figures only. */
+export function annualLine(instances: AutomationInstance[]): string {
+  const { savingKes } = annualSavingKes(instances);
+  const percent = siteConfig.automationCatalog.annualDiscountPercent;
+  return savingKes > 0
+    ? `Pay yearly and save ${percent}%: KES ${savingKes.toLocaleString("en-KE")} a year on your current plan.`
+    : `Pay yearly and save ${percent}% on any plan.`;
+}
+
 export async function sendTrialSequence(doc: AutomationDoc, now = new Date()) {
   const optOuts = new Set(doc.trialOptOuts || []);
   const site = publicSiteUrl();
@@ -432,6 +442,7 @@ export async function sendTrialSequence(doc: AutomationDoc, now = new Date()) {
             ? "No runs yet. Finish the setup checklist in the portal so the automations can start working."
             : `Here is what ran for ${instances[0]?.businessName || "your business"} so far.`,
           names,
+          annualLine(instances),
         ],
         card,
         action: { label: "Open your portal", href: `${site}/portal` },

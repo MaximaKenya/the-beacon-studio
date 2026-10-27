@@ -12,6 +12,7 @@ import { DEFAULT_USD_KES_RATE, formatKes, formatUsd } from "@/lib/fx";
 import { parseResponseJson } from "@/lib/safe-json";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { AnnualBadge, CarePlansGrid, FoundersNote, ProAddonsGrid } from "@/components/revenue/Offers";
 
 function kesFloor(tier: PricingTier, rate: number): number {
   if (tier.kesAmount && tier.kesAmount > 0) return tier.kesAmount;
@@ -197,6 +198,31 @@ export function Pricing() {
               </button>
             </article>
           ))}
+        </div>
+
+        <div id="care-plans" className="mt-16 scroll-mt-28">
+          <div className="flex flex-wrap items-center gap-3">
+            <h3 className="font-display text-2xl font-semibold text-heading">Care plans</h3>
+            <AnnualBadge />
+          </div>
+          <p className="mt-1 max-w-xl text-sm text-muted">Monthly care after launch. Billed by invoice.</p>
+          <div className="mt-6">
+            <CarePlansGrid />
+          </div>
+        </div>
+
+        <div id="add-ons" className="mt-16 scroll-mt-28">
+          <h3 className="font-display text-2xl font-semibold text-heading">Pro add-ons</h3>
+          <p className="mt-1 max-w-xl text-sm text-muted">
+            Add to any plan. WhatsApp and M-Pesa add-ons are on the <Link href="/add-ons" className="text-accent">add-ons page</Link>.
+          </p>
+          <div className="mt-6">
+            <ProAddonsGrid />
+          </div>
+        </div>
+
+        <div className="mt-8 max-w-3xl">
+          <FoundersNote />
         </div>
 
         <p className="sleek-card mt-8 max-w-3xl rounded-3xl p-5 text-sm leading-relaxed text-foreground">

@@ -84,3 +84,7 @@ Paystack references stay `BS-…` and `metadata.app` stays on the beacon app. A 
 | 29 | Existing 1-day reminder |
 
 Opt-out (`/api/automations/trial-optout`) stops the digests only. Reminders and receipts still arrive. The portal shows the trial stage. Admin › Trials shows trials by stage, and Admin › Referrals lets you mark credits used.
+
+## Revenue overview (admin)
+
+Admin → Revenue lists trials, referrals, add-on and partner requests, open invoices, care subscriptions, founders locks, Notify queue counts per channel, and template downloads. Admin → Partners lists partner and partnership requests. From the portal, clients see their price lock, pro add-ons, and WhatsApp/SMS queue placeholders, with a link to `/add-ons`.

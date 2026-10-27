@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Building2, CreditCard, Loader2, Smartphone } from "lucide-react";
-import { siteConfig } from "@/data/site";
+import { carePlans, siteConfig } from "@/data/site";
 import { trackEvent } from "@/lib/analytics";
 import { readStoredAttribution } from "@/lib/attribution-client";
 import { formatKes, formatUsd, kesForCharge } from "@/lib/fx";
@@ -47,6 +47,8 @@ export function PayButton({
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [note, setNote] = useState("");
+  const [carePlan, setCarePlan] = useState("");
+  const [annual, setAnnual] = useState(false);
   const [phone, setPhone] = useState("");
   const [showBank, setShowBank] = useState(false);
   const [showMpesa, setShowMpesa] = useState(false);
@@ -87,7 +89,7 @@ export function PayButton({
       ? "bg-accent text-background"
       : "bg-accent text-background";
 
-  function FallbackLinks() {
+  function renderFallbackLinks() {
     return (
       <div className="mt-2 flex flex-wrap gap-2">
         <a href={`mailto:${siteConfig.email}`} className="font-medium text-accent">
@@ -198,6 +200,8 @@ export function PayButton({
           name,
           email,
           ...(note ? { note } : {}),
+          ...(carePlan ? { carePlan } : {}),
+          ...(annual ? { billing: "annual" } : {}),
           ...(projectId ? { projectId } : {}),
           ...readStoredAttribution(),
         }),
@@ -295,6 +299,26 @@ export function PayButton({
             onChange={(event) => setNote(event.target.value)}
             className="w-full rounded-xl px-3 py-2 text-sm"
           />
+          <label className="block text-xs text-muted" htmlFor={`pay-care-${tierId}`}>
+            Add a care plan (optional)
+          </label>
+          <select
+            id={`pay-care-${tierId}`}
+            value={carePlan}
+            onChange={(event) => setCarePlan(event.target.value)}
+            className="w-full rounded-xl px-3 py-2 text-sm"
+          >
+            <option value="">No care plan</option>
+            {carePlans.map((plan) => (
+              <option key={plan.id} value={plan.id}>
+                {plan.name} · {formatUsd(plan.monthlyUsd)}/month
+              </option>
+            ))}
+          </select>
+          <label className="flex items-center gap-2 text-xs text-muted">
+            <input type="checkbox" checked={annual} onChange={(event) => setAnnual(event.target.checked)} />
+            Bill yearly and save {siteConfig.automationCatalog.annualDiscountPercent}%
+          </label>
           <button
             type="button"
             onClick={() => void requestInvoice()}
@@ -359,7 +383,7 @@ export function PayButton({
       {message && (
         <div className="mt-2 rounded-xl bg-surface/80 px-3 py-2 text-xs leading-relaxed text-muted">
           <p>{message}</p>
-          <FallbackLinks />
+          {renderFallbackLinks()}
         </div>
       )}
     </div>

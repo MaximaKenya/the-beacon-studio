@@ -12,6 +12,8 @@ import { markChargePaid, recordReview, runEngine } from "@/lib/automations/engin
 import { activateOnTrial, applyBundlePayment, endInstanceTrial, extendInstanceTrial, sendTrialWelcome, syncLedger } from "@/lib/automations/lifecycle";
 import { addAdminLog, addLog, instancesForEmail, loadAutomations, saveAutomations } from "@/lib/automations/store";
 import { extendTrialEnd, TRIAL_DAYS, trialDaysRemaining } from "@/lib/automations/trial";
+import { queueCounts } from "@/lib/notify-usage";
+import { foundersLockFor } from "@/lib/revenue-requests";
 import { adminReferrals, portalReferral, recordReferralSignup, settleReferralsForPayment } from "@/lib/referrals";
 import { TRIAL_STAGE_LABEL, trialPortalStage } from "@/lib/automations/trial-sequence";
 import { emptyDoc, type AutomationDoc, type AutomationInstance } from "@/lib/automations/types";
@@ -359,8 +361,10 @@ export async function portalSnapshot(email: string) {
     trial: soonestTrial(instances),
     referral: instances.length ? await portalReferral(normalized) : null,
     paystack: isPaystackConfigured(),
+    foundersLock: await foundersLockFor(normalized),
+    usage: { whatsapp: queueCounts(doc.deliveries || [], "whatsapp", ids), sms: queueCounts(doc.deliveries || [], "sms", ids) },
     invoices: payments
-      .filter((payment) => payment.payerEmail === normalized && (payment.tierId === "automation-bundle" || payment.automationInstanceIds?.some((id) => ids.has(id))))
+      .filter((payment) => payment.payerEmail === normalized && (payment.tierId === "automation-bundle" || payment.tierId.startsWith("care-") || payment.automationInstanceIds?.some((id) => ids.has(id))))
       .map((payment) => ({
         id: payment.id,
         status: payment.status,
@@ -428,7 +432,7 @@ export async function adminSnapshot() {
     adminLog: (doc.adminLog || []).slice(-60).reverse(),
     paystack: isPaystackConfigured(),
     invoices: payments
-      .filter((payment) => payment.status === "pending" && (payment.tierId === "automation-bundle" || payment.automationInstanceIds?.length))
+      .filter((payment) => payment.status === "pending" && (payment.tierId === "automation-bundle" || payment.tierId.startsWith("care-") || payment.automationInstanceIds?.length))
       .map((payment) => ({
         id: payment.id,
         email: payment.payerEmail,

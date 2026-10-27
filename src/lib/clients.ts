@@ -1,6 +1,7 @@
 import { randomUUID } from "crypto";
 import { readJsonFile, writeJsonFile } from "@/lib/storage";
 import { normalizeEmail } from "@/lib/validation";
+import type { FoundersLock } from "@/lib/revenue-pricing";
 
 const FILE = "clients.json";
 
@@ -13,6 +14,8 @@ export type ClientRecord = {
   createdAt: string;
   updatedAt: string;
   accessToken?: string;
+  /** Founders price lock: today's price kept until `until`. */
+  foundersLock?: FoundersLock;
 };
 
 export async function listClients(): Promise<ClientRecord[]> {

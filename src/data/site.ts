@@ -1539,3 +1539,129 @@ export const industryPacks: IndustryPack[] = [
     keywords: ["SME automation Kenya", "invoice reminders", "small business automation"],
   },
 ];
+
+/* ------------------------------------------------------------------ */
+/* Revenue add-ons. Edit prices and copy here; pages read these lists. */
+/* ------------------------------------------------------------------ */
+
+export type CarePlan = {
+  id: string;
+  name: string;
+  monthlyUsd: number;
+  summary: string;
+  includes: string[];
+};
+
+/** Care and maintenance plans. Billed by monthly invoice while Paystack is off. */
+export const carePlans: CarePlan[] = [
+  {
+    id: "care-essentials",
+    name: "Care Essentials",
+    monthlyUsd: 50,
+    summary: "Keep a site or automation healthy.",
+    includes: ["Uptime and error checks", "Security and dependency updates", "Monthly backup check", "Up to 1 hour of small fixes", "Email support, 2 working-day reply"],
+  },
+  {
+    id: "care-growth",
+    name: "Growth Care",
+    monthlyUsd: 150,
+    summary: "Care plus steady improvements.",
+    includes: ["Everything in Care Essentials", "Up to 4 hours of changes a month", "Monthly usage and leads report", "Prompt and copy tuning", "WhatsApp support, next working-day reply"],
+  },
+  {
+    id: "care-plus",
+    name: "Care Plus",
+    monthlyUsd: 450,
+    summary: "A part-time team on call.",
+    includes: ["Everything in Growth Care", "Up to 12 hours of changes a month", "Priority fixes, same working day", "Quarterly review call", "New automation set up each quarter"],
+  },
+];
+
+/** Founders price lock. Plain terms shown on pricing, portal and invoices. */
+export const foundersLock = {
+  months: 12,
+  title: "Founders price lock",
+  terms: "Early clients keep today's price for 12 months from the lock date, even if list prices go up. It covers the plans on your account when we lock it.",
+};
+
+export type WhatsAppAddon = {
+  id: string;
+  name: string;
+  monthlyKes: number;
+  marketingIncluded: number;
+  utilityIncluded: number;
+};
+
+/**
+ * WhatsApp add-on. Cost basis is Meta's Kenya rate card (Oct 2026):
+ * KSh 2.93 per marketing message, KSh 0.52 per utility/service message.
+ * Overage is pass-through cost plus `markupPercent`. Activates when WhatsApp is connected.
+ */
+export const whatsappAddon = {
+  status: "Activates when WhatsApp is connected",
+  costBasisKes: { marketing: 2.93, utility: 0.52 },
+  costBasisNote: "Meta's Kenya rates, Oct 2026. Meta may change them.",
+  markupPercent: 20,
+  tiers: [
+    { id: "wa-starter", name: "WhatsApp Starter", monthlyKes: 1500, marketingIncluded: 200, utilityIncluded: 500 },
+    { id: "wa-growth", name: "WhatsApp Growth", monthlyKes: 4500, marketingIncluded: 800, utilityIncluded: 2000 },
+    { id: "wa-scale", name: "WhatsApp Scale", monthlyKes: 12000, marketingIncluded: 2500, utilityIncluded: 6000 },
+  ] as WhatsAppAddon[],
+};
+
+/** M-Pesa collections add-on. We never hold the client's payment credentials. */
+export const mpesaAddon = {
+  status: "Setup on request, needs your paybill or till",
+  summary: "Reminders and reconciliation for money paid into your own paybill or till.",
+  uses: [
+    { id: "invoice", name: "Invoice collections", detail: "Send invoices with your paybill and account number, then chase what is unpaid." },
+    { id: "rent", name: "Rent collection", detail: "Monthly rent reminders per unit, marked paid when the tenant pays." },
+    { id: "school-fees", name: "School fees", detail: "Fee balances per learner with polite reminders to parents." },
+    { id: "sacco", name: "SACCO repayments", detail: "Loan and contribution reminders with member account numbers." },
+  ],
+  note: "Money goes straight to your paybill or till. You keep your own Daraja keys; we never store them.",
+};
+
+export type ProAddon = { id: string; name: string; priceKes: number; unit: string; detail: string };
+
+/** Paid upgrades. Billed by invoice for now. */
+export const proAddons: ProAddon[] = [
+  { id: "pro-priority", name: "Priority support", priceKes: 3000, unit: "a month", detail: "Same working-day replies and fixes first." },
+  { id: "pro-prompts", name: "Custom prompts", priceKes: 5000, unit: "one-off per automation", detail: "AI replies tuned to your tone, products and FAQs." },
+  { id: "pro-runs", name: "Extra runs", priceKes: 1000, unit: "per 1,000 runs", detail: "More scheduled runs when you outgrow the plan." },
+  { id: "pro-sms-1k", name: "SMS credits · 1,000", priceKes: 1200, unit: "pack", detail: "Used once SMS is connected. Credits do not expire for 12 months." },
+  { id: "pro-sms-5k", name: "SMS credits · 5,000", priceKes: 5500, unit: "pack", detail: "Used once SMS is connected. Credits do not expire for 12 months." },
+];
+
+export type PartnerTier = { id: string; name: string; wholesaleDiscountPercent: number; minClients: number; perks: string[] };
+
+/** White-label / reseller programme. Edit discounts here. */
+export const partnerTiers: PartnerTier[] = [
+  { id: "partner-registered", name: "Registered", wholesaleDiscountPercent: 15, minClients: 1, perks: ["Partner price on every plan", "Co-branded proposals"] },
+  { id: "partner-silver", name: "Silver", wholesaleDiscountPercent: 25, minClients: 5, perks: ["White-label portal and emails", "Partner onboarding call"] },
+  { id: "partner-gold", name: "Gold", wholesaleDiscountPercent: 35, minClients: 15, perks: ["Priority builds", "Shared roadmap input", "Named contact"] },
+];
+
+/** Associations, accountants and advisers. Leave commission empty until it is agreed. */
+export const partnershipProgramme = {
+  audiences: ["Business associations and chambers", "Accountants and bookkeepers", "SACCO and school networks", "Consultants and agencies"],
+  commissionNote: "Referral commission is agreed per partner in writing before any referral. No commission is promised on this page.",
+};
+
+export type LeadTemplate = { id: string; title: string; summary: string; format: "csv" | "md"; filename: string };
+
+/** Free lead-magnet templates. Content is generated in src/lib/templates-store.ts. */
+export const leadTemplates: LeadTemplate[] = [
+  { id: "rent-tracker", title: "Rent collection tracker", summary: "Units, tenants, rent due and paid, in one sheet.", format: "csv", filename: "beacon-rent-tracker.csv" },
+  { id: "fee-tracker", title: "School fee balance sheet", summary: "Learners, fees billed, paid and balance.", format: "csv", filename: "beacon-school-fees.csv" },
+  { id: "lead-tracker", title: "WhatsApp lead tracker", summary: "Log every enquiry and the follow-up date.", format: "csv", filename: "beacon-lead-tracker.csv" },
+  { id: "invoice-chaser", title: "Invoice follow-up checklist", summary: "A step-by-step routine for getting paid on time.", format: "md", filename: "beacon-invoice-checklist.md" },
+  { id: "automation-audit", title: "Automation audit checklist", summary: "Find the repetitive tasks worth automating first.", format: "md", filename: "beacon-automation-audit.md" },
+];
+
+/** Paid template slots. Edit when a template is ready. */
+export const paidTemplateSlots = [
+  { id: "paid-sacco-pack", title: "SACCO operations pack", status: "Coming soon" },
+  { id: "paid-clinic-pack", title: "Clinic front-desk pack", status: "Coming soon" },
+  { id: "paid-landlord-pack", title: "Landlord finance pack", status: "Coming soon" },
+];

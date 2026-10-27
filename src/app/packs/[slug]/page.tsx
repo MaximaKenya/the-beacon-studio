@@ -6,6 +6,8 @@ import { templateById } from "@/automations/templates/public";
 import { TRIAL_DAYS } from "@/lib/automations/trial";
 import { formatKes } from "@/lib/fx";
 import { absoluteUrl, pageMetadata } from "@/lib/seo";
+import { AnnualBadge } from "@/components/revenue/Offers";
+import { WorksWithApps } from "@/components/revenue/WorksWithApps";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -66,6 +68,7 @@ export default async function PackPage({ params }: Props) {
           <p className="mt-1 font-display text-3xl font-semibold text-foreground">{formatKes(monthly.recurringMonthlyKes)}</p>
           <p className="text-xs text-muted">a month{monthly.bundlePercent ? ` · ${monthly.bundlePercent}% bundle discount` : ""}</p>
           <p className="mt-2 text-sm text-muted">Annual: {formatKes(annual.recurringMonthlyKes)}/mo</p>
+          <AnnualBadge className="mt-2" />
           {monthly.setupKes > 0 && <p className="text-sm text-muted">Setup: {formatKes(monthly.setupKes)}</p>}
           <Link href={`/automations?pack=${pack.id}`} className="mt-4 block rounded-full bg-accent px-4 py-2.5 text-center text-sm font-semibold text-background">
             Start {TRIAL_DAYS}-day free trial
@@ -74,8 +77,13 @@ export default async function PackPage({ params }: Props) {
             Book a call instead
           </Link>
           <p className="mt-3 text-xs text-muted">No card needed. Priced with the same calculator as the buffet.</p>
+          <Link href="/add-ons#care" className="mt-3 block text-center text-xs text-accent">
+            Add a care plan from $50/month
+          </Link>
         </aside>
       </div>
+
+      <WorksWithApps className="mt-8" />
 
       <p className="mt-10 text-sm text-muted">
         Not sure it pays off?{" "}

@@ -10,6 +10,7 @@ import {
   type DeskLog,
 } from "@/components/automations/AutomationDesk";
 import { DemoSandbox } from "@/components/automations/DemoSandbox";
+import { AdminRevenue } from "@/components/revenue/AdminRevenue";
 import type { ChannelReadiness } from "@/lib/automations/channels";
 import { formatNairobi } from "@/lib/time";
 import { formatKes } from "@/lib/fx";
@@ -65,10 +66,12 @@ const empty: AdminView = { mrrKes: 0, active: 0, pending: 0, paused: 0, demos: 0
 
 const MENUS = [
   { id: "now", label: "Action Center" },
+  { id: "revenue", label: "Revenue" },
   { id: "trials", label: "Trials" },
   { id: "invoices", label: "Invoices" },
   { id: "clients", label: "Clients" },
   { id: "referrals", label: "Referrals" },
+  { id: "partners", label: "Partners" },
   { id: "channels", label: "Channels" },
   { id: "scheduler", label: "Scheduler" },
   { id: "health", label: "Health" },
@@ -227,6 +230,7 @@ export function AdminAutomations() {
                 ))}
               </div>
             )}
+            {(menu === "revenue" || menu === "partners") && <AdminRevenue view={menu} />}
             {menu === "referrals" && (
               <div className="space-y-3">
                 <p className="text-sm text-muted">Credit is earned after the referred client&apos;s first paid month. Apply it to the referrer&apos;s next invoice, then mark it used.</p>
