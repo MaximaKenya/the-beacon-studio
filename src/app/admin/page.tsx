@@ -24,6 +24,7 @@ import { AdminPdfExport } from "@/components/admin/AdminPdfExport";
 import { AdminInbox } from "@/components/admin/AdminInbox";
 import { AdminLeads } from "@/components/admin/AdminLeads";
 import { AdminMailbox } from "@/components/admin/AdminMailbox";
+import { AdminMessagingHub } from "@/components/admin/AdminMessagingHub";
 import { AdminOpsHub, type AdminOpsData } from "@/components/admin/AdminOpsHub";
 import { AdminProjectsPanel } from "@/components/admin/AdminProjectsPanel";
 import { AdminAutomations } from "@/components/automations/AdminAutomations";
@@ -36,6 +37,7 @@ const ADMIN_NAV = [
   { id: "leads", label: "Leads" },
   { id: "operations", label: "Operations" },
   { id: "projects", label: "Projects" },
+  { id: "messaging", label: "Messaging hub" },
   { id: "analytics", label: "Analytics" },
 ] as const;
 import { formatKes, formatUsd } from "@/lib/fx";
@@ -457,6 +459,10 @@ export default function AdminPage() {
             <AdminProjectsPanel />
           </div>
         )}
+
+        <div className="mb-10">
+          <AdminMessagingHub />
+        </div>
 
         {summary && (
           <div id="analytics" className="admin-section">
