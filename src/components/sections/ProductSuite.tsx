@@ -4,6 +4,8 @@ import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { siteConfig } from "@/data/site";
 import { ProductVisual } from "@/components/products/ProductVisual";
+import { ShotCarousel } from "@/components/gallery/ShotCarousel";
+import { shotsFor } from "@/data/product-shots";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { LiftCard } from "@/components/ui/LiftCard";
 import { ScrollReveal, StaggerChild } from "@/components/ui/ScrollReveal";
@@ -31,12 +33,16 @@ export function ProductSuite() {
               <article
                 className="sleek-card flex h-full flex-col overflow-hidden rounded-3xl bg-surface"
               >
-                <ProductVisual product={product} />
+                {shotsFor(product.id).length > 0 ? (
+                  <ShotCarousel shots={shotsFor(product.id).slice(0, 6)} name={product.name} compact autoplayMs={5000} />
+                ) : (
+                  <ProductVisual product={product} />
+                )}
                 <div className="flex flex-1 flex-col p-6 sm:p-7">
                   <p className="text-xs font-medium uppercase tracking-wide text-accent">
                     {product.statusLabel}
                   </p>
-                  <h3 className="mt-2 font-display text-2xl font-semibold tracking-tight text-foreground">
+                  <h3 className="text-heading mt-2 font-display text-2xl font-semibold tracking-tight">
                     {product.name}
                   </h3>
                   <p className="mt-1 text-sm font-medium text-foreground/90">{product.tagline}</p>

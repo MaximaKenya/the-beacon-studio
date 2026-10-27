@@ -1,8 +1,10 @@
 import { Check } from "lucide-react";
 import { EVERY_APP_INCLUDES, type ProductCopy } from "@/data/product-copy";
+import type { ProductShot } from "@/data/product-shots";
+import { BentoGallery, GalleryCarousel, ScreenMarquee } from "@/components/gallery/ProductGallery";
 
 /** Conversion sections for a product page. Server-safe, no client hooks. */
-export function ProductCopySections({ name, copy }: { name: string; copy: ProductCopy }) {
+export function ProductCopySections({ name, copy, shots = [] }: { name: string; copy: ProductCopy; shots?: ProductShot[] }) {
   return (
     <div className="mt-16 space-y-14">
       <section aria-labelledby="why-heading">
@@ -40,6 +42,8 @@ export function ProductCopySections({ name, copy }: { name: string; copy: Produc
         </ol>
       </section>
 
+      <GalleryCarousel shots={shots} name={name} />
+
       <section aria-labelledby="outcomes-heading">
         <h2 id="outcomes-heading" className="text-heading font-display text-2xl font-semibold tracking-tight">
           Before and after
@@ -69,6 +73,9 @@ export function ProductCopySections({ name, copy }: { name: string; copy: Produc
           ))}
         </ul>
       </section>
+
+      <ScreenMarquee shots={shots} />
+      <BentoGallery shots={shots} name={name} />
 
       <section aria-labelledby="faq-heading">
         <h2 id="faq-heading" className="text-heading font-display text-2xl font-semibold tracking-tight">
