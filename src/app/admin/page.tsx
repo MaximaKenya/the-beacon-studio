@@ -156,13 +156,18 @@ export default function AdminPage() {
   useEffect(() => {
     const handle = window.setTimeout(() => {
       void checkAuth();
-      void fetch("/api/health")
-        .then((res) => parseResponseJson<StorageHealth>(res, {}))
-        .then((data) => setStorageHealth(data))
-        .catch(() => setStorageHealth(null));
     }, 0);
     return () => window.clearTimeout(handle);
   }, []);
+
+  // Storage detail is only returned to a signed-in admin.
+  useEffect(() => {
+    if (auth !== "in") return;
+    void fetch("/api/health", { cache: "no-store" })
+      .then((res) => parseResponseJson<StorageHealth>(res, {}))
+      .then((data) => setStorageHealth(data))
+      .catch(() => setStorageHealth(null));
+  }, [auth]);
 
   useEffect(() => {
     function onUnread(event: Event) {

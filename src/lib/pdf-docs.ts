@@ -76,7 +76,7 @@ function footer(pdf: JsPdf, preparedBy = `${siteConfig.brand.name} team`) {
     pdf.roundedRect(28, pageH - 50, pageW - 56, 32, 10, 10, "F");
     pdf.setFontSize(8);
     pdf.setTextColor(MUTED.r, MUTED.g, MUTED.b);
-    pdf.text(`Prepared by ${preparedBy} · ${head.registration} · ${NAIROBI_TZ} · ${formatNairobi()}`, 40, pageH - 30);
+    pdf.text([`Prepared by ${preparedBy}`, head.registration, NAIROBI_TZ, formatNairobi()].filter(Boolean).join(" · "), 40, pageH - 30);
     pdf.text(`Page ${page} of ${pages}`, pageW - 40, pageH - 30, { align: "right" });
   }
 }

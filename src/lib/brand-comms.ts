@@ -21,6 +21,7 @@ export const BRAND_NAME = "The Beacon Studio";
 export const BRAND_DOMAIN = "thebeaconstudio.co.ke";
 /** Canonical public origin. Logos in email are always hosted here (never the Heroku URL). */
 export const BRAND_SITE_URL = "https://thebeaconstudio.co.ke";
+export const BRAND_PRIVACY_DEFAULT = `${BRAND_SITE_URL}/privacy`;
 export const BRAND_LOGO_URL = `${BRAND_SITE_URL}/email/beacon-mark.png`;
 
 export const BRAND_COLORS = {
@@ -72,7 +73,7 @@ export type BrandContact = {
   kraPin: string;
   /** TODO(GO_LIVE): LinkedIn URL. BRAND_LINKEDIN_URL env. site.ts value is a placeholder. */
   linkedinUrl: string;
-  /** TODO(GO_LIVE): privacy policy page. BRAND_PRIVACY_URL env. Until set, links to an admin@ privacy request. */
+  /** TODO(GO_LIVE): privacy policy page. BRAND_PRIVACY_URL env. Defaults to the public /privacy page. */
   privacyUrl: string;
 };
 
@@ -92,7 +93,7 @@ export function brandContact(env: Record<string, string | undefined> = typeof pr
     postalAddress: (env.NEXT_PUBLIC_BRAND_POSTAL_ADDRESS || env.BRAND_POSTAL_ADDRESS || "").trim(),
     registrationNo: (env.NEXT_PUBLIC_BRAND_REGISTRATION_NO || env.BRAND_REGISTRATION_NO || "").trim(),
     kraPin: (env.NEXT_PUBLIC_BRAND_KRA_PIN || env.BRAND_KRA_PIN || "").trim(),
-    privacyUrl: safeUrl(env.NEXT_PUBLIC_BRAND_PRIVACY_URL || env.BRAND_PRIVACY_URL) || `mailto:admin@${BRAND_DOMAIN}?subject=Privacy%20or%20data%20request`,
+    privacyUrl: safeUrl(env.NEXT_PUBLIC_BRAND_PRIVACY_URL || env.BRAND_PRIVACY_URL) || BRAND_PRIVACY_DEFAULT,
     linkedinUrl: !isPlaceholder(linkedinEnv) ? String(linkedinEnv) : !isPlaceholder(linkedinSite) ? String(linkedinSite) : "",
   };
 }
@@ -593,7 +594,7 @@ export function letterheadLines(opts: CoBrand & { contact?: BrandContact } = {})
     name: brandDisplayName(opts),
     logoUrl: BRAND_LOGO_URL,
     contactStrip: `${brandMailboxAddress("hello")}  ·  ${contact.phoneDisplay}  ·  ${BRAND_DOMAIN}  ·  ${brandAddressLine(contact)}`,
-    registration: contact.registrationNo ? `Reg. No. ${contact.registrationNo}` : "Reg. No. pending",
+    registration: contact.registrationNo ? `Reg. No. ${contact.registrationNo}` : "",
     kraPin: contact.kraPin ? `KRA PIN ${contact.kraPin}` : "",
     footer: (page: number, pages: number) => `${BRAND_NAME} · ${contact.registrationNo ? `Reg. No. ${contact.registrationNo} · ` : ""}Page ${page} of ${pages}`,
   };
@@ -645,6 +646,6 @@ export function renderLetterhead(input: LetterheadInput): string {
   <h1 class="lh-title">${esc(input.title)}</h1>
   <main class="lh-body">${input.bodyHtml}</main>
   <p class="lh-sign">Prepared by<br/><strong style="color:var(--ink)">${esc(input.preparedBy || `${BRAND_NAME} team`)}</strong></p>
-  <footer class="lh-foot"><span>${esc(lines.registration)}${lines.kraPin ? ` · ${esc(lines.kraPin)}` : ""} · ${esc(brandAddressLine(contact))}</span><span>${input.client?.name ? esc(POWERED_BY) : esc(BRAND_DOMAIN)} · <span class="lh-page"></span></span></footer>
+  <footer class="lh-foot"><span>${[lines.registration, lines.kraPin, brandAddressLine(contact)].filter(Boolean).map(esc).join(" · ")}</span><span>${input.client?.name ? esc(POWERED_BY) : esc(BRAND_DOMAIN)} · <span class="lh-page"></span></span></footer>
 </div>${input.tailHtml || ""}</body></html>`;
 }

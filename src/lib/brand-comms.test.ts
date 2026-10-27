@@ -113,7 +113,7 @@ test("welcome email explains each mailbox, trial counter and links", () => {
 
 test("letterhead lines are config-driven and never invent values", () => {
   const empty = letterheadLines({ contact: brandContact({}) });
-  assert.equal(empty.registration, "Reg. No. pending");
+  assert.equal(empty.registration, "");
   assert.equal(empty.footer(1, 2).includes("Page 1 of 2"), true);
   const set = letterheadLines({ contact: brandContact({ BRAND_REGISTRATION_NO: "PVT-123" }) });
   assert.match(set.registration, /PVT-123/);
