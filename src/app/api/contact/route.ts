@@ -1,3 +1,4 @@
+import { notifyAddressFor } from "@/lib/mail-addresses";
 import { NextResponse } from "next/server";
 import { parseRequestJson, readJsonFile, writeJsonFile } from "@/lib/storage";
 import { isValidEmail } from "@/lib/validation";
@@ -103,8 +104,8 @@ export async function POST(request: Request) {
       console.error("[contact] mailbox", error instanceof Error ? error.message : "mailbox failed");
     }
     if (isResendConfigured()) {
-      await sendResendEmail({
-        to: siteConfig.email,
+      await sendResendEmail({ purpose: "leadAlert",
+        to: notifyAddressFor("leadAlert"),
         subject: `Contact form — ${name}`,
         ...(emailOk ? { replyTo: email } : {}),
         html: `<p><strong>${name}</strong> (${email || phone})</p><p>Source: ${entry.source}</p><p>${message.replace(/\n/g, "<br/>")}</p>`,

@@ -208,7 +208,7 @@ export type PricingTier = {
   lane?: "build" | "care";
   /**
    * Exact KES floor when the public price is set in shillings.
-   * Paystack and Daraja charge this (or the deposit share of it) instead of converting USD.
+   * Paystack charges this (or the deposit share of it) instead of converting USD.
    */
   kesAmount?: number;
   /** No online deposit — price is quoted after discovery */
@@ -778,8 +778,8 @@ export const siteConfig = {
    * Paystack is the primary checkout (PAYSTACK_SECRET_KEY).
    * USD tiers convert to KES at PAYSTACK_USD_KES_RATE. Tiers with kesAmount charge that shilling floor.
    * Checkout can charge KES (M-Pesa or card) or a USD card.
-   * Paystack is the only card/online gateway. Daraja STK stays hidden
-   * unless the MPESA_* keys are set. Bank transfer / invoice is always available.
+   * Paystack is the only payment gateway (it takes M-Pesa and card).
+   * Beacon has no paybill of its own. Bank transfer is only an invoice request.
    *
    * Deposit rationale (depositPercent = 30):
    * Industry-fair for custom software: enough to reserve capacity and cover discovery/kickoff,
@@ -800,8 +800,6 @@ export const siteConfig = {
     defaultDepositPercent: 30,
     comingSoonMessage:
       "Paystack is not configured yet. Pay by bank transfer, or book a call and we will send an invoice.",
-    mpesaComingSoonMessage:
-      "M-Pesa STK is not configured yet (set MPESA_* in .env.local). Use Paystack or request an invoice.",
   },
 
   pricingDisclaimer:

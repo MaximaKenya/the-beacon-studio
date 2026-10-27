@@ -21,7 +21,7 @@ export const runtime = "nodejs";
 async function maybeSendPortalSignIn(email: string, code: string, magicUrl: string): Promise<boolean> {
   if (!isResendConfigured()) return false;
   const letter = composePortalSignIn({ email, code, magicUrl });
-  const result = await sendResendEmail({
+  const result = await sendResendEmail({ purpose: "portal",
     to: email,
     subject: `${siteConfig.brand.name} portal sign-in`,
     text: letter.text,

@@ -45,6 +45,11 @@ export type PersistedThread = {
   summary?: string;
   suggestedReply?: string;
   tags?: string[];
+  /** hello | support | billing | admin. Older rows are filled in on read. */
+  mailbox?: string;
+  starred?: boolean;
+  /** Where a trashed thread came from, for Restore. */
+  previousFolder?: string;
   messages: PersistedMessage[];
 };
 
@@ -79,6 +84,9 @@ type ThreadRow = {
   summary: string | null;
   suggested_reply: string | null;
   tags: unknown;
+  mailbox?: string | null;
+  starred?: boolean | null;
+  previous_folder?: string | null;
 };
 
 type MessageRow = {
@@ -157,6 +165,9 @@ async function loadPostgres(): Promise<PersistedMailbox> {
       ...(row.summary ? { summary: row.summary } : {}),
       ...(row.suggested_reply ? { suggestedReply: row.suggested_reply } : {}),
       ...(Array.isArray(row.tags) && row.tags.length ? { tags: asStringArray(row.tags) } : {}),
+      ...(row.mailbox ? { mailbox: row.mailbox } : {}),
+      ...(row.starred ? { starred: true } : {}),
+      ...(row.previous_folder ? { previousFolder: row.previous_folder } : {}),
       messages: byThread.get(row.id) || [],
     })),
   };
@@ -185,9 +196,10 @@ async function savePostgres(doc: PersistedMailbox): Promise<void> {
       await client.query(
         `INSERT INTO mail_threads (
            id, subject, folder, unread, participants, preview, created_at, updated_at,
-           client_id, client_name, lead_id, lead_kind, summary, suggested_reply, tags
+           client_id, client_name, lead_id, lead_kind, summary, suggested_reply, tags,
+           mailbox, starred, previous_folder
          ) VALUES (
-           $1,$2,$3,$4,$5::jsonb,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15::jsonb
+           $1,$2,$3,$4,$5::jsonb,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15::jsonb,$16,$17,$18
          )
          ON CONFLICT (id) DO UPDATE SET
            subject = EXCLUDED.subject,
@@ -203,7 +215,10 @@ async function savePostgres(doc: PersistedMailbox): Promise<void> {
            lead_kind = EXCLUDED.lead_kind,
            summary = EXCLUDED.summary,
            suggested_reply = EXCLUDED.suggested_reply,
-           tags = EXCLUDED.tags`,
+           tags = EXCLUDED.tags,
+           mailbox = EXCLUDED.mailbox,
+           starred = EXCLUDED.starred,
+           previous_folder = EXCLUDED.previous_folder`,
         [
           thread.id,
           thread.subject,
@@ -220,6 +235,9 @@ async function savePostgres(doc: PersistedMailbox): Promise<void> {
           thread.summary ?? null,
           thread.suggestedReply ?? null,
           JSON.stringify(thread.tags ?? []),
+          thread.mailbox ?? null,
+          Boolean(thread.starred),
+          thread.previousFolder ?? null,
         ]
       );
       for (const message of thread.messages) {

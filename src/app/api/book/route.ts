@@ -1,3 +1,4 @@
+import { notifyAddressFor } from "@/lib/mail-addresses";
 import { NextResponse } from "next/server";
 import { ensureDataFiles, parseRequestJson, readJsonFile, writeJsonFile } from "@/lib/storage";
 import {
@@ -177,8 +178,8 @@ export async function POST(request: Request) {
         greeting: "Hello,",
         bodyText: `${name} (${email}) booked ${meetingLabel} for ${when}.${message ? `\n\n${message}` : ""}${campaign ? `\n\n${campaign}` : ""}`,
       });
-      await sendResendEmail({
-        to: siteConfig.email,
+      await sendResendEmail({ purpose: "leadAlert",
+        to: notifyAddressFor("leadAlert"),
         replyTo: email,
         subject: `New booking — ${name} · ${meetingLabel}`,
         html: studio.html,

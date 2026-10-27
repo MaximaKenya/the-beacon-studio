@@ -17,7 +17,20 @@ import { readJsonFile } from "@/lib/storage";
 import { normalizeServiceIds, serviceLabels } from "@/lib/intake-services";
 import { isValidEmail, normalizeEmail } from "@/lib/validation";
 import { blockRemoteImages, sanitizeEmailHtml } from "@/lib/html-sanitize";
-import { MAILBOX_IDS, fromHeaderFor, isMailboxId, mailboxesOf, type MailboxId } from "@/lib/mail-addresses";
+import { MAILBOX_IDS, classifyInbound, fromHeaderFor, isMailboxId, mailboxesOf, senderFor } from "@/lib/mail-addresses";
+import {
+  asStoredFolder,
+  canDeleteForever,
+  countsByMailbox,
+  folderCounts,
+  inMailbox,
+  migrateThread,
+  moveThread,
+  primaryMailbox,
+  restoreThread,
+  threadInFolder as folderHas,
+  type MoveTarget,
+} from "@/lib/mail-folders";
 import { describeInboundMail } from "@/lib/mail-ai";
 import {
   hasResendMessage,
@@ -80,11 +93,7 @@ type BookingRow = {
 
 async function readDoc(): Promise<MailboxDoc> {
   const doc = await loadMailbox();
-  for (const thread of doc.threads) {
-    if (thread.folder !== "inbox" && thread.folder !== "sent" && thread.folder !== "drafts" && thread.folder !== "archive") {
-      thread.folder = "inbox";
-    }
-  }
+  for (const thread of doc.threads) migrateThread(thread);
   return doc;
 }
 
@@ -122,11 +131,6 @@ function messageDomain(): string {
   return domain || "localhost";
 }
 
-function asFolder(value: string): MailFolder {
-  if (value === "inbox" || value === "sent" || value === "drafts" || value === "archive") return value;
-  return "inbox";
-}
-
 function viewMessage(message: StoredMessage, remoteImages = false): MailMessageView {
   const clean = message.html ? sanitizeEmailHtml(message.html) : "";
   const gated = remoteImages ? { html: clean, blocked: 0 } : blockRemoteImages(clean);
@@ -156,7 +160,7 @@ function summarize(thread: StoredThread): MailThreadSummary {
   return {
     id: thread.id,
     subject: thread.subject,
-    folder: asFolder(thread.folder),
+    folder: asStoredFolder(thread.folder),
     unread: thread.unread,
     participants: thread.participants,
     preview: thread.preview,
@@ -169,32 +173,21 @@ function summarize(thread: StoredThread): MailThreadSummary {
     ...(thread.tags?.length ? { tags: thread.tags } : {}),
     messageCount: thread.messages.length,
     mailboxes: mailboxesOf(thread.messages),
+    mailbox: primaryMailbox(thread),
+    ...(thread.starred ? { starred: true } : {}),
   };
 }
 
 export function threadInFolder(thread: StoredThread, folder: MailFolder): boolean {
-  if (folder === "archive") return thread.folder === "archive";
-  if (thread.folder === "archive") return false;
-  if (folder === "drafts") {
-    return thread.folder === "drafts" || thread.messages.some((m) => m.direction === "draft");
-  }
-  if (folder === "inbox") return thread.folder === "inbox";
-  return thread.folder !== "drafts" && thread.messages.some((m) => m.direction === "out");
+  return folderHas(thread, folder);
 }
 
-function countsFor(threads: StoredThread[]): MailboxCounts {
+function countsFor(threads: StoredThread[], mailbox?: string): MailboxCounts {
+  const perMailbox = countsByMailbox(threads);
   return {
-    inbox: threads.filter((t) => threadInFolder(t, "inbox")).length,
-    sent: threads.filter((t) => threadInFolder(t, "sent")).length,
-    drafts: threads.filter((t) => threadInFolder(t, "drafts")).length,
-    archive: threads.filter((t) => threadInFolder(t, "archive")).length,
-    unread: threads.filter((t) => t.folder === "inbox" && t.unread).length,
-    byMailbox: Object.fromEntries(
-      MAILBOX_IDS.map((id) => [
-        id,
-        threads.filter((t) => t.folder === "inbox" && t.unread && mailboxesOf(t.messages).includes(id)).length,
-      ])
-    ),
+    ...folderCounts(threads, mailbox),
+    byMailbox: Object.fromEntries(MAILBOX_IDS.map((id) => [id, perMailbox[id].unread])),
+    perMailbox,
   };
 }
 
@@ -276,10 +269,10 @@ export async function listMailbox(folder: MailFolder, query: string, mailbox?: s
   const q = query.trim().toLowerCase();
   const threads = doc.threads
     .filter((thread) => threadInFolder(thread, folder) && matchesQuery(thread, q))
-    .filter((thread) => !isMailboxId(mailbox) || mailboxesOf(thread.messages).includes(mailbox as MailboxId))
+    .filter((thread) => inMailbox(thread, mailbox))
     .sort((a, b) => (a.updatedAt < b.updatedAt ? 1 : -1))
     .map(summarize);
-  return { configured: isMailboxConfigured(), counts: countsFor(doc.threads), threads };
+  return { configured: isMailboxConfigured(), counts: countsFor(doc.threads, mailbox), threads };
 }
 
 export async function findThreadIdByLead(leadId: string): Promise<string | null> {
@@ -391,17 +384,43 @@ export async function markMailboxRead(id: string, unread: boolean): Promise<bool
 }
 
 export async function archiveMailboxThread(id: string): Promise<boolean> {
-  return setFlag(id, (thread) => {
-    thread.folder = "archive";
-    thread.unread = false;
-  });
+  return setFlag(id, (thread) => moveThread(thread, "archive"));
 }
 
 export async function restoreMailboxThread(id: string): Promise<boolean> {
-  return setFlag(id, (thread) => {
-    const hasInbound = thread.messages.some((m) => m.direction === "in");
-    thread.folder = hasInbound ? "inbox" : "sent";
-  });
+  return setFlag(id, (thread) => restoreThread(thread));
+}
+
+/** Bulk-friendly thread actions. Returns how many threads changed. */
+export async function updateMailboxThreads(
+  ids: string[],
+  op:
+    | { kind: "move"; folder: MoveTarget }
+    | { kind: "restore" }
+    | { kind: "star"; starred: boolean }
+    | { kind: "read"; unread: boolean }
+    | { kind: "delete" }
+): Promise<number> {
+  const wanted = new Set(ids.filter(Boolean));
+  if (!wanted.size) return 0;
+  const doc = await readDoc();
+  let changed = 0;
+  if (op.kind === "delete") {
+    const before = doc.threads.length;
+    doc.threads = doc.threads.filter((thread) => !(wanted.has(thread.id) && canDeleteForever(thread)));
+    changed = before - doc.threads.length;
+  } else {
+    for (const thread of doc.threads) {
+      if (!wanted.has(thread.id)) continue;
+      if (op.kind === "move") moveThread(thread, op.folder);
+      else if (op.kind === "restore") restoreThread(thread);
+      else if (op.kind === "star") thread.starred = op.starred;
+      else thread.unread = op.unread;
+      changed += 1;
+    }
+  }
+  if (changed) await writeDoc(doc);
+  return changed;
 }
 
 function quotedForward(message: StoredMessage): string {
@@ -415,6 +434,7 @@ export async function saveMailboxDraft(input: ComposeInput): Promise<MailThreadD
   const cc = parseAddressList(input.cc || "");
   const subject = input.subject.trim() || "(no subject)";
   const text = clip(input.text);
+  const sender = fromHeaderFor(input.from);
   let thread = input.threadId ? doc.threads.find((row) => row.id === input.threadId) : undefined;
 
   if (!thread) {
@@ -422,6 +442,7 @@ export async function saveMailboxDraft(input: ComposeInput): Promise<MailThreadD
       id: randomUUID(),
       subject,
       folder: "drafts",
+      mailbox: isMailboxId(input.from) ? input.from : "hello",
       unread: false,
       participants: to,
       preview: previewFrom(text),
@@ -439,7 +460,7 @@ export async function saveMailboxDraft(input: ComposeInput): Promise<MailThreadD
   const message: StoredMessage = existing ?? {
     id: randomUUID(),
     direction: "draft",
-    from: fromAddress() || siteConfig.email,
+    from: sender.address,
     to,
     cc,
     subject,
@@ -447,6 +468,7 @@ export async function saveMailboxDraft(input: ComposeInput): Promise<MailThreadD
     createdAt: now,
     attachments: [],
   };
+  message.from = sender.address;
   message.to = to;
   message.cc = cc;
   message.subject = subject;
@@ -598,6 +620,7 @@ export async function sendMailbox(input: ComposeInput): Promise<{ thread: MailTh
       id: randomUUID(),
       subject,
       folder: "sent",
+      mailbox: isMailboxId(input.from) ? input.from : "hello",
       unread: false,
       participants: [],
       preview: "",
@@ -640,7 +663,7 @@ export async function sendMailbox(input: ComposeInput): Promise<{ thread: MailTh
   const sender = input.from ? fromHeaderFor(input.from) : undefined;
   if (sender) message.from = sender.address;
   const result = await deliverMessage(thread, message, `mailbox/${message.id}`, sender);
-  if (!result.sent && thread.folder !== "inbox" && thread.folder !== "archive") {
+  if (!result.sent && thread.folder !== "inbox" && thread.folder !== "archive" && thread.folder !== "spam" && thread.folder !== "trash") {
     thread.folder = "drafts";
   }
   thread.subject = thread.subject || subject;
@@ -650,6 +673,11 @@ export async function sendMailbox(input: ComposeInput): Promise<{ thread: MailTh
   const detail = await getMailboxThread(thread.id);
   if (!detail) throw new Error("Could not save the message.");
   return { thread: detail, sent: result.sent, error: result.error };
+}
+
+/** Site forms file into the mailbox that owns them: invoice requests go to billing@, the rest to hello@. */
+export function siteFormPurpose(kind: string): "invoice" | "contact" {
+  return kind === "invoice" ? "invoice" : "contact";
 }
 
 export async function recordSiteForm(input: {
@@ -670,11 +698,13 @@ export async function recordSiteForm(input: {
   const email = input.email && isValidEmail(input.email) ? normalizeEmail(input.email) : "";
   const client = email ? await rememberClient(email, input.name, input.phone) : null;
   const text = clip(input.text);
+  const purpose = siteFormPurpose(input.kind);
+  const studio = senderFor(purpose);
   const inbound: StoredMessage = {
     id: randomUUID(),
     direction: "in",
     from: email || input.name || "website",
-    to: [fromAddress() || siteConfig.email],
+    to: [studio.address],
     cc: [],
     subject: input.subject,
     text,
@@ -685,6 +715,7 @@ export async function recordSiteForm(input: {
     id: randomUUID(),
     subject: input.subject,
     folder: "inbox",
+    mailbox: studio.mailbox,
     unread: true,
     participants: email ? [email] : [],
     preview: previewFrom(text),
@@ -708,7 +739,7 @@ export async function recordSiteForm(input: {
     const outbound: StoredMessage = {
       id: randomUUID(),
       direction: "out",
-      from: fromHeaderFallback(),
+      from: studio.address,
       to: [email],
       cc: [],
       subject: input.confirmationSubject || `We received your message — ${siteConfig.brand.name}`,
@@ -720,6 +751,7 @@ export async function recordSiteForm(input: {
     const domain = messageDomain();
     outbound.messageId = `<${outbound.id}@${domain}>`;
     const result = await sendResendEmail({
+      purpose,
       to: email,
       subject: outbound.subject,
       html: note.html,
@@ -850,6 +882,7 @@ export async function ingestInboundEmail(input: {
       id: randomUUID(),
       subject: message.subject,
       folder: "inbox",
+      mailbox: classifyInbound(input.to, input.cc ?? []),
       unread: true,
       participants: fromEmail && isValidEmail(fromEmail) ? [fromEmail] : [],
       preview: previewFrom(text),
@@ -861,7 +894,9 @@ export async function ingestInboundEmail(input: {
     doc.threads.unshift(thread);
   }
 
-  thread.folder = thread.folder === "archive" ? "archive" : "inbox";
+  // A reply pulls a thread back to the inbox, unless it was marked spam.
+  thread.folder = thread.folder === "spam" ? "spam" : "inbox";
+  if (thread.folder === "inbox") delete thread.previousFolder;
   thread.unread = true;
   thread.messages.push(message);
   touch(thread, message);

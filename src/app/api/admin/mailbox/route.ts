@@ -12,18 +12,24 @@ import {
   restoreMailboxThread,
   saveMailboxDraft,
   sendMailbox,
+  updateMailboxThreads,
   type ComposeInput,
 } from "@/lib/mailbox";
+import { isMailFolder, isMoveTarget } from "@/lib/mail-folders";
 import type { MailFolder } from "@/lib/mailbox-types";
 import { isMailboxConfigured } from "@/lib/resend";
 import { parseRequestJson } from "@/lib/storage";
 
 export const runtime = "nodejs";
 
-const FOLDERS: MailFolder[] = ["inbox", "sent", "drafts", "archive"];
-
 function folderOf(value: string | null): MailFolder {
-  return FOLDERS.includes(value as MailFolder) ? (value as MailFolder) : "inbox";
+  return isMailFolder(value) ? value : "inbox";
+}
+
+function idsOf(body: Record<string, unknown>): string[] {
+  const list = Array.isArray(body.threadIds) ? body.threadIds.filter((id): id is string => typeof id === "string") : [];
+  if (typeof body.threadId === "string" && body.threadId) list.push(body.threadId);
+  return [...new Set(list)].slice(0, 500);
 }
 
 function composeFrom(body: Record<string, unknown>): ComposeInput {
@@ -88,6 +94,7 @@ export async function POST(request: Request) {
   const body = await parseRequestJson(request);
   const action = typeof body.action === "string" ? body.action : "";
   const threadId = typeof body.threadId === "string" ? body.threadId : "";
+  const ids = idsOf(body);
 
   try {
     if (action === "send" || action === "reply" || action === "forward") {
@@ -127,17 +134,36 @@ export async function POST(request: Request) {
       const thread = await saveMailboxDraft(composeFrom(body));
       return NextResponse.json({ ok: true, thread });
     }
-    if (action === "archive" && threadId) {
+    if (action === "archive" && threadId && ids.length === 1) {
       const ok = await archiveMailboxThread(threadId);
       return NextResponse.json({ ok });
     }
-    if (action === "restore" && threadId) {
+    if (action === "restore" && threadId && ids.length === 1) {
       const ok = await restoreMailboxThread(threadId);
       return NextResponse.json({ ok });
     }
-    if ((action === "read" || action === "unread") && threadId) {
+    if ((action === "read" || action === "unread") && threadId && ids.length === 1) {
       const ok = await markMailboxRead(threadId, action === "unread");
       return NextResponse.json({ ok });
+    }
+    if (ids.length) {
+      let changed = -1;
+      if (action === "move") {
+        if (!isMoveTarget(body.folder)) return NextResponse.json({ error: "Pick a folder to move to." }, { status: 400 });
+        changed = await updateMailboxThreads(ids, { kind: "move", folder: body.folder });
+      } else if (action === "archive" || action === "trash" || action === "spam") {
+        changed = await updateMailboxThreads(ids, { kind: "move", folder: action });
+      } else if (action === "restore") {
+        changed = await updateMailboxThreads(ids, { kind: "restore" });
+      } else if (action === "star" || action === "unstar") {
+        changed = await updateMailboxThreads(ids, { kind: "star", starred: action === "star" });
+      } else if (action === "read" || action === "unread") {
+        changed = await updateMailboxThreads(ids, { kind: "read", unread: action === "unread" });
+      } else if (action === "delete") {
+        // Permanent. Only threads already in Trash are removed.
+        changed = await updateMailboxThreads(ids, { kind: "delete" });
+      }
+      if (changed >= 0) return NextResponse.json({ ok: changed > 0, changed });
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : "Mailbox action failed.";

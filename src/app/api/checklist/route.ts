@@ -108,7 +108,7 @@ export async function POST(request: Request) {
         greeting: `Hi ${name},`,
         bodyText: `Your checklist is ready.\n\nHTML: ${links.html}\nPDF: ${links.pdf}\n\nIt is a planning list, not a quote. The free 20-minute audit is at ${absoluteUrl("/book")}.`,
       });
-      await sendResendEmail({
+      await sendResendEmail({ purpose: "enquiry",
         to: email,
         subject: `Your checklist — ${siteConfig.brand.name}`,
         html: mail.html,

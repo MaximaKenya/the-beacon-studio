@@ -63,6 +63,9 @@ const SCHEMA_SQL = `
     ON mail_messages (thread_id, created_at);
   CREATE INDEX IF NOT EXISTS mail_threads_updated_idx
     ON mail_threads (updated_at DESC);
+  ALTER TABLE mail_threads ADD COLUMN IF NOT EXISTS mailbox text;
+  ALTER TABLE mail_threads ADD COLUMN IF NOT EXISTS starred boolean NOT NULL DEFAULT false;
+  ALTER TABLE mail_threads ADD COLUMN IF NOT EXISTS previous_folder text;
 `;
 
 type GlobalWithPool = typeof globalThis & {

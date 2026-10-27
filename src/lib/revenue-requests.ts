@@ -1,3 +1,4 @@
+import { notifyAddressFor } from "@/lib/mail-addresses";
 import { randomBytes, randomUUID } from "crypto";
 import { siteConfig } from "@/data/site";
 import { brandedEmail } from "@/lib/email-html";
@@ -84,7 +85,7 @@ export async function saveRevenueRequest(input: ParsedRequest): Promise<RevenueR
     }
     if (isResendConfigured()) {
       const mail = brandedEmail({ heading: `New ${label.toLowerCase()}`, greeting: "Hi,", bodyText: `${entry.name} <${entry.email}>\n${summary}\n\nOpen /admin › Revenue.` });
-      await sendResendEmail({ to: process.env.ADMIN_EMAIL?.trim() || siteConfig.email, subject: `${label}: ${entry.company || entry.name}`, html: mail.html, text: mail.text }).catch(() => undefined);
+      await sendResendEmail({ purpose: "leadAlert", to: notifyAddressFor("leadAlert"), subject: `${label}: ${entry.company || entry.name}`, html: mail.html, text: mail.text }).catch(() => undefined);
     }
   }
   return entry;

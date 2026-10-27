@@ -30,10 +30,9 @@ Client and admin steps live in `AUTOMATIONS.md`. Short version:
 |---|---|---|
 | **Resend** (mailbox, form confirmations, portal OTP, inbox replies) | `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `RESEND_REPLY_TO`, `RESEND_WEBHOOK_SECRET` | Forms still save. Admin mailbox shows **Email not configured**. No confirmation email |
 | **Paystack** (primary deposits) | `PAYSTACK_SECRET_KEY`, `PAYSTACK_PUBLIC_KEY`, optional `PAYSTACK_USD_KES_RATE` | Checkout explains Paystack is not configured. Bank transfer / invoice still works |
-| **M-Pesa Daraja** (hidden unless configured) | `MPESA_*` | Button is not shown. Paystack KES still covers M-Pesa when Paystack is live |
 | **OpenAI** (Glow + brief helper) | `OPENAI_API_KEY` | On-site knowledge base only |
 | **Groq** (Beacon AI chat, `POST /api/ai/chat`) | `GROQ_API_KEY`, optional `GROQ_MODEL` | Widget still opens. Replies fall back to WhatsApp. Default model is `llama-3.3-70b-versatile`. Free and developer Groq tiers retired that id on 2026-08-16; the route then retries `openai/gpt-oss-120b`. Set `GROQ_MODEL` to pin one model. |
-| Paystack webhook / M-Pesa callback | Point at your domain `/api/payments/...` | Needed once keys are live |
+| Paystack webhook | Point at your domain `/api/payments/...` | Needed once keys are live |
 
 ## Product suite
 
@@ -122,6 +121,34 @@ Webhook in the Resend dashboard:
 
 Without `RESEND_API_KEY` or `RESEND_FROM_EMAIL`, `/admin` → Mailbox shows **Email not configured**. Form submissions still create a thread in storage. Inbound webhooks are rejected until the signing secret is set.
 
+### Mailboxes and routing
+
+The admin Mail panel has one tab per address. Each tab has Inbox, Unread, Starred, Sent, Drafts, Archive, Spam and Trash, with counts, search within the folder, star, move-to-folder and bulk select. Trash is a soft delete: Restore puts a thread back where it was, and **Delete forever** (only offered in Trash) removes it from storage.
+
+| Mailbox | Default address | What it is for |
+|---|---|---|
+| hello | `hello@<domain>` | Public contact form, general enquiries, welcome/onboarding, trial nurture and their replies, booking confirmations |
+| support | `support@<domain>` | Client portal sign-in and help, automation failure/alert notices, support replies |
+| billing | `billing@<domain>` | Invoices, receipts, Paystack payment notices, trial-ended and renewal notices, care-plan invoices |
+| admin | `admin@<domain>` | Security and system alerts, new lead and signup notifications, daily digest, health notices |
+
+The mapping lives in one place: `src/lib/mail-addresses.ts` (`MAIL_PURPOSES`). Every app email names a purpose; `senderFor(purpose)` picks the From and Reply-To so replies land in the right tab.
+
+| Var | Default | Role |
+|---|---|---|
+| `MAIL_HELLO` | `hello@<domain>` | Override the hello address |
+| `MAIL_SUPPORT` | `support@<domain>` | Override the support address |
+| `MAIL_BILLING` | `billing@<domain>` | Override the billing address |
+| `MAIL_ADMIN` | `admin@<domain>` | Override the admin address |
+| `ADMIN_EMAIL` | admin address | Where internal alerts (leads, signups, digest) are delivered. The sender stays admin@ |
+
+- All four addresses must be on the verified Resend domain (or set the overrides to addresses that are).
+- **Inbound classification:** Resend inbound delivers every address on the domain to `/api/email/inbound`. A new thread is filed under the first studio address in To, then Cc. Plus-tags and unknown local parts fall back to hello. Replies stay on their thread's mailbox.
+- **Existing mail** from before this change has no mailbox. On read it is filed by the address it was sent to (or sent from), keeps its old folder, and is saved back the next time it changes. Postgres gets three nullable columns (`mailbox`, `starred`, `previous_folder`) via `ALTER TABLE … ADD COLUMN IF NOT EXISTS`.
+- Compose sends from the open tab; the From picker can still change it. Drafts remember their mailbox.
+- **Unchanged on purpose:** automation messages sent to clients' own customers keep their existing Reply-To (the client's address). Mail sent without a purpose still uses `EMAIL_FROM` / `RESEND_REPLY_TO`.
+- The admin UI shows the default addresses; `MAIL_*` overrides apply to sending and routing on the server.
+
 ### DNS for `<domain>`
 
 Add the domain in Resend first (sending + receiving). Copy any value the dashboard shows if it differs — the DKIM public key is unique, and the MX host depends on the region (`<region>`, usually `us-east-1`).
@@ -166,7 +193,7 @@ Prices on the site stay in USD. Checkout shows the KES equivalent and lets the c
 |---|---|
 | `PAYSTACK_SECRET_KEY` | Initialize, verify, and webhook HMAC |
 | `PAYSTACK_PUBLIC_KEY` | Paystack public key for the same account |
-| `PAYSTACK_USD_KES_RATE` | Optional. Default `130`. Also used for Daraja STK when `MPESA_KES_RATE` is unset |
+| `PAYSTACK_USD_KES_RATE` | Optional. Default `130`. |
 
 Endpoints:
 
@@ -231,7 +258,7 @@ curl -X POST https://thebeaconstudio.co.ke/api/automations/tick -H "Authorizatio
 
 **Bank transfer / invoice** is always on the checkout panel. It writes a pending payment (`provider: bank`), a lead in the admin inbox, and a mailbox thread. No bank account number is invented in the email — you reply with details.
 
-**Daraja** (full `MPESA_*` set) keeps its existing routes; its button renders only when those keys exist. Stripe has been removed — Paystack is the only online gateway.
+Beacon has no paybill: the Daraja STK routes were removed. Stripe has been removed too. Paystack is the only payment method. A client may enter **their own** optional paybill or till for their automations; it has no default.
 
 ## Revenue features (packs, trial nurture, ROI, packages, referrals)
 
@@ -257,9 +284,8 @@ curl -X POST https://thebeaconstudio.co.ke/api/automations/tick -H "Authorizatio
 - **High:** Portal pause and resume now check the owner. Resume only works from paused with a live trial or paid period, so `pending_payment` can't be skipped.
 - **High:** `data/*.json` (contacts, intakes, analytics) was committed to a public repo. Those files are no longer tracked and are now gitignored, but **git history still has them** and needs a purge.
 - **Medium:** Added rate limits on API POSTs (auth: 8 per 10 min) and same-origin checks on `/api/admin/*` and `/api/portal/*`. Tick now only accepts `Authorization: Bearer`. Analytics GET compares safely.
-- **Medium:** M-Pesa callback only changes pending payments. It requires `?token=` when `MPESA_CALLBACK_TOKEN` is set; add the same token to `MPESA_CALLBACK_URL`.
 - **Medium:** Added HSTS, nosniff, Referrer-Policy, Permissions-Policy, X-Frame-Options and frame-ancestors (except the `/a/*` and widget/embed routes). `X-Powered-By` is removed and admin/portal pages are noindex.
 - **Deps:** next 16.4.3, zod 4.6.7 and `npm audit fix` bring the prod audit to 0.
 - **Demo sandbox:** Booking date is now relative and shown in Nairobi time. Previews link to the live site, demo phone numbers are fake (2547000000NN) and the clinic-recall preview works. New "create demo client" in the admin, plus a read-only `/portal/demo` link.
 - **Admin:** Clearer tab names (Requests, Automation leads, Demo clients, Activity log). Requests, Partners, Referrals and Invoices tabs now have badges, and the top nav shows an Action Center badge.
-- **Todo (Max):** set `ADMIN_SESSION_SECRET`, `PORTAL_SECRET` (the code falls back to a weak dev secret if both it and `ADMIN_PASSWORD` are unset) and `MPESA_CALLBACK_TOKEN`. Purge `data/*.json` from git history. Consider a full script CSP.
+- **Todo (Max):** set `ADMIN_SESSION_SECRET`, `PORTAL_SECRET` (the code falls back to a weak dev secret if both it and `ADMIN_PASSWORD` are unset). Purge `data/*.json` from git history. Consider a full script CSP.

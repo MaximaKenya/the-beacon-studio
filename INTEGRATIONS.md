@@ -12,7 +12,6 @@ Copy `.env.example` → `.env.local` and fill values for your environment.
 | Integration | Used for | Required? |
 |---|---|---|
 | **Resend** | Contact notify + ack, subscribe confirm, booking confirm, portal OTP | Optional |
-| **M-Pesa Daraja** | STK Push deposits / invoices (pricing, intake, portal) | Optional |
 | **OpenAI** | Glow assistant + brief improver | Optional |
 | **ADMIN_PASSWORD** | `/admin` login | **Required** |
 | **PORTAL_SECRET** | Portal JWT / OTP signing | Recommended (falls back to `ADMIN_PASSWORD` in dev) |
@@ -66,32 +65,9 @@ Deposit amount = tier floor × `siteConfig.payments.depositPercent` (default **3
 
 ---
 
-## 3. M-Pesa Daraja (STK Push)
+## 3. M-Pesa
 
-**Env**
-
-```bash
-MPESA_CONSUMER_KEY=
-MPESA_CONSUMER_SECRET=
-MPESA_SHORTCODE=
-MPESA_PASSKEY=
-MPESA_CALLBACK_URL=https://YOUR_DOMAIN/api/payments/mpesa/callback
-MPESA_ENV=sandbox
-# Optional USD→KES rate (default 130)
-MPESA_KES_RATE=130
-```
-
-**Endpoints**
-
-- `POST /api/payments/mpesa/stk` — initiate STK Push
-- `POST /api/payments/mpesa/callback` — Safaricom result → reconcile `payments.json`
-
-**Setup**
-
-1. Create an app at [developer.safaricom.co.ke](https://developer.safaricom.co.ke/).
-2. Copy Consumer Key / Secret; use Lipa Na M-Pesa Online shortcode + passkey.
-3. Expose a public HTTPS callback (ngrok for local sandbox).
-4. Without keys: API returns `coming_soon` + mailto / book / call fallbacks.
+Beacon has no paybill of its own. Clients pay Beacon through Paystack (card or M-Pesa mobile money in KES). A client can add **their own** optional paybill or till to their automations (Settings → "Your own M-Pesa paybill or till"); it has no default and is left out of messages when blank.
 
 ---
 
@@ -203,19 +179,15 @@ flowchart TD
   D --> I[/admin Bookings panel]
 ```
 
-### Pay → Paystack / M-Pesa → receipt
+### Pay → Paystack → receipt
 
 ```mermaid
 flowchart LR
   UI[PayButton pricing / intake / portal] --> S{Provider}
   S -->|Paystack| ST[POST /api/paystack/initialize]
-  S -->|M-Pesa| MP[POST /api/payments/mpesa/stk]
   ST --> SS[Paystack checkout]
   SS --> WH[paystack webhook]
-  MP --> PH[Phone PIN]
-  PH --> CB[mpesa callback]
   WH --> PJ[payments.json success]
-  CB --> PJ
   PJ --> AD[Admin Mark paid / receipt]
   AD --> RC[receipts.json + portal docs]
 ```
@@ -244,12 +216,12 @@ sequenceDiagram
 
 ## Payment path audit
 
-| Surface | Paystack | M-Pesa STK | Fallback without keys |
-|---|---|---|---|
-| Pricing deposit | ✅ | ✅ | coming_soon + mailto / book |
-| Intake wizard | ✅ | ✅ | same |
-| Portal next payment | ✅ | ✅ | same (`projectId` stored) |
-| Admin mark-paid | N/A (manual) | N/A | Creates receipt; uses `payment.projectId` when present |
+| Surface | Paystack | Fallback without keys |
+|---|---|---|
+| Pricing deposit | ✅ | coming_soon + mailto / book |
+| Intake wizard | ✅ | same |
+| Portal next payment | ✅ | same (`projectId` stored) |
+| Admin mark-paid | N/A (manual) | Creates receipt; uses `payment.projectId` when present |
 
 ---
 
