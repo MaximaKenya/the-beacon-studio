@@ -17,7 +17,7 @@
     "automations:run": "tsx scripts/run-each-automation.ts"
   },
   "dependencies": {
-    "framer-motion": "^12.23.12",
+    "framer-motion": "^14.6.0",
     "html2canvas": "^1.4.1",
     "jspdf": "^4.2.1",
     "lucide-react": "^0.525.0",
