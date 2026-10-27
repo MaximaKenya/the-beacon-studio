@@ -16,7 +16,8 @@ import { fromAddress, isMailboxConfigured, sendResendEmail } from "@/lib/resend"
 import { readJsonFile } from "@/lib/storage";
 import { normalizeServiceIds, serviceLabels } from "@/lib/intake-services";
 import { isValidEmail, normalizeEmail } from "@/lib/validation";
-import { sanitizeEmailHtml } from "@/lib/html-sanitize";
+import { blockRemoteImages, sanitizeEmailHtml } from "@/lib/html-sanitize";
+import { MAILBOX_IDS, fromHeaderFor, isMailboxId, mailboxesOf, type MailboxId } from "@/lib/mail-addresses";
 import { describeInboundMail } from "@/lib/mail-ai";
 import {
   hasResendMessage,
@@ -48,6 +49,8 @@ export type ComposeInput = {
   subject: string;
   text: string;
   attachments?: OutboundAttachment[];
+  /** Which studio mailbox sends it: hello, support, billing, or admin. */
+  from?: string;
 };
 
 type ContactRow = {
@@ -124,8 +127,10 @@ function asFolder(value: string): MailFolder {
   return "inbox";
 }
 
-function viewMessage(message: StoredMessage): MailMessageView {
-  const html = message.html ? sanitizeEmailHtml(message.html) : "";
+function viewMessage(message: StoredMessage, remoteImages = false): MailMessageView {
+  const clean = message.html ? sanitizeEmailHtml(message.html) : "";
+  const gated = remoteImages ? { html: clean, blocked: 0 } : blockRemoteImages(clean);
+  const html = gated.html;
   return {
     id: message.id,
     direction: message.direction,
@@ -143,6 +148,7 @@ function viewMessage(message: StoredMessage): MailMessageView {
       size: file.size,
       stored: Boolean(file.contentBase64),
     })),
+    ...(gated.blocked ? { remoteImagesBlocked: gated.blocked } : {}),
   };
 }
 
@@ -162,6 +168,7 @@ function summarize(thread: StoredThread): MailThreadSummary {
     ...(thread.suggestedReply ? { suggestedReply: thread.suggestedReply } : {}),
     ...(thread.tags?.length ? { tags: thread.tags } : {}),
     messageCount: thread.messages.length,
+    mailboxes: mailboxesOf(thread.messages),
   };
 }
 
@@ -182,6 +189,12 @@ function countsFor(threads: StoredThread[]): MailboxCounts {
     drafts: threads.filter((t) => threadInFolder(t, "drafts")).length,
     archive: threads.filter((t) => threadInFolder(t, "archive")).length,
     unread: threads.filter((t) => t.folder === "inbox" && t.unread).length,
+    byMailbox: Object.fromEntries(
+      MAILBOX_IDS.map((id) => [
+        id,
+        threads.filter((t) => t.folder === "inbox" && t.unread && mailboxesOf(t.messages).includes(id)).length,
+      ])
+    ),
   };
 }
 
@@ -241,7 +254,7 @@ function touch(thread: StoredThread, message: StoredMessage) {
   thread.subject = thread.subject || message.subject;
   const people = [message.from, ...message.to, ...message.cc]
     .map(extractEmail)
-    .filter((email) => email && email !== fromAddress());
+    .filter((email) => email && email !== fromAddress() && !email.endsWith("@thebeaconstudio.co.ke"));
   thread.participants = [...new Set([...thread.participants, ...people])];
 }
 
@@ -254,7 +267,7 @@ async function rememberClient(email: string, name?: string, phone?: string) {
   });
 }
 
-export async function listMailbox(folder: MailFolder, query: string): Promise<{
+export async function listMailbox(folder: MailFolder, query: string, mailbox?: string): Promise<{
   configured: boolean;
   counts: MailboxCounts;
   threads: MailThreadSummary[];
@@ -263,6 +276,7 @@ export async function listMailbox(folder: MailFolder, query: string): Promise<{
   const q = query.trim().toLowerCase();
   const threads = doc.threads
     .filter((thread) => threadInFolder(thread, folder) && matchesQuery(thread, q))
+    .filter((thread) => !isMailboxId(mailbox) || mailboxesOf(thread.messages).includes(mailbox as MailboxId))
     .sort((a, b) => (a.updatedAt < b.updatedAt ? 1 : -1))
     .map(summarize);
   return { configured: isMailboxConfigured(), counts: countsFor(doc.threads), threads };
@@ -353,12 +367,12 @@ async function linksFor(thread: StoredThread): Promise<{ client: MailClientLink 
   };
 }
 
-export async function getMailboxThread(id: string): Promise<MailThreadDetail | null> {
+export async function getMailboxThread(id: string, opts: { remoteImages?: boolean } = {}): Promise<MailThreadDetail | null> {
   const doc = await readDoc();
   const thread = doc.threads.find((row) => row.id === id);
   if (!thread) return null;
   const links = await linksFor(thread);
-  return { ...summarize(thread), clientId: thread.clientId, messages: thread.messages.map(viewMessage), links };
+  return { ...summarize(thread), clientId: thread.clientId, messages: thread.messages.map((m) => viewMessage(m, Boolean(opts.remoteImages))), links };
 }
 
 async function setFlag(id: string, patch: (thread: StoredThread) => void): Promise<boolean> {
@@ -454,7 +468,8 @@ export async function saveMailboxDraft(input: ComposeInput): Promise<MailThreadD
 async function deliverMessage(
   thread: StoredThread,
   message: StoredMessage,
-  idempotencyKey: string
+  idempotencyKey: string,
+  sender?: { address: string; header: string }
 ): Promise<{ sent: boolean; error?: string }> {
   if (!message.to.length) {
     message.direction = "draft";
@@ -488,6 +503,7 @@ async function deliverMessage(
   if (headers.References) message.references = headers.References;
 
   const result = await sendResendEmail({
+    ...(sender ? { from: sender.header, replyTo: sender.address } : {}),
     to: message.to,
     cc: message.cc,
     subject: message.subject,
@@ -522,7 +538,7 @@ async function deliverMessage(
   message.direction = "out";
   message.resendId = result.id;
   message.messageId = headers["Message-ID"];
-  message.from = fromHeaderFallback();
+  message.from = sender?.address || fromHeaderFallback();
   if (thread.folder === "drafts") thread.folder = "sent";
   return { sent: true };
 }
@@ -621,7 +637,9 @@ export async function sendMailbox(input: ComposeInput): Promise<{ thread: MailTh
   else if (!draft) message.attachments = copied;
   if (!draft) thread.messages.push(message);
 
-  const result = await deliverMessage(thread, message, `mailbox/${message.id}`);
+  const sender = input.from ? fromHeaderFor(input.from) : undefined;
+  if (sender) message.from = sender.address;
+  const result = await deliverMessage(thread, message, `mailbox/${message.id}`, sender);
   if (!result.sent && thread.folder !== "inbox" && thread.folder !== "archive") {
     thread.folder = "drafts";
   }

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { addInstanceNote, markOwnedCharge, portalSnapshot, rememberShare, requestOwnerInvoice, runOwnerHook, saveInstanceConfig, ownerSetStatus, stopFollowUps } from "@/lib/automations/runtime";
+import { addInstanceNote, markOwnedCharge, portalSnapshot, rememberShare, requestOwnerInvoice, runOwnerHook, saveInstanceConfig, saveOrgInputs, ownerSetStatus, stopFollowUps } from "@/lib/automations/runtime";
 import { shareTokenMatches } from "@/lib/automations/share";
 import { loadAutomations } from "@/lib/automations/store";
 import { getPortalSession } from "@/lib/portal-auth";
@@ -35,6 +35,10 @@ export async function POST(request: Request) {
     return NextResponse.json(result, { status: result.ok ? 200 : 403 });
   }
   if (action === "config") return NextResponse.json(await saveInstanceConfig(id, body.config, session.email, origin));
+  if (action === "org") {
+    const result = await saveOrgInputs(id, body.org, session.email, origin);
+    return NextResponse.json(result, { status: result.ok ? 200 : 400 });
+  }
   if (action === "note") return NextResponse.json(await addInstanceNote(id, String(body.text || ""), "client", session.email));
   if (action === "stop") return NextResponse.json(await stopFollowUps(id, session.email));
   if (action === "mark-paid") return NextResponse.json(await markOwnedCharge(String(body.chargeId || ""), session.email, "client"));

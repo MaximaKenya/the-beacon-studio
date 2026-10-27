@@ -52,6 +52,8 @@ export function replyToAddress(override?: string): string | undefined {
 }
 
 export async function sendResendEmail(opts: {
+  /** Full From header on the verified domain, e.g. "The Beacon Studio <support@…>". */
+  from?: string;
   to: string | string[];
   subject: string;
   html: string;
@@ -75,7 +77,7 @@ export async function sendResendEmail(opts: {
 
   const { data, error } = await resend.emails.send(
     {
-      from: fromHeader(),
+      from: opts.from || fromHeader(),
       to,
       subject: opts.subject,
       html: opts.html,

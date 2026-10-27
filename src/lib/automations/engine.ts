@@ -3,6 +3,7 @@ import { templateById } from "@/automations/templates/public";
 import { deliver, rememberDeliveries } from "@/lib/automations/channels";
 import { groqText } from "@/lib/automations/groq";
 import { entryKey } from "@/lib/automations/inputs";
+import { ORG_INTERNAL_TEMPLATES, orgMessageFooter, orgNumber, orgTemplateVars, readOrgInputs } from "@/lib/automations/org-fields";
 import { initialCustomReminderAt, isEmailAddress, nextYearlyIso, paymentReminderText, recurrenceDays, splitRecipients } from "@/lib/automations/messages";
 import { traceStep } from "@/lib/automations/trace";
 import { createChargeLink } from "@/lib/automations/paylinks";
@@ -123,6 +124,7 @@ async function sendOut(
     detail: `To ${target.email || "no email"}${target.phone ? ` · ${target.phone}` : ""}\n\n${target.text}`,
   });
   const live = input.deliverTo;
+  target = withOrgInputs(input, target);
   const result = await deliver({
     instance: input.instance,
     email: live ? live.email : target.email,
@@ -136,6 +138,18 @@ async function sendOut(
   await touch(input.instance, nowOf(input), "messages");
   addLog(input.doc, input.instance.id, `${target.subject}. ${result.note}`);
   return result;
+}
+
+/** Fill org placeholders and add the client's terms, sign-off, contact and opt-out text to customer messages. */
+export function withOrgInputs<T extends { email?: string; subject: string; text: string }>(input: Pick<EngineInput, "instance">, target: T): T {
+  const { templateId, config } = input.instance;
+  const vars = orgTemplateVars(templateId, config);
+  const fill = (value: string) => value.replace(/\{\{\s*(\w+)\s*\}\}/g, (match, key: string) => (key in vars ? String(vars[key]) : match));
+  const owner = ownerEmail(input.instance);
+  const toOwner = Boolean(target.email) && target.email?.toLowerCase() === owner.toLowerCase();
+  const footer = toOwner || ORG_INTERNAL_TEMPLATES.has(templateId) ? "" : orgMessageFooter(templateId, config, "customer");
+  const text = fill(target.text);
+  return { ...target, subject: fill(target.subject), text: footer && !text.includes(footer) ? `${text}\n\n${footer}` : text };
 }
 
 /** Next run in Africa/Nairobi. Weekday is 1 (Monday) through 7 (Sunday). */
@@ -235,7 +249,10 @@ async function runLead(input: EngineInput): Promise<{ ok: boolean; message: stri
   const message = textOf(body.message) || textOf(body.text);
   const config = input.instance.config;
   const system = `You qualify leads and draft a short reply. Use only the business rules given. Reply as JSON: {"qualified":true|false,"summary":"...","reply":"..."}. Do not invent prices.`;
-  const user = `Rules: ${textOf(config.qualifyNotes)}\nTone: ${textOf(config.greeting)}\nLead ${name} <${email}> ${phone}: ${message}`;
+  const sla = orgNumber(input.instance.templateId, config, "responseSlaHours");
+  const minBudget = orgNumber(input.instance.templateId, config, "minBudget");
+  const orgRules = [sla ? `Promise a reply within ${sla} hours.` : "", minBudget ? `Leads below KES ${minBudget} budget are not qualified.` : ""].filter(Boolean).join(" ");
+  const user = `Rules: ${textOf(config.qualifyNotes)} ${orgRules}\nTone: ${textOf(config.greeting)}\nLead ${name} <${email}> ${phone}: ${message}`;
   const raw = await groqText(system, user);
   let qualified = Boolean(message);
   let summary = message.slice(0, 180) || "New lead";
@@ -522,7 +539,7 @@ async function runSequence(input: EngineInput): Promise<{ ok: boolean; message: 
   } catch {
     payload = {};
   }
-  const text = fillTemplate(payload.text || steps[input.job?.step ?? 0] || "", { name: payload.name || "there" });
+  const text = fillTemplate(payload.text || steps[input.job?.step ?? 0] || "", { ...orgTemplateVars(input.instance.templateId, input.instance.config), name: payload.name || "there" });
   await sendOut(input, { email: payload.email, phone: payload.phone, subject: input.instance.businessName, text });
   return { ok: true, message: "Step sent." };
 }
@@ -572,6 +589,7 @@ async function runDates(input: EngineInput): Promise<{ ok: boolean; message: str
           .map((email) => ({ email }));
     for (const row of targets) {
       const text = fillTemplate(message, {
+        ...orgTemplateVars(input.instance.templateId, input.instance.config),
         name: row.name || "there",
         date: row.date || "",
         amount: row.amountKes || "",
@@ -591,6 +609,7 @@ async function runDates(input: EngineInput): Promise<{ ok: boolean; message: str
     payload = {};
   }
   const text = fillTemplate(payload.message || textOf(input.instance.config.message) || "Reminder for {{name}} on {{date}}.", {
+    ...orgTemplateVars(input.instance.templateId, input.instance.config),
     name: payload.name || "there",
     date: payload.date || textOf(input.instance.config.eventDate),
     note: payload.note || textOf(input.instance.config.eventName),
@@ -628,8 +647,26 @@ export function schedulePaymentReminders(
   });
 }
 
+/** Reorder level per item: the row's own, then the org per-item level, then the org default. */
+export function stockLevels(instance: AutomationInstance): (row: Record<string, unknown>) => number | null {
+  const org = readOrgInputs(instance.templateId, instance.config);
+  const perItem = new Map<string, number>();
+  const list = Array.isArray(org.values.reorderLevels) ? (org.values.reorderLevels as { item?: unknown; level?: unknown }[]) : [];
+  for (const item of list) if (typeof item.level === "number") perItem.set(String(item.item ?? "").trim().toLowerCase(), item.level);
+  const fallback = typeof org.values.defaultReorderLevel === "number" ? org.values.defaultReorderLevel : null;
+  return (row) => {
+    const own = row.reorderAt;
+    if (own !== undefined && own !== null && String(own).trim() !== "" && Number.isFinite(Number(own))) return Number(own);
+    const named = perItem.get(String(row.name ?? "").trim().toLowerCase());
+    return named ?? fallback;
+  };
+}
+
 async function runStock(input: EngineInput): Promise<{ ok: boolean; message: string }> {
-  const rows = entriesFromConfig(input.instance.config).filter((row) => numOf(row.qty) <= numOf(row.reorderAt));
+  const levels = stockLevels(input.instance);
+  const rows = entriesFromConfig(input.instance.config)
+    .map((row) => ({ ...row, reorderAt: levels(row) }))
+    .filter((row) => row.reorderAt !== null && numOf(row.qty) <= numOf(row.reorderAt));
   if (input.mode === "activate") {
     schedule(input.doc, input.instance.id, plusDays(nowOf(input), 1), "stock");
   }

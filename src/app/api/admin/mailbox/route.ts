@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
-import { isAdminAuthenticated } from "@/lib/admin-auth";
+import { createHash } from "crypto";
+import { cookies } from "next/headers";
+import { ADMIN_COOKIE, isAdminAuthenticated } from "@/lib/admin-auth";
+import { checkSend, sendRateLimit } from "@/lib/mail-guard";
 import {
   archiveMailboxThread,
   findThreadIdByLead,
@@ -49,6 +52,7 @@ function composeFrom(body: Record<string, unknown>): ComposeInput {
     subject: typeof body.subject === "string" ? body.subject : "",
     text: typeof body.text === "string" ? body.text : "",
     attachments,
+    ...(typeof body.from === "string" ? { from: body.from } : {}),
   };
 }
 
@@ -64,15 +68,16 @@ export async function GET(request: Request) {
   }
   const id = url.searchParams.get("id");
   if (id) {
-    const thread = await getMailboxThread(id);
+    const remoteImages = url.searchParams.get("images") === "1";
+    const thread = await getMailboxThread(id, { remoteImages });
     if (!thread) return NextResponse.json({ error: "Not found" }, { status: 404 });
     if (thread.unread) await markMailboxRead(id, false);
-    const fresh = thread.unread ? await getMailboxThread(id) : thread;
+    const fresh = thread.unread ? await getMailboxThread(id, { remoteImages }) : thread;
     return NextResponse.json({ configured: isMailboxConfigured(), thread: fresh ?? thread });
   }
   const folder = folderOf(url.searchParams.get("folder"));
   const q = url.searchParams.get("q") || "";
-  const list = await listMailbox(folder, q);
+  const list = await listMailbox(folder, q, url.searchParams.get("mailbox") || undefined);
   return NextResponse.json(list);
 }
 
@@ -88,6 +93,28 @@ export async function POST(request: Request) {
     if (action === "send" || action === "reply" || action === "forward") {
       const input = composeFrom(body);
       if (action !== "send") input.mode = action;
+      const lengthHeader = request.headers.get("content-length");
+      const problem = checkSend({
+        origin: request.headers.get("origin"),
+        referer: request.headers.get("referer"),
+        host: request.headers.get("x-forwarded-host") || request.headers.get("host"),
+        contentLength: lengthHeader ? Number(lengthHeader) : null,
+        confirm: body.confirm,
+        to: input.to,
+        cc: input.cc,
+        subject: input.subject,
+        text: input.text,
+      });
+      if (problem) return NextResponse.json({ error: problem }, { status: 400 });
+      const jar = await cookies();
+      const session = createHash("sha256").update(jar.get(ADMIN_COOKIE)?.value || "none").digest("hex").slice(0, 16);
+      const limit = sendRateLimit(session);
+      if (!limit.ok) {
+        return NextResponse.json(
+          { error: `Sending limit reached. Try again in ${limit.retryAfter}s.` },
+          { status: 429, headers: { "Retry-After": String(limit.retryAfter) } }
+        );
+      }
       const result = await sendMailbox(input);
       return NextResponse.json({
         ok: result.sent,

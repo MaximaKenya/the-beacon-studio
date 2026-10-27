@@ -3,6 +3,7 @@
  * Shown on the portal automation detail and on /how-it-works.
  * Keep each line short. The test checks every template has a card.
  */
+import { orgFieldsFor } from "@/lib/automations/org-fields";
 export type HowItWorks = {
   /** What starts a run. */
   trigger: string;
@@ -20,7 +21,7 @@ export type HowItWorks = {
 
 const PORTAL_ROWS = "Portal → the automation → Inputs (add rows or upload a CSV).";
 
-export const HOW_IT_WORKS: Record<string, HowItWorks> = {
+const CARDS: Record<string, HowItWorks> = {
   "lead-reply": {
     trigger: "Someone fills in your lead form (/a/<your-link>/lead) or the website widget.",
     needs: "Your reply tone and what a good lead looks like. Set in Setup.",
@@ -255,6 +256,15 @@ export const HOW_IT_WORKS: Record<string, HowItWorks> = {
   },
 };
 
+/** Every card's "needs" line names the Organization inputs required to activate. */
+export const HOW_IT_WORKS: Record<string, HowItWorks> = Object.fromEntries(
+  Object.entries(CARDS).map(([id, card]) => {
+    const required = orgFieldsFor(id).filter((field) => field.required).map((field) => field.label.toLowerCase());
+    const line = `Organization inputs: ${required.join(", ")}${required.length ? " (required)" : ""}, plus your rates, contacts, hours, tone and custom fields.`;
+    return [id, { ...card, needs: `${card.needs} ${line}` }];
+  })
+);
+
 export const CHANNEL_NOTE = {
   email: "Email goes out once the studio's Resend key is set. Until then it is logged as not sent.",
   phone: "Texts wait in the Notify queue until SMS (Africa's Talking) or WhatsApp keys are added, then go out automatically.",
@@ -269,6 +279,7 @@ export const USAGE_STEPS: { title: string; body: string }[] = [
   { title: "Sign up", body: "Pick automations at /automations and start the free 30 days. No card needed." },
   { title: "Sign in", body: "Open the portal with the same email. We send a 6-digit code." },
   { title: "Set up", body: "Open each automation and fill in Setup: messages, hours, links." },
+  { title: "Organization inputs", body: "Open Organization inputs on each automation: commission and discount rates, payment terms and late fees, stock levels, hours, contacts, tone, opt-out text and your own custom fields. The meter shows what is still required." },
   { title: "Enter your data", body: "Add customers, invoices, dates or stock in Inputs, or upload a CSV. Share your form links for leads, bookings and reviews." },
   { title: "Watch results", body: "The dashboard shows runs, messages, leads, bookings and money collected. Run history shows every step." },
   { title: "Pause or resume", body: "Press Pause on any automation to stop it at once. Resume picks up where it left off." },

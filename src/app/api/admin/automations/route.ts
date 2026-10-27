@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { markReferralRedeemed } from "@/lib/referrals";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { createNamedDemo, resetDemoSandbox, runSandboxNow } from "@/lib/automations/sandbox";
-import { addInstanceNote, adminSnapshot, changeTrial, markBundleInvoicePaid, markLeadRead, markOwnedCharge, retryFailedJobs, saveInstanceConfig, setInstanceStatus, stopFollowUps } from "@/lib/automations/runtime";
+import { addInstanceNote, adminSnapshot, changeTrial, markBundleInvoicePaid, markLeadRead, markOwnedCharge, retryFailedJobs, saveInstanceConfig, saveOrgInputs, setInstanceStatus, stopFollowUps } from "@/lib/automations/runtime";
 import { shareToken } from "@/lib/automations/share";
 import { parseRequestJson } from "@/lib/storage";
 
@@ -32,6 +32,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true });
   }
   if (action === "config") return NextResponse.json(await saveInstanceConfig(id, body.config, undefined, origin));
+  if (action === "org") {
+    const result = await saveOrgInputs(id, body.org, undefined, origin);
+    return NextResponse.json(result, { status: result.ok ? 200 : 400 });
+  }
   if (action === "note") return NextResponse.json(await addInstanceNote(id, String(body.text || ""), "studio"));
   if (action === "stop") return NextResponse.json(await stopFollowUps(id));
   if (action === "run") return NextResponse.json(await runSandboxNow(id, body.sendToMe === true));

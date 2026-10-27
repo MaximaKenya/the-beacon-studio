@@ -83,3 +83,18 @@ export function sanitizeEmailHtml(input: string): string {
   });
   return html.trim();
 }
+
+/**
+ * Remote images can track opens, so they are off by default. Each remote
+ * <img> becomes a small placeholder until the reader chooses to load them.
+ */
+export function blockRemoteImages(html: string): { html: string; blocked: number } {
+  let blocked = 0;
+  const out = html.replace(/<img\b[^>]*>/gi, (tag) => {
+    if (!/\ssrc="https?:/i.test(tag)) return tag;
+    blocked += 1;
+    const alt = tag.match(/\salt="([^"]*)"/i)?.[1] || "image";
+    return `<span class="mail-blocked-image">[${alt} blocked]</span>`;
+  });
+  return { html: out, blocked };
+}
