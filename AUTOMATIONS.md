@@ -71,3 +71,16 @@ Invoices, receipts, and the booking `.ics` use the lighthouse mark and the name 
 | `DATABASE_URL` | Data stays in local JSON and is wiped on a Heroku restart |
 
 Paystack references stay `BS-…` and `metadata.app` stays on the beacon app. A Heroku variable named `PAYSTACK_FORWARD_CONFIRENT` was flagged as a possible misspelling. The router reads `PAYSTACK_FORWARD_` plus the slug `CONFIRENT`. Confirm the live name before renaming it. This app does not change Heroku config.
+
+## Trial nurture sequence
+
+`sweepTrials` sends the nurture emails before the 7/3/1 reminders. Each owner gets at most one email per sweep, and each stage is recorded in `trial.stagesSent`, so sends are idempotent.
+
+| Day | Email |
+| --- | --- |
+| 0 | Welcome with a setup checklist (existing welcome) |
+| 7, 21 | Usage digest built from real run stats |
+| 27 (≤3 days left) | "Keep it running": shows the annual saving with Request invoice / Book a call buttons. Replaces the 3-day reminder. |
+| 29 | Existing 1-day reminder |
+
+Opt-out (`/api/automations/trial-optout`) stops the digests only. Reminders and receipts still arrive. The portal shows the trial stage. Admin › Trials shows trials by stage, and Admin › Referrals lets you mark credits used.

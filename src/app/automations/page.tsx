@@ -11,7 +11,9 @@ export const metadata = pageMetadata({
   keywords: ["AI automation Kenya", "ready-made automations", siteConfig.brand.name],
 });
 
-export default function AutomationsPage() {
+export default async function AutomationsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+  const params = await searchParams;
+  const pack = typeof params.pack === "string" ? params.pack : undefined;
   const templates = pricedTemplates();
   return (
     <div className="mx-auto max-w-6xl px-6 pb-24 pt-28 lg:px-8">
@@ -21,7 +23,7 @@ export default function AutomationsPage() {
         {siteConfig.automationPricing.buildBody} One Paystack checkout, or one invoice, covers the whole bundle. Payment turns every selected automation on.
       </p>
       <div className="mt-10">
-        <BuffetBuilder templates={templates} />
+        <BuffetBuilder key={pack || "all"} templates={templates} initialPack={pack} />
       </div>
     </div>
   );

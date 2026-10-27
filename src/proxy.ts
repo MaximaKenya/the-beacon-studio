@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { httpsRedirectTarget } from "@/lib/session-cookie";
+import { normalizeReferralCode, REFERRAL_COOKIE, REFERRAL_COOKIE_DAYS } from "@/lib/referral-rules";
 
 /**
  * Force HTTP → HTTPS on thebeaconstudio.co.ke and www.
@@ -17,7 +18,18 @@ export function proxy(request: NextRequest) {
   if (target) {
     return NextResponse.redirect(target, 308);
   }
-  return NextResponse.next();
+  const response = NextResponse.next();
+  const ref = normalizeReferralCode(request.nextUrl.searchParams.get("ref"));
+  if (ref) {
+    response.cookies.set(REFERRAL_COOKIE, ref, {
+      maxAge: REFERRAL_COOKIE_DAYS * 86_400,
+      path: "/",
+      sameSite: "lax",
+      httpOnly: true,
+      secure: request.nextUrl.protocol === "https:",
+    });
+  }
+  return response;
 }
 
 export const config = {

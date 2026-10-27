@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
+import { REFERRAL_COOKIE } from "@/lib/referral-rules";
 import { startBundleCheckout } from "@/lib/automations/runtime";
 import { TRIAL_DAYS } from "@/lib/automations/trial";
 import { isPaystackConfigured } from "@/lib/paystack";
@@ -26,6 +28,7 @@ export async function POST(request: Request) {
       businessName: typeof body.businessName === "string" ? body.businessName : "",
       pay,
       origin: new URL(request.url).origin,
+      refCode: typeof body.ref === "string" ? body.ref : (await cookies()).get(REFERRAL_COOKIE)?.value,
     });
     if (!result.ok) return NextResponse.json(result, { status: result.status === 200 ? 200 : result.status });
     return NextResponse.json(result);

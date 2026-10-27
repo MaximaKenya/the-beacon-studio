@@ -57,6 +57,8 @@ type AdminView = {
   adminLog?: { id: string; at: string; kind: string; title: string; detail: string }[];
   invoices?: Invoice[];
   paystack?: boolean;
+  trialStages?: { stage: string; label: string; clients: { email: string; businessName: string; days: number }[] }[];
+  referrals?: { id: string; code: string; referrerEmail: string; referredEmail: string; status: string; createdAt: string; expiresAt?: string; live: boolean }[];
 };
 
 const empty: AdminView = { mrrKes: 0, active: 0, pending: 0, paused: 0, demos: 0, clients: [], sandbox: { instances: [] } };
@@ -66,6 +68,7 @@ const MENUS = [
   { id: "trials", label: "Trials" },
   { id: "invoices", label: "Invoices" },
   { id: "clients", label: "Clients" },
+  { id: "referrals", label: "Referrals" },
   { id: "channels", label: "Channels" },
   { id: "scheduler", label: "Scheduler" },
   { id: "health", label: "Health" },
@@ -206,6 +209,46 @@ export function AdminAutomations() {
                   )}
                 </article>
               ))}
+            {menu === "trials" && (
+              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+                {(data.trialStages || []).map((column) => (
+                  <div key={column.stage} className="sleek-card rounded-2xl p-4">
+                    <p className="text-xs text-muted">{column.label}</p>
+                    <p className="mt-1 font-display text-2xl font-semibold text-foreground">{column.clients.length}</p>
+                    <ul className="mt-2 space-y-1 text-xs text-muted">
+                      {column.clients.slice(0, 8).map((client) => (
+                        <li key={client.email} className="truncate">
+                          {client.businessName || client.email}
+                          {column.stage !== "ended" && column.stage !== "paid" ? ` · ${client.days}d` : ""}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            )}
+            {menu === "referrals" && (
+              <div className="space-y-3">
+                <p className="text-sm text-muted">Credit is earned after the referred client&apos;s first paid month. Apply it to the referrer&apos;s next invoice, then mark it used.</p>
+                {(data.referrals || []).length === 0 && <p className="text-sm text-muted">No referrals yet.</p>}
+                {data.referrals?.map((item) => (
+                  <article key={item.id} className="sleek-card rounded-2xl p-4">
+                    <p className="font-medium text-foreground">
+                      {item.referrerEmail} → {item.referredEmail}
+                    </p>
+                    <p className="mt-1 text-sm text-muted">
+                      {item.code} · {item.status === "earned" && !item.live ? "expired" : item.status} · {formatNairobi(item.createdAt)}
+                      {item.expiresAt && item.live ? ` · expires ${formatNairobi(item.expiresAt)}` : ""}
+                    </p>
+                    {item.live && (
+                      <button type="button" className="admin-btn mt-3" onClick={() => void act("redeem-referral", { referralId: item.id })}>
+                        Mark credit used
+                      </button>
+                    )}
+                  </article>
+                ))}
+              </div>
+            )}
             {menu === "now" && visible.length === 0 && <p className="text-sm text-muted">Nothing is waiting. The hourly tick keeps going.</p>}
             {menu === "invoices" && (
               <div className="space-y-3">

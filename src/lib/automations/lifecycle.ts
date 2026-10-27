@@ -17,6 +17,9 @@ import {
   trialDaysRemaining,
   trialWindow,
 } from "@/lib/automations/trial";
+import { quoteBundle } from "@/automations/pricing";
+import { markTrialStage, nextTrialStage, type TrialStage } from "@/lib/automations/trial-sequence";
+import { trialOptOutUrl } from "@/lib/automations/trial-optout";
 import type { AutomationCharge, AutomationDoc, AutomationInstance } from "@/lib/automations/types";
 import { sendSms, sendWhatsApp, smsConfigured, whatsAppConfigured } from "@/lib/notify";
 import { listPayments } from "@/lib/payments";
@@ -27,13 +30,27 @@ import { emptyDoc } from "@/lib/automations/types";
 
 const TICK_LOCK_MS = 10 * 60 * 1000;
 
-async function ownerLetter(input: { to: string; subject: string; heading: string; paragraphs: string[]; action?: { label: string; href: string } }) {
+async function ownerLetter(input: {
+  to: string;
+  subject: string;
+  heading: string;
+  paragraphs: string[];
+  action?: { label: string; href: string };
+  actions?: { label: string; href: string }[];
+  card?: { label: string; value: string }[];
+  unsubscribeUrl?: string;
+}) {
   if (!isResendConfigured() || !input.to || input.to.endsWith("@example.com")) return false;
+  const actions = input.actions || (input.action ? [input.action] : []);
   const letter = renderBrandEmail({
     heading: input.heading,
     greeting: "Hello,",
     paragraphs: input.paragraphs,
-    ...(input.action ? { actions: [input.action] } : {}),
+    ...(actions.length ? { actions } : {}),
+    ...(input.card ? { card: input.card } : {}),
+    ...(input.unsubscribeUrl
+      ? { unsubscribeUrl: input.unsubscribeUrl, unsubscribeNote: "from trial tips. Trial reminders and receipts still arrive." }
+      : {}),
   });
   const result = await sendResendEmail({ to: input.to, subject: input.subject, text: letter.text, html: letter.html });
   return result.sent;
@@ -65,6 +82,7 @@ export async function sendTrialWelcome(doc: AutomationDoc, email: string) {
       `${mine[0].businessName} is live on The Beacon Studio.`,
       `Included: ${names.join(", ")}.`,
       `You have ${days} days left. No card is needed. When the trial ends the automations pause until you choose a plan or request an invoice.`,
+      "Setup checklist: 1) Open the portal and fill in each automation's settings. 2) Add your customer list or connect your form. 3) Run a test and check the preview. 4) Connect SMS or WhatsApp when you are ready.",
     ],
     action: { label: "Open your portal", href: `${publicSiteUrl()}/portal` },
   });
@@ -82,6 +100,8 @@ export async function sweepTrials(doc: AutomationDoc, origin: string, now = new 
   }
   const owners = new Set(doc.instances.filter((item) => item.trial && !item.trial.welcomed && !item.demo).map((item) => item.ownerEmail));
   for (const email of owners) await sendTrialWelcome(doc, email);
+
+  await sendTrialSequence(doc, now);
 
   const reminders = new Map<string, { days: number; names: string[] }>();
   const ended = new Map<string, string[]>();
@@ -317,4 +337,112 @@ export async function finishAutomationTick(ok: boolean, error?: string) {
     }
     return doc;
   });
+}
+
+const STAGE_ORDER: TrialStage[] = ["digest-7", "digest-21", "keep"];
+
+/** Which nurture stage each owner is due, grouped so one owner gets one email. Pure. */
+export function planTrialSequence(doc: AutomationDoc, now = new Date()) {
+  const plan = new Map<string, { stage: TrialStage; instances: AutomationInstance[] }>();
+  for (const instance of doc.instances) {
+    if (instance.demo || !instance.trial || instance.status !== "active") continue;
+    const stage = nextTrialStage(instance.trial, now);
+    if (!stage) continue;
+    const current = plan.get(instance.ownerEmail);
+    if (!current) {
+      plan.set(instance.ownerEmail, { stage, instances: [instance] });
+      continue;
+    }
+    current.instances.push(instance);
+    if (STAGE_ORDER.indexOf(stage) > STAGE_ORDER.indexOf(current.stage)) current.stage = stage;
+  }
+  return plan;
+}
+
+/** Record a stage on every instance of the owner. "keep" stands in for the 3-day reminder. */
+export function recordTrialStage(instances: AutomationInstance[], stage: TrialStage) {
+  for (const instance of instances) {
+    if (!instance.trial) continue;
+    instance.trial.stagesSent = markTrialStage(instance.trial.stagesSent, stage);
+    if (stage === "keep") instance.trial.remindersSent = markTrialReminder(instance.trial.remindersSent, 3);
+  }
+}
+
+function usageCard(instances: AutomationInstance[]) {
+  const sum = (key: "runs" | "leads" | "payments" | "messages") => instances.reduce((total, item) => total + (item.stats?.[key] || 0), 0);
+  return [
+    { label: "Runs", value: String(sum("runs")) },
+    { label: "Leads captured", value: String(sum("leads")) },
+    { label: "Payments logged", value: String(sum("payments")) },
+    { label: "Messages sent", value: String(sum("messages")) },
+  ];
+}
+
+export function annualSavingKes(instances: AutomationInstance[]) {
+  const ids = instances.map((item) => item.templateId);
+  const monthly = quoteBundle(ids, { billing: "monthly" });
+  const annual = quoteBundle(ids, { billing: "annual" });
+  if (!monthly || !annual) return { monthlyKes: 0, savingKes: 0 };
+  return {
+    monthlyKes: monthly.recurringMonthlyKes,
+    savingKes: Math.max(0, (monthly.recurringMonthlyKes - annual.recurringMonthlyKes) * 12),
+  };
+}
+
+export async function sendTrialSequence(doc: AutomationDoc, now = new Date()) {
+  const optOuts = new Set(doc.trialOptOuts || []);
+  const site = publicSiteUrl();
+  let sent = 0;
+  for (const [email, { stage, instances }] of planTrialSequence(doc, now)) {
+    if (optOuts.has(email)) {
+      if (stage !== "keep") recordTrialStage(instances, stage);
+      continue;
+    }
+    const unsubscribeUrl = trialOptOutUrl(email);
+    const names = instances.map((item) => templateById(item.templateId)?.name || item.templateId).join(", ");
+    const card = usageCard(instances);
+    const empty = card.every((row) => row.value === "0");
+    let ok = false;
+    if (stage === "keep") {
+      const { monthlyKes, savingKes } = annualSavingKes(instances);
+      ok = await ownerLetter({
+        to: email,
+        subject: "Keep your automations running",
+        heading: "3 days left",
+        paragraphs: [
+          `Your trial ends in 3 days. ${names}.`,
+          `Monthly: KES ${monthlyKes.toLocaleString("en-KE")}.${savingKes > 0 ? ` Paying annually saves KES ${savingKes.toLocaleString("en-KE")} a year.` : ""}`,
+          "Request an invoice from the portal, or book a short call to choose a plan. Nothing is deleted.",
+        ],
+        card,
+        actions: [
+          { label: "Request invoice", href: `${site}/portal` },
+          { label: "Book a call", href: `${site}/book` },
+        ],
+        unsubscribeUrl,
+      });
+    } else {
+      const day = stage === "digest-7" ? 7 : 21;
+      ok = await ownerLetter({
+        to: email,
+        subject: `Day ${day}: what your automations did`,
+        heading: `Day ${day} digest`,
+        paragraphs: [
+          empty
+            ? "No runs yet. Finish the setup checklist in the portal so the automations can start working."
+            : `Here is what ran for ${instances[0]?.businessName || "your business"} so far.`,
+          names,
+        ],
+        card,
+        action: { label: "Open your portal", href: `${site}/portal` },
+        unsubscribeUrl,
+      });
+    }
+    if (ok) {
+      recordTrialStage(instances, stage);
+      addAdminLog(doc, "automated", "Trial email sent", `${email} · ${stage}`);
+      sent += 1;
+    }
+  }
+  return sent;
 }

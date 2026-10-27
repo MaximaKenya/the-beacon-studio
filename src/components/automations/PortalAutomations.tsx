@@ -24,7 +24,8 @@ type Snapshot = {
   leads: DeskLead[];
   channels?: ChannelReadiness;
   analytics?: AutomationAnalytics;
-  trial?: { endsAt: string; days: number; ended: boolean } | null;
+  trial?: { endsAt: string; days: number; ended: boolean; stage?: string; stageLabel?: string; bonusDays?: number } | null;
+  referral?: { code: string; link: string; pending: number; earned: number; redeemed: number; expired: number } | null;
   paystack?: boolean;
   invoices?: { id: string; status: string; amount: number; currency: string; tierName: string }[];
 };
@@ -113,6 +114,10 @@ export function PortalAutomations() {
         <p className="text-sm text-muted">Free for 30 days, no card needed. Pay with Paystack stays hidden until that account is ready.</p>
       )}
 
+      {data.trial && data.trial.stage && data.trial.stage !== "paid" && (
+        <TrialBanner trial={data.trial} onInvoice={() => void requestInvoice()} />
+      )}
+
       {data.instances.length === 0 ? (
         <div className="sleek-card rounded-3xl p-6">
           <p className="text-sm text-muted">No automations yet.</p>
@@ -134,6 +139,8 @@ export function PortalAutomations() {
           </div>
 
           {data.channels && <ChannelStatus channels={data.channels} />}
+
+          {data.referral && <ReferralCard referral={data.referral} />}
 
           <div className="flex flex-wrap items-center gap-2">
             {([7, 30, 90] as const).map((item) => (
@@ -235,6 +242,78 @@ function barSlices(days: DayBucket[]) {
     { label: "Bookings", value: days.reduce((sum, day) => sum + day.bookings, 0) },
     { label: "Reviews", value: days.reduce((sum, day) => sum + day.reviews, 0) },
   ];
+}
+
+const STAGE_NOTE: Record<string, string> = {
+  setup: "Finish setup: fill in each automation, add your contacts, run a test.",
+  running: "Your automations are running. Check the numbers below.",
+  ending: "Request an invoice to keep everything running after the trial.",
+  ended: "Paused, not deleted. Request an invoice to switch back on.",
+};
+
+function TrialBanner({
+  trial,
+  onInvoice,
+}: {
+  trial: NonNullable<Snapshot["trial"]>;
+  onInvoice: () => void;
+}) {
+  const stage = trial.stage || "running";
+  return (
+    <div className="sleek-card flex flex-wrap items-center justify-between gap-3 rounded-3xl p-5">
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-wide text-accent">Trial · {trial.stageLabel}</p>
+        <p className="mt-1 text-sm text-foreground">
+          {trial.ended ? "Trial ended." : `${trial.days} days left.`}
+          {trial.bonusDays ? ` Includes +${trial.bonusDays} referral days.` : ""}
+        </p>
+        <p className="mt-1 text-sm text-muted">{STAGE_NOTE[stage]}</p>
+      </div>
+      {(stage === "ending" || stage === "ended") && (
+        <div className="flex flex-wrap gap-2">
+          <button type="button" className="admin-btn" onClick={onInvoice}>
+            Request invoice
+          </button>
+          <Link href="/book" className="admin-btn">
+            Book a call
+          </Link>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ReferralCard({ referral }: { referral: NonNullable<Snapshot["referral"]> }) {
+  const [copied, setCopied] = useState(false);
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(referral.link);
+      setCopied(true);
+    } catch {
+      setCopied(false);
+    }
+  }
+  return (
+    <div className="sleek-card rounded-2xl p-5">
+      <h3 className="text-sm font-medium text-foreground">Refer a business</h3>
+      <p className="mt-1 text-sm text-muted">They get an extra free month. You get one free month after their first paid month.</p>
+      <div className="mt-3 flex flex-wrap items-center gap-2">
+        <code className="rounded-xl bg-surface-elevated/80 px-3 py-2 text-xs text-foreground break-all">{referral.link}</code>
+        <button type="button" className="admin-btn" onClick={() => void copy()}>
+          {copied ? "Copied" : "Copy link"}
+        </button>
+      </div>
+      <p className="mt-2 text-xs text-muted">Code {referral.code}</p>
+      <div className="mt-3 grid grid-cols-3 gap-2 text-center">
+        <div><p className="font-display text-xl font-semibold text-foreground">{referral.earned}</p><p className="text-xs text-muted">Credits earned</p></div>
+        <div><p className="font-display text-xl font-semibold text-foreground">{referral.pending}</p><p className="text-xs text-muted">Pending</p></div>
+        <div><p className="font-display text-xl font-semibold text-foreground">{referral.redeemed}</p><p className="text-xs text-muted">Used</p></div>
+      </div>
+      <p className="mt-3 text-xs text-muted">
+        <Link href="/referrals" className="text-accent">Terms</Link>: new clients only, no self-referrals, credits expire after 12 months, no cash payouts.
+      </p>
+    </div>
+  );
 }
 
 function Card({ label, value }: { label: string; value: string }) {

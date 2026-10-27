@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { markReferralRedeemed } from "@/lib/referrals";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { resetDemoSandbox, runSandboxNow } from "@/lib/automations/sandbox";
 import { addInstanceNote, adminSnapshot, changeTrial, markBundleInvoicePaid, markLeadRead, markOwnedCharge, retryFailedJobs, saveInstanceConfig, setInstanceStatus, stopFollowUps } from "@/lib/automations/runtime";
@@ -35,6 +36,7 @@ export async function POST(request: Request) {
   if (action === "run") return NextResponse.json(await runSandboxNow(id, body.sendToMe === true));
   if (action === "reset-demo") return NextResponse.json(await resetDemoSandbox());
   if (action === "mark-paid") return NextResponse.json(await markOwnedCharge(String(body.chargeId || ""), undefined, "studio"));
+  if (action === "redeem-referral") return NextResponse.json(await markReferralRedeemed(String(body.referralId || "")));
   if (action === "mark-invoice") return NextResponse.json(await markBundleInvoicePaid(String(body.paymentId || "")));
   if (action === "extend-trial") return NextResponse.json(await changeTrial(id, "extend", Number(body.days) || 14));
   if (action === "end-trial") return NextResponse.json(await changeTrial(id, "end"));

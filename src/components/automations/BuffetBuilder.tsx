@@ -7,13 +7,19 @@ import { formatKes, formatUsd } from "@/lib/fx";
 import { quoteBundle, type BillingInterval } from "@/automations/pricing";
 import { AUTOMATION_CATEGORIES, type PricedTemplate, type SetupField } from "@/automations/templates/public";
 import { parseResponseJson } from "@/lib/safe-json";
+import { industryPacks } from "@/data/site";
+import { packById } from "@/automations/packs";
 
 type Entry = Record<string, string>;
 
-export function BuffetBuilder({ templates }: { templates: PricedTemplate[] }) {
+export function BuffetBuilder({ templates, initialPack }: { templates: PricedTemplate[]; initialPack?: string }) {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<string>("All");
-  const [selected, setSelected] = useState<string[]>([]);
+  const [selected, setSelected] = useState<string[]>(() => {
+    const pack = packById(initialPack);
+    return pack ? pack.templateIds.filter((id) => templates.some((item) => item.id === id)) : [];
+  });
+  const [activePack, setActivePack] = useState<string | null>(() => packById(initialPack)?.id || null);
   const [billing, setBilling] = useState<BillingInterval>("monthly");
   const [step, setStep] = useState<"pick" | "setup">("pick");
   const [ownerName, setOwnerName] = useState("");
@@ -91,6 +97,37 @@ export function BuffetBuilder({ templates }: { templates: PricedTemplate[] }) {
       <div className="min-w-0">
         {step === "pick" ? (
           <>
+            <div className="mb-8">
+              <h2 className="font-display text-lg font-semibold text-foreground">Packs</h2>
+              <p className="mt-1 text-sm text-muted">Pre-picked by industry. Same bundle discount as picking them yourself.</p>
+              <div className="mt-4 flex snap-x gap-3 overflow-x-auto pb-2">
+                {industryPacks.map((pack) => {
+                  const quote = quoteBundle(pack.templateIds, { billing });
+                  const on = activePack === pack.id;
+                  return (
+                    <div key={pack.id} className={`sleek-card flex w-64 shrink-0 snap-start flex-col rounded-3xl p-4 ${on ? "shadow-lg" : ""}`}>
+                      <p className="text-xs font-semibold uppercase tracking-wide text-accent">{pack.industry}</p>
+                      <Link href={`/packs/${pack.id}`} className="mt-1 font-display text-base font-semibold text-foreground hover:underline">
+                        {pack.name}
+                      </Link>
+                      <p className="mt-1 text-xs text-muted">{pack.templateIds.length} automations{quote?.bundlePercent ? ` · ${quote.bundlePercent}% off` : ""}</p>
+                      <p className="mt-2 text-sm font-semibold text-foreground">{quote ? `${formatKes(quote.recurringMonthlyKes)}/mo` : ""}</p>
+                      <button
+                        type="button"
+                        className="mt-3 rounded-full bg-accent px-3 py-2 text-xs font-semibold text-background"
+                        onClick={() => {
+                          setSelected(pack.templateIds.filter((id) => templates.some((item) => item.id === id)));
+                          setActivePack(pack.id);
+                          setStep("setup");
+                        }}
+                      >
+                        Start {trialDays}-day free trial
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
             <div className="flex flex-col gap-3 sm:flex-row">
               <label className="sr-only" htmlFor="automation-search">
                 Search automations

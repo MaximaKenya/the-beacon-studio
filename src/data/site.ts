@@ -201,7 +201,11 @@ export type PricingTier = {
   /** Optional Stripe Price id env key hint (see .env.example) */
   stripePriceEnv?: string;
   /** Studio builds vs AI automation offer ladder */
-  group?: "studio" | "automation" | "it";
+  group?: "studio" | "automation" | "it" | "package";
+  /** Fixed-price packages: what is not included. */
+  excludes?: string[];
+  /** Fixed-price packages: revision rounds included. */
+  revisions?: string;
   /** Build is a one-off. Care is a monthly plan after go-live. */
   lane?: "build" | "care";
   /**
@@ -712,6 +716,62 @@ export const siteConfig = {
       ctaAction: "booking",
       group: "it",
       quoteOnly: true,
+    },
+    {
+      id: "package-lead-site",
+      name: "WhatsApp lead site",
+      headline: "A one-page site that sends every enquiry to WhatsApp.",
+      fromPrice: "$450",
+      fromAmount: 450,
+      unit: "fixed price",
+      includes: ["One responsive page with your copy and photos", "WhatsApp and call buttons", "Enquiry form to your email", "Basic SEO and Google Business link", "Live in about 7 working days"],
+      excludes: ["Domain and hosting fees", "Copywriting from scratch", "Online payments"],
+      revisions: "2 revision rounds",
+      cta: "Pay deposit",
+      ctaAction: "intake",
+      group: "package",
+    },
+    {
+      id: "package-automation-day",
+      name: "Automation setup day",
+      headline: "One working day to wire up an automation you already need.",
+      fromPrice: "$300",
+      fromAmount: 300,
+      unit: "fixed price",
+      includes: ["Scoping call before the day", "One automation built and tested", "Handover notes and a short walkthrough", "7 days of fixes after handover"],
+      excludes: ["Paid third-party tools", "Work beyond one day", "Ongoing monitoring"],
+      revisions: "1 revision round",
+      cta: "Pay deposit",
+      ctaAction: "intake",
+      group: "package",
+    },
+    {
+      id: "package-booking-launch",
+      name: "Booking + reminders launch",
+      headline: "Online booking with automatic reminders, set up end to end.",
+      fromPrice: "$600",
+      fromAmount: 600,
+      unit: "fixed price",
+      includes: ["Booking page with your services and hours", "Email reminders before each slot", "Calendar sync", "Staff walkthrough", "14 days of fixes after launch"],
+      excludes: ["SMS or WhatsApp sending fees", "Online payments until Paystack is connected", "Custom app development"],
+      revisions: "2 revision rounds",
+      cta: "Pay deposit",
+      ctaAction: "intake",
+      group: "package",
+    },
+    {
+      id: "package-faq-bot",
+      name: "Custom AI FAQ bot setup",
+      headline: "An AI assistant that answers from your own FAQs and documents.",
+      fromPrice: "$500",
+      fromAmount: 500,
+      unit: "fixed price",
+      includes: ["Up to 50 FAQs or 20 pages of documents", "Website chat widget", "Hand-off to a person when unsure", "Tone set to your brand", "14 days of tuning"],
+      excludes: ["AI usage fees beyond the setup month", "WhatsApp Business API fees", "Integrations with private systems"],
+      revisions: "2 revision rounds",
+      cta: "Pay deposit",
+      ctaAction: "intake",
+      group: "package",
     },
   ] as PricingTier[],
 
@@ -1410,3 +1470,72 @@ export type SiteConfig = typeof siteConfig;
 
 /** Convenience: current suite size — always prefer this over hardcoding. */
 export const productCount = siteConfig.products.length;
+
+export type IndustryPack = {
+  id: string;
+  name: string;
+  industry: string;
+  headline: string;
+  summary: string;
+  /** Buffet template ids. Priced by quoteBundle, never by hand. */
+  templateIds: string[];
+  keywords: string[];
+};
+
+/** Industry bundles. Prices come from the same buffet maths as /automations. */
+export const industryPacks: IndustryPack[] = [
+  {
+    id: "clinic",
+    name: "Clinic Pack",
+    industry: "Clinics",
+    headline: "Fewer missed appointments, more returning patients.",
+    summary: "Booking reminders, recall nudges, review requests and an FAQ bot for front-desk questions.",
+    templateIds: ["appointments", "clinic-recall", "reviews", "faq-bot"],
+    keywords: ["clinic automation Kenya", "appointment reminders clinic", "patient recall SMS"],
+  },
+  {
+    id: "school",
+    name: "School Pack",
+    industry: "Schools",
+    headline: "Fee reminders and parent updates without the phone calls.",
+    summary: "Fee reminders, event RSVPs, a parent FAQ bot, new-family onboarding and a weekly report.",
+    templateIds: ["school-fees", "rsvp", "faq-bot", "onboarding", "weekly-report"],
+    keywords: ["school fees reminders Kenya", "school automation", "parent communication"],
+  },
+  {
+    id: "sacco",
+    name: "SACCO Pack",
+    industry: "SACCOs",
+    headline: "Repayments on time, members kept in the loop.",
+    summary: "Loan repayment reminders, arrears follow-up, member greetings, a member FAQ bot and a KPI digest.",
+    templateIds: ["sacco-repayments", "debt-collection", "greetings", "faq-bot", "kpi-digest"],
+    keywords: ["SACCO automation Kenya", "loan repayment reminders", "SACCO member SMS"],
+  },
+  {
+    id: "landlord",
+    name: "Landlord Pack",
+    industry: "Landlords",
+    headline: "Rent collected, repairs tracked, leases renewed.",
+    summary: "Rent reminders, maintenance requests, lease and document expiry alerts and a weekly report.",
+    templateIds: ["rent-collection", "maintenance", "doc-expiry", "weekly-report"],
+    keywords: ["rent collection automation Kenya", "landlord software", "tenant reminders"],
+  },
+  {
+    id: "retail",
+    name: "Retail Pack",
+    industry: "Retail",
+    headline: "Answer buyers fast and never run out of stock.",
+    summary: "Instant lead replies, low-stock alerts, daily sales summaries, review requests and customer greetings.",
+    templateIds: ["lead-reply", "low-stock", "daily-sales", "reviews", "greetings"],
+    keywords: ["retail automation Kenya", "shop stock alerts", "WhatsApp lead reply"],
+  },
+  {
+    id: "services",
+    name: "Services & SME Pack",
+    industry: "Services and SMEs",
+    headline: "From enquiry to paid invoice on autopilot.",
+    summary: "Lead replies, quote follow-up, invoice reminders, bookings, reviews, onboarding, inbox triage and a weekly report.",
+    templateIds: ["lead-reply", "abandoned-quote", "invoice-reminders", "appointments", "reviews", "onboarding", "inbox-triage", "weekly-report"],
+    keywords: ["SME automation Kenya", "invoice reminders", "small business automation"],
+  },
+];
