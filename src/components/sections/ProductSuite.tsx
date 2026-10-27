@@ -18,8 +18,8 @@ export function ProductSuite() {
       <div className="mx-auto max-w-6xl px-6 lg:px-8">
         <SectionHeading
           label="Products"
-          title="Four products"
-          description="Two are open now. Two are still being built."
+          title="Five products"
+          description="Built in Nairobi. Most start with a 30-day free trial, no card needed."
         />
 
         <ScrollReveal stagger className="grid gap-6 md:grid-cols-2">
@@ -76,14 +76,12 @@ export function ProductSuite() {
                         Get notified
                       </button>
                     )}
-                    {isOpen ? (
-                      <Link
+                    <Link
                         href={`/products/${product.id}`}
                         className="inline-flex h-11 items-center rounded-2xl bg-surface-elevated/80 px-4 text-sm font-medium text-foreground"
                       >
                         Details
                       </Link>
-                    ) : null}
                     {product.id === "confirent" || product.id === "cadenceapp" ? (
                       <Link
                         href={`/work/${product.id}`}

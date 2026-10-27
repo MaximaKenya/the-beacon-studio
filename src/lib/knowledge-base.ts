@@ -448,7 +448,7 @@ function buildReply(intent: Intent): string {
     case "projects":
       return projects.length
         ? `Selected work:\n• ${formatProjects()}\nAlso see the [products](/#products).`
-        : `The public work is the four products: ${formatProductPageLinks()}. Example results on the site are illustrative, not client results. Client projects are not listed here.`;
+        : `The public work is our products: ${formatProductPageLinks()}. Example results on the site are illustrative, not client results. Client projects are not listed here.`;
 
     case "contact":
       return `Reach ${brand.name} at ${email} — typically 1–2 business days (EAT). Or use [Contact](/#contact), [Book a Call](/#book), or call ${siteConfig.phoneDisplay}.`;
@@ -498,7 +498,7 @@ export function getKnowledgeResponse(userMessage: string): KnowledgeResponse {
 
   if (/\btrivia\s*yard\b|\btriviayard\b|\bconfi\s*trade\b|\bconfitrade\b/i.test(trimmed)) {
     return {
-      reply: `Those are not products we offer. The four products are ${formatProductPageLinks()}.`,
+      reply: `Those are not products we offer. Our products are ${formatProductPageLinks()}.`,
       confidence: 0.95,
       intent: "products",
       source: "knowledge-base",
