@@ -1,13 +1,14 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { ProductShot } from "@/data/product-shots";
 import { DeviceFrame } from "./DeviceFrame";
 
 /**
  * Scroll-snap carousel: native swipe/drag on touch, pointer drag on desktop, arrows,
- * dots, ←/→ keys. Autoplay pauses on hover/focus/hidden tab, off for reduced motion.
+ * dots (or a thumbnail strip for large sets), ←/→ keys. Autoplay pauses on hover/focus/hidden tab, off for reduced motion.
  */
 export function ShotCarousel({
   shots,
@@ -25,6 +26,8 @@ export function ShotCarousel({
   const track = useRef<HTMLDivElement>(null);
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
+  const strip = useRef<HTMLDivElement>(null);
+  const useThumbs = !compact && shots.length > 8;
   const drag = useRef<{ x: number; left: number; moved: boolean } | null>(null);
 
   const go = useCallback(
@@ -33,7 +36,8 @@ export function ShotCarousel({
       if (!el) return;
       const n = (i + shots.length) % shots.length;
       const slide = el.children[n] as HTMLElement | undefined;
-      if (slide) el.scrollTo({ left: slide.offsetLeft - el.offsetLeft, behavior: "smooth" });
+      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (slide) el.scrollTo({ left: slide.offsetLeft - el.offsetLeft, behavior: reduce ? "auto" : "smooth" });
     },
     [shots.length]
   );
@@ -50,6 +54,16 @@ export function ShotCarousel({
     Array.from(el.children).forEach((c) => io.observe(c));
     return () => io.disconnect();
   }, [shots.length]);
+
+  // Keep the active thumbnail in view without scrolling the page vertically.
+  useEffect(() => {
+    const el = strip.current;
+    const thumb = el?.children[index] as HTMLElement | undefined;
+    if (!el || !thumb) return;
+    const left = thumb.offsetLeft - el.offsetLeft - (el.clientWidth - thumb.clientWidth) / 2;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    el.scrollTo({ left, behavior: reduce ? "auto" : "smooth" });
+  }, [index]);
 
   useEffect(() => {
     if (paused || shots.length < 2) return;
@@ -132,21 +146,43 @@ export function ShotCarousel({
           <button type="button" className="pg-arrow" onClick={() => go(index - 1)} aria-label="Previous screenshot">
             <ChevronLeft className="h-4 w-4" aria-hidden />
           </button>
-          <div className="pg-dots">
-            {shots.map((s, i) => (
-              <button
-                key={s.file}
-                type="button"
-                className="pg-dot"
-                aria-current={i === index ? "true" : undefined}
-                aria-label={`Show screenshot ${i + 1}: ${s.caption}`}
-                onClick={() => go(i)}
-              />
-            ))}
-          </div>
+          {useThumbs ? (
+            <span className="pg-count" aria-live="polite">
+              {index + 1} / {shots.length}
+            </span>
+          ) : (
+            <div className="pg-dots">
+              {shots.map((s, i) => (
+                <button
+                  key={s.file}
+                  type="button"
+                  className="pg-dot"
+                  aria-current={i === index ? "true" : undefined}
+                  aria-label={`Show screenshot ${i + 1}: ${s.caption}`}
+                  onClick={() => go(i)}
+                />
+              ))}
+            </div>
+          )}
           <button type="button" className="pg-arrow" onClick={() => go(index + 1)} aria-label="Next screenshot">
             <ChevronRight className="h-4 w-4" aria-hidden />
           </button>
+        </div>
+      ) : null}
+      {useThumbs ? (
+        <div ref={strip} className="pg-thumbs" aria-label={`${name} screenshot thumbnails`}>
+          {shots.map((s, i) => (
+            <button
+              key={s.file}
+              type="button"
+              className={`pg-thumb ${s.device === "mobile" ? "is-mobile" : ""}`}
+              aria-current={i === index ? "true" : undefined}
+              aria-label={`Show screenshot ${i + 1}: ${s.caption}`}
+              onClick={() => go(i)}
+            >
+              <Image src={s.file} alt="" width={s.width} height={s.height} sizes="96px" loading="lazy" className="pg-thumb-img" draggable={false} />
+            </button>
+          ))}
         </div>
       ) : null}
     </div>
