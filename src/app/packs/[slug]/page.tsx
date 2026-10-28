@@ -46,38 +46,38 @@ export default async function PackPage({ params }: Props) {
   return (
     <div className="mx-auto max-w-5xl px-6 pb-24 pt-28 lg:px-8">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <p className="text-xs font-medium uppercase tracking-wide text-accent">{pack.industry} pack</p>
+      <p className="price-accent text-xs font-medium uppercase tracking-wide">{pack.industry} pack</p>
       <h1 className="mt-2 max-w-2xl font-display text-4xl font-semibold tracking-tight text-heading">{pack.headline}</h1>
       <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted">{pack.summary}</p>
 
-      <div className="mt-8 grid gap-4 md:grid-cols-[minmax(0,1fr)_300px]">
-        <div className="grid gap-3 sm:grid-cols-2">
+      <div className="mt-10 grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="grid gap-5 sm:grid-cols-2">
           {monthly.items.map((item) => {
             const template = templateById(item.id);
             return (
-              <div key={item.id} className="sleek-card rounded-3xl p-5">
-                <h2 className="font-display text-base font-semibold text-foreground">{item.name}</h2>
-                {template?.summary && <p className="mt-1 text-sm text-muted">{template.summary}</p>}
-                <p className="mt-2 text-xs text-muted">{formatKes(item.monthlyKes)}/mo on its own</p>
+              <div key={item.id} className="sleek-card flex flex-col rounded-3xl p-6">
+                <h2 className="font-display text-lg font-semibold text-heading">{item.name}</h2>
+                {template?.summary && <p className="mt-2 flex-1 text-sm leading-relaxed text-muted">{template.summary}</p>}
+                <p className="mt-4 text-xs text-muted">{formatKes(item.monthlyKes)}/mo on its own</p>
               </div>
             );
           })}
         </div>
-        <aside className="sleek-card h-fit rounded-3xl p-5">
-          <p className="text-xs text-muted">Pack price</p>
-          <p className="mt-1 font-display text-3xl font-semibold text-foreground">{formatKes(monthly.recurringMonthlyKes)}</p>
-          <p className="text-xs text-muted">a month{monthly.bundlePercent ? ` · ${monthly.bundlePercent}% bundle discount` : ""}</p>
-          <p className="mt-2 text-sm text-muted">Annual: {formatKes(annual.recurringMonthlyKes)}/mo</p>
-          <AnnualBadge className="mt-2" />
-          {monthly.setupKes > 0 && <p className="text-sm text-muted">Setup: {formatKes(monthly.setupKes)}</p>}
-          <Link href={`/automations?pack=${pack.id}`} className="mt-4 block rounded-full bg-accent px-4 py-2.5 text-center text-sm font-semibold text-background">
+        <aside className="sleek-card price-card-popular h-fit rounded-3xl p-7 sm:p-8 lg:sticky lg:top-28">
+          <p className="text-sm text-muted">Pack price</p>
+          <p className="mt-2 font-display text-4xl font-semibold tracking-tight text-heading">{formatKes(monthly.recurringMonthlyKes)}</p>
+          <p className="mt-1 text-sm text-muted">a month{monthly.bundlePercent ? ` · ${monthly.bundlePercent}% bundle discount` : ""}</p>
+          <p className="mt-4 text-sm text-muted">Annual: {formatKes(annual.recurringMonthlyKes)}/mo</p>
+          <AnnualBadge className="mt-3" />
+          {monthly.setupKes > 0 && <p className="mt-3 text-sm text-muted">Setup: {formatKes(monthly.setupKes)}</p>}
+          <Link href={`/automations?pack=${pack.id}`} className="price-btn price-btn-primary mt-7 w-full">
             Start {TRIAL_DAYS}-day free trial
           </Link>
-          <Link href="/book" className="mt-2 block text-center text-sm text-accent">
+          <Link href="/book" className="price-accent mt-3 block text-center text-sm font-medium hover:underline">
             Book a call instead
           </Link>
-          <p className="mt-3 text-xs text-muted">No card needed. Priced with the same calculator as the buffet.</p>
-          <Link href="/add-ons#care" className="mt-3 block text-center text-xs text-accent">
+          <p className="mt-5 text-xs leading-relaxed text-muted">No card needed. Priced with the same calculator as the buffet.</p>
+          <Link href="/add-ons#care" className="price-accent mt-3 block text-center text-xs hover:underline">
             Add a care plan from $50/month
           </Link>
         </aside>

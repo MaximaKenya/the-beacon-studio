@@ -4,13 +4,12 @@ import { useEffect, useState } from "react";
 import { siteConfig, type PricingTier } from "@/data/site";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { CountUp } from "@/components/ui/CountUp";
-import { LiftCard } from "@/components/ui/LiftCard";
 import { useFeatures } from "@/providers/FeatureProvider";
 import { PayButton } from "@/components/features/PayButton";
 import { trackEvent } from "@/lib/analytics";
 import { DEFAULT_USD_KES_RATE, formatKes, formatUsd } from "@/lib/fx";
 import { parseResponseJson } from "@/lib/safe-json";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Check } from "lucide-react";
 import Link from "next/link";
 import { AnnualBadge, CarePlansGrid, FoundersNote, ProAddonsGrid } from "@/components/revenue/Offers";
 
@@ -73,7 +72,7 @@ export function Pricing() {
               trackEvent("cta_click", { type: "book", source: "pricing_audit" });
               openBooking("automation-audit");
             }}
-            className="inline-flex h-11 shrink-0 items-center gap-2 rounded-2xl bg-accent px-4 text-sm font-semibold text-background"
+            className="price-btn price-btn-primary shrink-0 self-start sm:self-auto"
           >
             {siteConfig.automation.cta}
             <ArrowRight className="h-4 w-4" aria-hidden />
@@ -121,13 +120,13 @@ export function Pricing() {
               Discounts at 3, 5, and 8 or more. Annual pay takes a further {siteConfig.automationCatalog.annualDiscountPercent}% off.
             </p>
           </div>
-          <Link href="/automations" className="inline-flex h-11 shrink-0 items-center justify-center rounded-2xl bg-accent px-4 text-sm font-semibold text-background">
+          <Link href="/automations" className="price-btn price-btn-secondary shrink-0 self-start sm:self-auto">
             Build a bundle
           </Link>
         </div>
 
         <h3 className="mt-10 font-display text-lg font-semibold text-foreground">Custom build</h3>
-        <div className="mt-4 grid grid-cols-1 items-stretch gap-6 lg:grid-cols-3">
+        <div className="mt-6 grid grid-cols-1 items-stretch gap-6 md:grid-cols-2 lg:grid-cols-3 lg:gap-8">
           {automationTiers.map((tier) => (
             <TierCard key={tier.id} tier={tier} rate={rate} onCta={handleCta} />
           ))}
@@ -158,7 +157,7 @@ export function Pricing() {
                 Not sure? Run the ROI calculator.
               </Link>
             </p>
-            <div className="mt-6 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+            <div className="mt-8 grid grid-cols-1 items-stretch gap-6 md:grid-cols-2 lg:gap-8">
               {packageTiers.map((tier) => (
                 <TierCard key={tier.id} tier={tier} rate={rate} onCta={handleCta} />
               ))}
@@ -170,20 +169,22 @@ export function Pricing() {
           {[...customTiers, ...itTiers].map((tier) => (
             <article
               key={tier.id}
-              className="sleek-card flex flex-col gap-6 rounded-3xl p-6 md:flex-row md:items-center md:justify-between"
+              className="sleek-card price-lift flex flex-col gap-6 rounded-3xl p-7 sm:p-8 md:flex-row md:items-end md:justify-between md:gap-10"
             >
               <div className="max-w-xl">
                 <p className="text-xs font-medium uppercase tracking-wide text-muted">
                   {tier.group === "it" ? "Managed IT" : "Custom software"}
                 </p>
-                <h3 className="mt-2 font-display text-2xl font-semibold text-foreground">{tier.name}</h3>
+                <h3 className="mt-2 font-display text-2xl font-semibold text-heading">{tier.name}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-muted">{tier.headline}</p>
-                <p className="mt-4 font-display text-2xl font-semibold text-foreground">{tier.fromPrice}</p>
-                <ul className="mt-4 space-y-2">
+                <p className="mt-5 font-display text-2xl font-semibold text-heading">{tier.fromPrice}</p>
+                <ul className="mt-5 space-y-3">
                   {tier.includes.map((item) => (
-                    <li key={item} className="flex gap-2 text-sm text-foreground">
-                      <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-accent" aria-hidden />
-                      {item}
+                    <li key={item} className="flex gap-3 text-sm leading-relaxed text-foreground">
+                      <span className="price-check" aria-hidden>
+                        <Check className="h-3 w-3" strokeWidth={3} />
+                      </span>
+                      <span className="min-w-0">{item}</span>
                     </li>
                   ))}
                 </ul>
@@ -191,7 +192,7 @@ export function Pricing() {
               <button
                 type="button"
                 onClick={() => handleCta(tier)}
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-accent px-5 text-sm font-semibold text-background"
+                className="price-btn price-btn-secondary shrink-0 self-start md:self-auto"
               >
                 {tier.cta}
                 <ArrowRight className="h-4 w-4" aria-hidden />
@@ -206,7 +207,7 @@ export function Pricing() {
             <AnnualBadge />
           </div>
           <p className="mt-1 max-w-xl text-sm text-muted">Monthly care after launch. Billed by invoice.</p>
-          <div className="mt-6">
+          <div className="mt-8">
             <CarePlansGrid />
           </div>
         </div>
@@ -216,7 +217,7 @@ export function Pricing() {
           <p className="mt-1 max-w-xl text-sm text-muted">
             Add to any plan. WhatsApp and M-Pesa add-ons are on the <Link href="/add-ons" className="text-accent">add-ons page</Link>.
           </p>
-          <div className="mt-6">
+          <div className="mt-8">
             <ProAddonsGrid />
           </div>
         </div>
@@ -248,74 +249,84 @@ function TierCard({
   const priced = tier.fromAmount > 0;
   const kesPriced = Boolean(tier.kesAmount);
   const kes = priced ? kesFloor(tier, rate) : 0;
+  const payable = priced && !tier.quoteOnly;
 
   return (
-    <LiftCard className="h-full">
-      <article className={`sleek-card flex h-full flex-col rounded-3xl p-6 ${popular ? "sleek-card-popular" : ""}`}>
-        <div className="flex items-center justify-between gap-3">
-          <h3 className="font-display text-xl font-semibold text-foreground">{tier.name}</h3>
-          {popular && (
-            <span className="rounded-full bg-accent px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-background">
-              Most popular
-            </span>
+    <article className={`sleek-card price-card price-lift ${popular ? "price-card-popular" : ""}`}>
+      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
+        <h3 className="font-display text-xl font-semibold text-heading">{tier.name}</h3>
+        {popular && <span className="price-badge">Most popular</span>}
+      </div>
+      <p className="mt-2 text-sm leading-relaxed text-muted">{tier.headline}</p>
+
+      <div className="mt-6">
+        <p className="font-display text-4xl font-semibold tracking-tight text-heading">
+          {priced ? (
+            kesPriced ? (
+              <>
+                <span className="mr-1 text-lg font-medium text-muted">KES</span>
+                <CountUp value={String(kes)} />
+              </>
+            ) : (
+              <>
+                $<CountUp value={String(tier.fromAmount)} />
+              </>
+            )
+          ) : (
+            tier.fromPrice
           )}
-        </div>
-        <p className="mt-2 text-sm leading-relaxed text-muted">{tier.headline}</p>
-        {priced ? (
-          <>
-            <p className="mt-5 font-display text-3xl font-semibold text-foreground">
-              {kesPriced ? (
-                <>
-                  KES <CountUp value={String(kes)} />
-                </>
-              ) : (
-                <>
-                  $<CountUp value={String(tier.fromAmount)} />
-                </>
-              )}
-            </p>
-            <p className="mt-1 text-sm text-muted">
-              about {kesPriced ? formatUsd(tier.fromAmount) : formatKes(kes)}
-              <span className="text-muted"> · {tier.unit}</span>
-            </p>
-          </>
-        ) : (
-          <>
-            <p className="mt-5 font-display text-3xl font-semibold text-foreground">{tier.fromPrice}</p>
-            <p className="mt-1 text-sm text-muted">{tier.unit}</p>
-          </>
-        )}
-        <ul className="mt-5 flex-1 space-y-2">
-          {tier.includes.map((item) => (
-            <li key={item} className="flex gap-2 text-sm leading-relaxed text-foreground">
-              <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-accent" aria-hidden />
-              {item}
+        </p>
+        <p className="mt-2 text-sm leading-relaxed text-muted">
+          {priced ? (
+            <>
+              about {kesPriced ? formatUsd(tier.fromAmount) : formatKes(kes)} · {tier.unit}
+            </>
+          ) : (
+            tier.unit
+          )}
+        </p>
+      </div>
+
+      <ul className="mt-7 flex-1 space-y-3.5">
+        {tier.includes.map((item) => (
+          <li key={item} className="flex gap-3 text-sm leading-relaxed text-foreground">
+            <span className="price-check" aria-hidden>
+              <Check className="h-3 w-3" strokeWidth={3} />
+            </span>
+            <span className="min-w-0">{item}</span>
+          </li>
+        ))}
+      </ul>
+      {tier.excludes && tier.excludes.length > 0 && (
+        <ul className="mt-5 space-y-1.5">
+          {tier.excludes.map((item) => (
+            <li key={item} className="text-xs leading-relaxed text-muted">
+              Not included: {item}
             </li>
           ))}
         </ul>
-        {tier.excludes && tier.excludes.length > 0 && (
-          <ul className="mt-4 space-y-1">
-            {tier.excludes.map((item) => (
-              <li key={item} className="text-xs leading-relaxed text-muted">
-                Not included: {item}
-              </li>
-            ))}
-          </ul>
+      )}
+      {tier.revisions && <p className="mt-4 text-xs text-muted">Revisions: {tier.revisions}</p>}
+
+      <div className="mt-8 flex flex-col items-start gap-3">
+        <button
+          type="button"
+          onClick={() => onCta(tier)}
+          className={`price-btn ${popular ? "price-btn-primary" : "price-btn-secondary"}`}
+        >
+          {tier.cta}
+          <ArrowRight className="h-4 w-4" aria-hidden />
+        </button>
+        {payable && (
+          <details className="group w-full">
+            <summary className="cursor-pointer list-none text-sm font-medium text-muted hover:text-heading [&::-webkit-details-marker]:hidden">
+              Other ways to pay
+              <span className="ml-1 inline-block transition-transform group-open:rotate-90" aria-hidden>›</span>
+            </summary>
+            <PayButton tierId={tier.id} mode="deposit" variant="ghost" className="mt-3" />
+          </details>
         )}
-        {tier.revisions && <p className="mt-3 text-xs text-muted">Revisions: {tier.revisions}</p>}
-        <div className="mt-6 space-y-2">
-          <button
-            type="button"
-            onClick={() => onCta(tier)}
-            className={`inline-flex h-11 w-full items-center justify-center gap-2 rounded-2xl text-sm font-semibold ${
-              popular ? "bg-accent text-background" : "bg-surface-elevated/80 text-foreground"
-            }`}
-          >
-            {tier.cta}
-          </button>
-          {priced && !tier.quoteOnly && <PayButton tierId={tier.id} mode="deposit" variant="ghost" />}
-        </div>
-      </article>
-    </LiftCard>
+      </div>
+    </article>
   );
 }

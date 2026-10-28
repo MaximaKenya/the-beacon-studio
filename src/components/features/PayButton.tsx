@@ -75,6 +75,8 @@ export function PayButton({
     rate,
   });
   const kesPriced = Boolean(tier.kesAmount);
+  // Card checkout only shows once Paystack is switched on for the account.
+  const paystackOn = options?.paystack === true;
   const text = label ?? (mode === "deposit" ? `${siteConfig.payments.depositLabel} (${depositPct}%)` : siteConfig.payments.invoiceLabel);
   const usdLabel = formatUsd(usd);
   const kesLabel = formatKes(kes);
@@ -166,29 +168,31 @@ export function PayButton({
   }
 
   return (
-    <div className={`w-full rounded-2xl bg-background/40 p-3 ${className}`}>
+    <div className={`w-full rounded-2xl bg-background/40 p-4 ${className}`}>
       <p className="font-mono text-[10px] uppercase tracking-wider text-muted">
         {mode === "deposit" ? `${depositPct}% deposit` : "Full amount"} · {kesPriced ? "KES" : "USD"} and {kesPriced ? "USD" : "KES"}
       </p>
       <p className="mt-1 font-display text-2xl font-semibold text-foreground">{kesPriced ? kesLabel : usdLabel}</p>
       <p className="text-xs text-muted">About {kesPriced ? usdLabel : kesLabel} at checkout</p>
 
+      {paystackOn && (
       <div className="mt-3 grid grid-cols-2 gap-1 rounded-xl bg-surface/70 p-1">
-        <button
-          type="button"
-          onClick={() => setCurrency("KES")}
-          className={`rounded-lg px-2 py-1.5 text-xs font-semibold ${currency === "KES" ? "bg-accent text-background" : "text-muted"}`}
-        >
-          KES · M-Pesa & card
-        </button>
-        <button
-          type="button"
-          onClick={() => setCurrency("USD")}
-          className={`rounded-lg px-2 py-1.5 text-xs font-semibold ${currency === "USD" ? "bg-accent text-background" : "text-muted"}`}
-        >
-          USD · card
-        </button>
-      </div>
+          <button
+            type="button"
+            onClick={() => setCurrency("KES")}
+            className={`rounded-lg px-2 py-1.5 text-xs font-semibold ${currency === "KES" ? "bg-accent text-background" : "text-muted"}`}
+          >
+            KES · M-Pesa & card
+          </button>
+          <button
+            type="button"
+            onClick={() => setCurrency("USD")}
+            className={`rounded-lg px-2 py-1.5 text-xs font-semibold ${currency === "USD" ? "bg-accent text-background" : "text-muted"}`}
+          >
+            USD · card
+          </button>
+        </div>
+      )}
 
       <label className="mt-3 block text-xs text-muted" htmlFor={`pay-email-${tierId}`}>
         Email for the receipt
@@ -203,26 +207,30 @@ export function PayButton({
         className="mt-1 w-full rounded-xl px-3 py-2 text-sm"
       />
 
+      {paystackOn && (
+        <>
       <button
-        type="button"
-        onClick={() => void checkoutPaystack()}
-        disabled={!!loading || !email.trim()}
-        className={`mt-3 inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl text-sm font-semibold disabled:opacity-60 ${primary}`}
-      >
-        {loading === "paystack" ? <Loader2 className="h-4 w-4 animate-spin" /> : <CreditCard className="h-4 w-4" />}
-        {text} · Paystack
-      </button>
-      <p className="mt-1 text-[11px] leading-relaxed text-muted">
-        {currency === "KES"
-          ? `${kesLabel} via M-Pesa or card.`
-          : `${usdLabel} on an international card, when the Paystack account allows USD.`}
-      </p>
+            type="button"
+            onClick={() => void checkoutPaystack()}
+            disabled={!!loading || !email.trim()}
+            className={`mt-3 inline-flex h-10 w-full items-center justify-center gap-2 rounded-full px-5 text-sm font-semibold disabled:opacity-60 ${primary}`}
+          >
+            {loading === "paystack" ? <Loader2 className="h-4 w-4 animate-spin" /> : <CreditCard className="h-4 w-4" />}
+            {text} · Paystack
+          </button>
+          <p className="mt-1 text-[11px] leading-relaxed text-muted">
+            {currency === "KES"
+              ? `${kesLabel} via M-Pesa or card.`
+              : `${usdLabel} on an international card, when the Paystack account allows USD.`}
+          </p>
+        </>
+      )}
 
       {!showBank ? (
         <button
           type="button"
           onClick={() => setShowBank(true)}
-          className="mt-2 inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-surface-elevated/80 text-sm font-semibold text-foreground"
+          className="price-btn price-btn-secondary mt-3"
         >
           <Building2 className="h-4 w-4" />
           Pay by bank transfer / invoice
@@ -272,7 +280,7 @@ export function PayButton({
             type="button"
             onClick={() => void requestInvoice()}
             disabled={!!loading || !name.trim() || !email.trim()}
-            className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-accent text-sm font-semibold text-background disabled:opacity-60"
+            className="price-btn price-btn-primary"
           >
             {loading === "bank" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Building2 className="h-4 w-4" />}
             Request invoice · {usdLabel}
