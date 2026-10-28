@@ -5,7 +5,7 @@ import { carePlans, foundersLock, mpesaAddon, proAddons, whatsappAddon } from "@
 import { formatKes, formatUsd } from "@/lib/fx";
 import { annualPrice, whatsappUnitKes } from "@/lib/revenue-pricing";
 
-const card = "sleek-card rounded-3xl p-6";
+const card = "sleek-card price-tone rounded-3xl p-6 sm:p-8";
 const priceCard = "sleek-card price-card price-lift";
 const cta = "price-btn price-btn-secondary mt-8 self-start";
 
@@ -27,14 +27,14 @@ export function AnnualBadge({ className = "" }: { className?: string }) {
 
 export function CarePlansGrid({ ctaHref = "/add-ons#care" }: { ctaHref?: string }) {
   return (
-    <div className="grid grid-cols-1 items-stretch gap-6 md:grid-cols-2 lg:grid-cols-3 lg:gap-8">
+    <div className="price-grid">
       {carePlans.map((plan) => {
         const annual = annualPrice(plan.monthlyUsd);
         return (
           <article key={plan.id} className={priceCard}>
             <h3 className="font-display text-xl font-semibold text-heading">{plan.name}</h3>
             <p className="mt-2 text-sm leading-relaxed text-muted">{plan.summary}</p>
-            <p className="mt-6 font-display text-4xl font-semibold tracking-tight text-heading">
+            <p className="price-amount mt-6 font-display text-4xl font-semibold tracking-tight text-heading">
               {formatUsd(plan.monthlyUsd)}
               <span className="ml-1 text-sm font-normal tracking-normal text-muted">/ month</span>
             </p>
@@ -61,11 +61,11 @@ export function WhatsAppTiers() {
   const utility = whatsappUnitKes("utility");
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-1 items-stretch gap-6 md:grid-cols-2 lg:grid-cols-3 lg:gap-8">
+      <div className="price-grid">
         {whatsappAddon.tiers.map((tier) => (
           <article key={tier.id} className={priceCard}>
             <h3 className="font-display text-xl font-semibold text-heading">{tier.name}</h3>
-            <p className="mt-5 font-display text-3xl font-semibold tracking-tight text-heading">
+            <p className="price-amount mt-5 font-display text-4xl font-semibold tracking-tight text-heading">
               {formatKes(tier.monthlyKes)}
               <span className="ml-1 text-sm font-normal tracking-normal text-muted">/ month</span>
             </p>
@@ -104,12 +104,12 @@ export function MpesaCard() {
 
 export function ProAddonsGrid({ ctaHref = "/add-ons#pro" }: { ctaHref?: string }) {
   return (
-    <div className="grid grid-cols-1 items-stretch gap-6 md:grid-cols-2 lg:grid-cols-3">
+    <div className="price-grid">
       {proAddons.map((addon) => (
-        <article key={addon.id} className={`${priceCard} sm:p-7`}>
+        <article key={addon.id} className={priceCard}>
           <h3 className="font-display text-lg font-semibold text-heading">{addon.name}</h3>
           <p className="mt-2 flex-1 text-sm leading-relaxed text-muted">{addon.detail}</p>
-          <p className="mt-5 font-display text-xl font-semibold text-heading">
+          <p className="mt-5 font-display text-3xl font-semibold tracking-tight text-heading">
             {formatKes(addon.priceKes)} <span className="text-sm font-normal text-muted">{addon.unit}</span>
           </p>
           <Link href={ctaHref} className="price-accent mt-4 inline-flex self-start text-sm font-semibold hover:underline">
