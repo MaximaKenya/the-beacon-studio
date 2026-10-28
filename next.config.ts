@@ -34,7 +34,13 @@ const nextConfig: NextConfig = {
         headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
       },
       {
-        source: "/work/:path*",
+        // Only the screenshots: /work/<slug> case-study pages are HTML and must not be cached for a year.
+        source: "/work/:file(.+\\.(?:jpg|jpeg|png|webp|avif))",
+        headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
+      },
+      {
+        // Product screenshots (/products/<slug>/<file>.webp). Not the /products/<slug> pages.
+        source: "/products/:slug/:file(.+\\.(?:jpg|jpeg|png|webp|avif))",
         headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
       },
       {

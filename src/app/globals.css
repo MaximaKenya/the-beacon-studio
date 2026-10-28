@@ -1661,3 +1661,27 @@ h4 {
   .mg-btn:hover .mg-img { transform: none; }
 }
 @media (hover: none) { .mg-btn { transform: none; } }
+
+/* ============ Product cards on phones ============ */
+.ps-card, .ps-card * { min-width: 0; }
+.ps-body { overflow-wrap: anywhere; }
+.ps-media, .ps-media .pg-carousel, .ps-media .pg-track { max-width: 100%; }
+.ps-media .pg-track { overflow-y: hidden; }
+.pg-shot { max-width: 100%; height: 100%; }
+.pg-browser-screen, .pg-phone-screen { background: color-mix(in srgb, var(--surface-elevated, var(--surface)) 92%, var(--foreground) 8%); }
+.dev-toggle { max-width: 100%; }
+/* Primary action full width, secondary links share a row; on wider screens all sit inline. */
+.ps-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.6rem; }
+.ps-actions > .price-btn-primary { grid-column: 1 / -1; }
+.ps-actions > .price-btn { width: 100%; justify-content: center; min-width: 0; white-space: normal; text-align: center; }
+.ps-actions > .price-btn-secondary { font-size: 0.85rem; }
+.ps-actions > .price-btn-secondary:last-child:nth-child(2) { grid-column: 1 / -1; }
+@media (min-width: 480px) {
+  .ps-actions { display: flex; flex-wrap: wrap; align-items: center; }
+  .ps-actions > .price-btn { width: auto; }
+}
+/* Keep carousel arrows/dots on the left on phones so the assistant launcher (bottom right) never sits on them. */
+@media (max-width: 767px) {
+  .pg-carousel-compact .pg-controls { justify-content: flex-start; padding-right: 3.5rem; }
+}
+.ps-actions > .price-btn-primary { height: 2.75rem; }
