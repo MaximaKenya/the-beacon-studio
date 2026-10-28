@@ -99,6 +99,6 @@ const INDUSTRY_NOTES: Record<string, string> = {
 };
 
 export function studiesForIndustry(slug: string): { study: WorkStudy; note: string }[] {
-  const note = INDUSTRY_NOTES[slug] || "Two products from the studio.";
+  const note = INDUSTRY_NOTES[slug] || "Products from the studio.";
   return workStudies.map((study) => ({ study, note }));
 }

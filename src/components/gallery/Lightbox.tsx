@@ -5,7 +5,7 @@ import Image from "next/image";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import type { ProductShot } from "@/data/product-shots";
 
-/** Modal viewer: captions, prev/next, ←/→, Esc closes, focus trapped, focus restored. */
+/** Modal viewer: captions, prev/next, ←/→ and swipe, Esc closes, focus trapped, focus restored. */
 export function Lightbox({
   shots,
   index,
@@ -21,6 +21,7 @@ export function Lightbox({
 }) {
   const dialog = useRef<HTMLDivElement>(null);
   const restore = useRef<HTMLElement | null>(null);
+  const swipe = useRef<{ x: number; y: number } | null>(null);
   const open = index !== null;
 
   useEffect(() => {
@@ -47,6 +48,14 @@ export function Lightbox({
       aria-modal="true"
       aria-label={`${name} screenshot ${index + 1} of ${shots.length}`}
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      onPointerDown={(e) => { if (e.pointerType !== "mouse") swipe.current = { x: e.clientX, y: e.clientY }; }}
+      onPointerUp={(e) => {
+        const s0 = swipe.current;
+        swipe.current = null;
+        if (!s0) return;
+        const dx = e.clientX - s0.x;
+        if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(e.clientY - s0.y)) step(dx < 0 ? 1 : -1);
+      }}
       onKeyDown={(e) => {
         if (e.key === "Escape") onClose();
         else if (e.key === "ArrowRight") step(1);

@@ -33,7 +33,6 @@ type PayCurrency = "KES" | "USD";
 export function PayButton({
   tierId,
   mode = "deposit",
-  variant = "secondary",
   className = "",
   label,
   projectId,
@@ -80,11 +79,6 @@ export function PayButton({
   const text = label ?? (mode === "deposit" ? `${siteConfig.payments.depositLabel} (${depositPct}%)` : siteConfig.payments.invoiceLabel);
   const usdLabel = formatUsd(usd);
   const kesLabel = formatKes(kes);
-
-  const primary =
-    variant === "primary"
-      ? "bg-accent text-background"
-      : "bg-accent text-background";
 
   function renderFallbackLinks() {
     return (
@@ -168,7 +162,7 @@ export function PayButton({
   }
 
   return (
-    <div className={`w-full rounded-2xl bg-background/40 p-4 ${className}`}>
+    <div className={`price-tone w-full rounded-2xl bg-background/40 p-5 ${className}`}>
       <p className="font-mono text-[10px] uppercase tracking-wider text-muted">
         {mode === "deposit" ? `${depositPct}% deposit` : "Full amount"} · {kesPriced ? "KES" : "USD"} and {kesPriced ? "USD" : "KES"}
       </p>
@@ -213,7 +207,7 @@ export function PayButton({
             type="button"
             onClick={() => void checkoutPaystack()}
             disabled={!!loading || !email.trim()}
-            className={`mt-3 inline-flex h-10 w-full items-center justify-center gap-2 rounded-full px-5 text-sm font-semibold disabled:opacity-60 ${primary}`}
+            className="price-btn price-btn-primary mt-3 w-full"
           >
             {loading === "paystack" ? <Loader2 className="h-4 w-4 animate-spin" /> : <CreditCard className="h-4 w-4" />}
             {text} · Paystack

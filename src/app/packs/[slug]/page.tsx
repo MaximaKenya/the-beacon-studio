@@ -50,12 +50,12 @@ export default async function PackPage({ params }: Props) {
       <h1 className="mt-2 max-w-2xl font-display text-4xl font-semibold tracking-tight text-heading">{pack.headline}</h1>
       <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted">{pack.summary}</p>
 
-      <div className="mt-10 grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
+      <div className="mt-10 grid gap-8 lg:grid-cols-[minmax(0,1fr)_360px]">
         <div className="grid gap-5 sm:grid-cols-2">
           {monthly.items.map((item) => {
             const template = templateById(item.id);
             return (
-              <div key={item.id} className="sleek-card flex flex-col rounded-3xl p-6">
+              <div key={item.id} className="sleek-card price-tone flex flex-col rounded-3xl p-6 sm:p-7">
                 <h2 className="font-display text-lg font-semibold text-heading">{item.name}</h2>
                 {template?.summary && <p className="mt-2 flex-1 text-sm leading-relaxed text-muted">{template.summary}</p>}
                 <p className="mt-4 text-xs text-muted">{formatKes(item.monthlyKes)}/mo on its own</p>
@@ -63,7 +63,7 @@ export default async function PackPage({ params }: Props) {
             );
           })}
         </div>
-        <aside className="sleek-card price-card-popular h-fit rounded-3xl p-7 sm:p-8 lg:sticky lg:top-28">
+        <aside className="sleek-card price-tone price-card-popular h-fit rounded-3xl p-7 sm:p-9 lg:sticky lg:top-28">
           <p className="text-sm text-muted">Pack price</p>
           <p className="mt-2 font-display text-4xl font-semibold tracking-tight text-heading">{formatKes(monthly.recurringMonthlyKes)}</p>
           <p className="mt-1 text-sm text-muted">a month{monthly.bundlePercent ? ` · ${monthly.bundlePercent}% bundle discount` : ""}</p>

@@ -93,7 +93,7 @@ export function BuffetBuilder({ templates, initialPack }: { templates: PricedTem
   }
 
   return (
-    <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
+    <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_360px]">
       <div className="min-w-0">
         {step === "pick" ? (
           <>
@@ -105,13 +105,13 @@ export function BuffetBuilder({ templates, initialPack }: { templates: PricedTem
                   const quote = quoteBundle(pack.templateIds, { billing });
                   const on = activePack === pack.id;
                   return (
-                    <div key={pack.id} className={`sleek-card flex w-72 shrink-0 snap-start flex-col rounded-3xl p-6 ${on ? "price-card-popular" : ""}`}>
+                    <div key={pack.id} className={`sleek-card price-tone flex w-[22rem] max-w-[85vw] shrink-0 snap-start flex-col rounded-3xl p-7 ${on ? "price-card-popular" : ""}`}>
                       <p className="price-accent text-xs font-semibold uppercase tracking-wide">{pack.industry}</p>
                       <Link href={`/packs/${pack.id}`} className="mt-2 font-display text-lg font-semibold text-heading hover:underline">
                         {pack.name}
                       </Link>
                       <p className="mt-1 text-sm text-muted">{pack.templateIds.length} automations{quote?.bundlePercent ? ` · ${quote.bundlePercent}% off` : ""}</p>
-                      <p className="mt-4 flex-1 font-display text-2xl font-semibold tracking-tight text-heading">
+                      <p className="mt-4 flex-1 font-display text-3xl font-semibold tracking-tight text-heading">
                         {quote ? formatKes(quote.recurringMonthlyKes) : ""}
                         {quote && <span className="ml-1 text-sm font-normal tracking-normal text-muted">/mo</span>}
                       </p>
@@ -207,7 +207,7 @@ export function BuffetBuilder({ templates, initialPack }: { templates: PricedTem
         )}
       </div>
       <aside data-clear-cluster="" className="sticky bottom-[max(1rem,env(safe-area-inset-bottom))] z-30 self-start lg:top-24 lg:bottom-auto">
-        <div className="sleek-card max-h-[min(58vh,28rem)] overflow-y-auto overscroll-contain rounded-3xl p-6 lg:max-h-[min(calc(100dvh-12.5rem),40rem)]">
+        <div className="sleek-card price-tone max-h-[min(58vh,28rem)] overflow-y-auto overscroll-contain rounded-3xl p-6 lg:max-h-[min(calc(100dvh-12.5rem),40rem)]">
           <h2 className="font-display text-lg font-semibold text-foreground">Your bundle</h2>
           {!quote || quote.count === 0 ? (
             <p className="mt-2 text-sm text-muted">Tick the automations you need. The total updates as you go.</p>
@@ -227,7 +227,7 @@ export function BuffetBuilder({ templates, initialPack }: { templates: PricedTem
                     key={item}
                     type="button"
                     onClick={() => setBilling(item)}
-                    className={`rounded-full px-3 py-1 text-xs font-semibold ${billing === item ? "bg-accent text-background" : "bg-surface-elevated/80 text-muted"}`}
+                    className={`rounded-full px-3 py-1 text-xs font-semibold ${billing === item ? "[background:var(--pastel-btn)] text-[color:var(--pastel-ink)]" : "bg-surface-elevated/80 text-muted"}`}
                   >
                     {item === "monthly" ? "Monthly" : "Annual"}
                   </button>

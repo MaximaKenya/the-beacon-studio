@@ -1,7 +1,9 @@
 "use client";
 
 import { ProductSuite } from "@/components/sections/ProductSuite";
-import { SelectedWork } from "@/components/sections/SelectedWork";
+import { MotionGallery } from "@/components/gallery/MotionGallery";
+import { productShots } from "@/data/product-shots";
+import { siteConfig } from "@/data/site";
 import { Services } from "@/components/sections/Services";
 import { ExampleResults } from "@/components/sections/ExampleResults";
 import { RoiCalculator } from "@/components/sections/RoiCalculator";
@@ -22,7 +24,15 @@ export function HomeRest() {
   return (
     <>
       <ProductSuite />
-      <SelectedWork />
+      <div className="mx-auto max-w-6xl px-6 py-16 lg:px-8 lg:py-24">
+        <MotionGallery
+          shots={productShots}
+          products={siteConfig.products.map((p) => ({ id: p.id, name: p.name }))}
+          name="The Beacon Studio"
+          title="Every screen, in motion"
+          description={`${productShots.length} real screens from all ${siteConfig.products.length} products. Filter, hover, tap to enlarge.`}
+        />
+      </div>
       <Services />
       <ExampleResults />
       <RoiCalculator />

@@ -9,7 +9,7 @@ import { PayButton } from "@/components/features/PayButton";
 import { trackEvent } from "@/lib/analytics";
 import { DEFAULT_USD_KES_RATE, formatKes, formatUsd } from "@/lib/fx";
 import { parseResponseJson } from "@/lib/safe-json";
-import { ArrowRight, Check } from "lucide-react";
+import { ArrowRight, Check, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { AnnualBadge, CarePlansGrid, FoundersNote, ProAddonsGrid } from "@/components/revenue/Offers";
 
@@ -59,7 +59,7 @@ export function Pricing() {
           description="A build is a one-off. A care plan keeps it running. Smaller teams can start with a template. Custom software is quoted after a free call. Outsourced IT is quoted after a free assessment."
         />
 
-        <div className="sleek-card mb-8 flex flex-col gap-4 rounded-3xl p-6 sm:flex-row sm:items-center sm:justify-between">
+        <div className="sleek-card price-tone mb-8 flex flex-col gap-4 rounded-3xl p-6 sm:p-8 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h3 className="font-display text-lg font-semibold text-foreground">AI Automation</h3>
             <p className="mt-1 max-w-xl text-sm leading-relaxed text-muted">
@@ -111,7 +111,7 @@ export function Pricing() {
           </ol>
         </div>
 
-        <div className="sleek-card mt-8 flex flex-col gap-4 rounded-3xl p-6 sm:flex-row sm:items-center sm:justify-between">
+        <div className="sleek-card price-tone mt-8 flex flex-col gap-4 rounded-3xl p-6 sm:p-8 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h3 className="font-display text-lg font-semibold text-foreground">Ready-made buffet</h3>
             <p className="mt-1 max-w-xl text-sm leading-relaxed text-muted">
@@ -126,7 +126,7 @@ export function Pricing() {
         </div>
 
         <h3 className="mt-10 font-display text-lg font-semibold text-foreground">Custom build</h3>
-        <div className="mt-6 grid grid-cols-1 items-stretch gap-6 md:grid-cols-2 lg:grid-cols-3 lg:gap-8">
+        <div className="price-grid mt-6">
           {automationTiers.map((tier) => (
             <TierCard key={tier.id} tier={tier} rate={rate} onCta={handleCta} />
           ))}
@@ -157,7 +157,7 @@ export function Pricing() {
                 Not sure? Run the ROI calculator.
               </Link>
             </p>
-            <div className="mt-8 grid grid-cols-1 items-stretch gap-6 md:grid-cols-2 lg:gap-8">
+            <div className="price-grid mt-8">
               {packageTiers.map((tier) => (
                 <TierCard key={tier.id} tier={tier} rate={rate} onCta={handleCta} />
               ))}
@@ -169,7 +169,7 @@ export function Pricing() {
           {[...customTiers, ...itTiers].map((tier) => (
             <article
               key={tier.id}
-              className="sleek-card price-lift flex flex-col gap-6 rounded-3xl p-7 sm:p-8 md:flex-row md:items-end md:justify-between md:gap-10"
+              className="sleek-card price-tone price-lift flex flex-col gap-6 rounded-3xl p-7 sm:p-10 md:flex-row md:items-end md:justify-between md:gap-10"
             >
               <div className="max-w-xl">
                 <p className="text-xs font-medium uppercase tracking-wide text-muted">
@@ -177,7 +177,7 @@ export function Pricing() {
                 </p>
                 <h3 className="mt-2 font-display text-2xl font-semibold text-heading">{tier.name}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-muted">{tier.headline}</p>
-                <p className="mt-5 font-display text-2xl font-semibold text-heading">{tier.fromPrice}</p>
+                <p className="mt-5 font-display text-3xl font-semibold tracking-tight text-heading">{tier.fromPrice}</p>
                 <ul className="mt-5 space-y-3">
                   {tier.includes.map((item) => (
                     <li key={item} className="flex gap-3 text-sm leading-relaxed text-foreground">
@@ -254,13 +254,18 @@ function TierCard({
   return (
     <article className={`sleek-card price-card price-lift ${popular ? "price-card-popular" : ""}`}>
       <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
-        <h3 className="font-display text-xl font-semibold text-heading">{tier.name}</h3>
+        <div className="flex items-center gap-3">
+          <span className="price-chip" aria-hidden>
+            <Sparkles className="h-4 w-4" />
+          </span>
+          <h3 className="font-display text-xl font-semibold text-heading">{tier.name}</h3>
+        </div>
         {popular && <span className="price-badge">Most popular</span>}
       </div>
       <p className="mt-2 text-sm leading-relaxed text-muted">{tier.headline}</p>
 
       <div className="mt-6">
-        <p className="font-display text-4xl font-semibold tracking-tight text-heading">
+        <p className="price-amount font-display text-4xl font-semibold tracking-tight text-heading">
           {priced ? (
             kesPriced ? (
               <>
