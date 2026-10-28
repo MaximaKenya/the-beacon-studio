@@ -1,10 +1,24 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
+import { Check } from "lucide-react";
 import { carePlans, foundersLock, mpesaAddon, proAddons, whatsappAddon } from "@/data/site";
 import { formatKes, formatUsd } from "@/lib/fx";
 import { annualPrice, whatsappUnitKes } from "@/lib/revenue-pricing";
 
 const card = "sleek-card rounded-3xl p-6";
-const cta = "mt-4 inline-flex h-10 items-center justify-center rounded-2xl bg-accent px-4 text-sm font-semibold text-background";
+const priceCard = "sleek-card price-card price-lift";
+const cta = "price-btn price-btn-secondary mt-8 self-start";
+
+function CheckItem({ children }: { children: ReactNode }) {
+  return (
+    <li className="flex gap-3 text-sm leading-relaxed text-foreground">
+      <span className="price-check" aria-hidden>
+        <Check className="h-3 w-3" strokeWidth={3} />
+      </span>
+      <span className="min-w-0">{children}</span>
+    </li>
+  );
+}
 
 export function AnnualBadge({ className = "" }: { className?: string }) {
   const percent = annualPrice(1).percent;
@@ -13,23 +27,23 @@ export function AnnualBadge({ className = "" }: { className?: string }) {
 
 export function CarePlansGrid({ ctaHref = "/add-ons#care" }: { ctaHref?: string }) {
   return (
-    <div className="grid gap-4 md:grid-cols-3">
+    <div className="grid grid-cols-1 items-stretch gap-6 md:grid-cols-2 lg:grid-cols-3 lg:gap-8">
       {carePlans.map((plan) => {
         const annual = annualPrice(plan.monthlyUsd);
         return (
-          <article key={plan.id} className={card}>
-            <h3 className="font-display text-lg font-semibold text-heading">{plan.name}</h3>
-            <p className="mt-1 text-sm text-muted">{plan.summary}</p>
-            <p className="mt-3 font-display text-2xl font-semibold text-heading">
+          <article key={plan.id} className={priceCard}>
+            <h3 className="font-display text-xl font-semibold text-heading">{plan.name}</h3>
+            <p className="mt-2 text-sm leading-relaxed text-muted">{plan.summary}</p>
+            <p className="mt-6 font-display text-4xl font-semibold tracking-tight text-heading">
               {formatUsd(plan.monthlyUsd)}
-              <span className="text-sm font-normal text-muted"> / month</span>
+              <span className="ml-1 text-sm font-normal tracking-normal text-muted">/ month</span>
             </p>
-            <p className="text-xs text-muted">
+            <p className="mt-2 text-xs leading-relaxed text-muted">
               Or {formatUsd(annual.perYear)} a year, save {formatUsd(annual.savingPerYear)}
             </p>
-            <ul className="mt-3 space-y-1 text-sm text-muted">
+            <ul className="mt-7 flex-1 space-y-3.5">
               {plan.includes.map((item) => (
-                <li key={item}>· {item}</li>
+                <CheckItem key={item}>{item}</CheckItem>
               ))}
             </ul>
             <Link href={`${ctaHref}`} className={cta}>
@@ -47,17 +61,17 @@ export function WhatsAppTiers() {
   const utility = whatsappUnitKes("utility");
   return (
     <div className="space-y-4">
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid grid-cols-1 items-stretch gap-6 md:grid-cols-2 lg:grid-cols-3 lg:gap-8">
         {whatsappAddon.tiers.map((tier) => (
-          <article key={tier.id} className={card}>
-            <h3 className="font-display text-lg font-semibold text-heading">{tier.name}</h3>
-            <p className="mt-3 font-display text-2xl font-semibold text-heading">
+          <article key={tier.id} className={priceCard}>
+            <h3 className="font-display text-xl font-semibold text-heading">{tier.name}</h3>
+            <p className="mt-5 font-display text-3xl font-semibold tracking-tight text-heading">
               {formatKes(tier.monthlyKes)}
-              <span className="text-sm font-normal text-muted"> / month</span>
+              <span className="ml-1 text-sm font-normal tracking-normal text-muted">/ month</span>
             </p>
-            <ul className="mt-3 space-y-1 text-sm text-muted">
-              <li>· {tier.marketingIncluded.toLocaleString("en-KE")} marketing messages</li>
-              <li>· {tier.utilityIncluded.toLocaleString("en-KE")} utility messages</li>
+            <ul className="mt-6 space-y-3.5">
+              <CheckItem>{tier.marketingIncluded.toLocaleString("en-KE")} marketing messages</CheckItem>
+              <CheckItem>{tier.utilityIncluded.toLocaleString("en-KE")} utility messages</CheckItem>
             </ul>
           </article>
         ))}
@@ -90,15 +104,15 @@ export function MpesaCard() {
 
 export function ProAddonsGrid({ ctaHref = "/add-ons#pro" }: { ctaHref?: string }) {
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid grid-cols-1 items-stretch gap-6 md:grid-cols-2 lg:grid-cols-3">
       {proAddons.map((addon) => (
-        <article key={addon.id} className={card}>
-          <h3 className="font-display text-base font-semibold text-heading">{addon.name}</h3>
-          <p className="mt-1 text-sm text-muted">{addon.detail}</p>
-          <p className="mt-2 text-sm font-semibold text-foreground">
-            {formatKes(addon.priceKes)} <span className="font-normal text-muted">{addon.unit}</span>
+        <article key={addon.id} className={`${priceCard} sm:p-7`}>
+          <h3 className="font-display text-lg font-semibold text-heading">{addon.name}</h3>
+          <p className="mt-2 flex-1 text-sm leading-relaxed text-muted">{addon.detail}</p>
+          <p className="mt-5 font-display text-xl font-semibold text-heading">
+            {formatKes(addon.priceKes)} <span className="text-sm font-normal text-muted">{addon.unit}</span>
           </p>
-          <Link href={ctaHref} className="mt-3 inline-flex text-sm font-semibold text-accent">
+          <Link href={ctaHref} className="price-accent mt-4 inline-flex self-start text-sm font-semibold hover:underline">
             Request invoice →
           </Link>
         </article>

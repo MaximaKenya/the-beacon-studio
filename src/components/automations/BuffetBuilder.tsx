@@ -100,21 +100,24 @@ export function BuffetBuilder({ templates, initialPack }: { templates: PricedTem
             <div className="mb-8">
               <h2 className="font-display text-lg font-semibold text-foreground">Packs</h2>
               <p className="mt-1 text-sm text-muted">Pre-picked by industry. Same bundle discount as picking them yourself.</p>
-              <div className="mt-4 flex snap-x gap-3 overflow-x-auto pb-2">
+              <div className="-mx-1 mt-5 flex snap-x gap-5 overflow-x-auto px-1 pt-1 pb-6">
                 {industryPacks.map((pack) => {
                   const quote = quoteBundle(pack.templateIds, { billing });
                   const on = activePack === pack.id;
                   return (
-                    <div key={pack.id} className={`sleek-card flex w-64 shrink-0 snap-start flex-col rounded-3xl p-4 ${on ? "shadow-lg" : ""}`}>
-                      <p className="text-xs font-semibold uppercase tracking-wide text-accent">{pack.industry}</p>
-                      <Link href={`/packs/${pack.id}`} className="mt-1 font-display text-base font-semibold text-foreground hover:underline">
+                    <div key={pack.id} className={`sleek-card flex w-72 shrink-0 snap-start flex-col rounded-3xl p-6 ${on ? "price-card-popular" : ""}`}>
+                      <p className="price-accent text-xs font-semibold uppercase tracking-wide">{pack.industry}</p>
+                      <Link href={`/packs/${pack.id}`} className="mt-2 font-display text-lg font-semibold text-heading hover:underline">
                         {pack.name}
                       </Link>
-                      <p className="mt-1 text-xs text-muted">{pack.templateIds.length} automations{quote?.bundlePercent ? ` · ${quote.bundlePercent}% off` : ""}</p>
-                      <p className="mt-2 text-sm font-semibold text-foreground">{quote ? `${formatKes(quote.recurringMonthlyKes)}/mo` : ""}</p>
+                      <p className="mt-1 text-sm text-muted">{pack.templateIds.length} automations{quote?.bundlePercent ? ` · ${quote.bundlePercent}% off` : ""}</p>
+                      <p className="mt-4 flex-1 font-display text-2xl font-semibold tracking-tight text-heading">
+                        {quote ? formatKes(quote.recurringMonthlyKes) : ""}
+                        {quote && <span className="ml-1 text-sm font-normal tracking-normal text-muted">/mo</span>}
+                      </p>
                       <button
                         type="button"
-                        className="mt-3 rounded-full bg-accent px-3 py-2 text-xs font-semibold text-background"
+                        className="price-btn price-btn-secondary mt-5 self-start"
                         onClick={() => {
                           setSelected(pack.templateIds.filter((id) => templates.some((item) => item.id === id)));
                           setActivePack(pack.id);
@@ -152,7 +155,7 @@ export function BuffetBuilder({ templates, initialPack }: { templates: PricedTem
                 </button>
               ))}
             </div>
-            <div className="mt-5 grid gap-4 sm:grid-cols-2">
+            <div className="mt-6 grid gap-5 sm:grid-cols-2">
               {visible.map((template) => {
                 const on = selected.includes(template.id);
                 return (
@@ -161,7 +164,7 @@ export function BuffetBuilder({ templates, initialPack }: { templates: PricedTem
                     type="button"
                     onClick={() => toggle(template.id)}
                     aria-pressed={on}
-                    className={`sleek-card relative rounded-3xl p-5 text-left ${on ? "choice-selected" : ""}`}
+                    className={`sleek-card price-lift relative flex flex-col rounded-3xl p-6 text-left ${on ? "choice-selected" : ""}`}
                   >
                     {on && (
                       <span className="absolute top-4 right-4 flex h-7 w-7 items-center justify-center rounded-full bg-accent text-background shadow-[0_8px_18px_color-mix(in_srgb,var(--accent)_45%,transparent)]">
@@ -170,8 +173,8 @@ export function BuffetBuilder({ templates, initialPack }: { templates: PricedTem
                     )}
                     <p className="text-xs font-medium uppercase tracking-wide text-muted">{template.category}</p>
                     <h2 className="mt-2 pr-8 font-display text-lg font-semibold text-foreground">{template.name}</h2>
-                    <p className="mt-2 text-sm leading-relaxed text-muted">{template.outcome}</p>
-                    <p className="mt-4 font-display text-xl font-semibold text-foreground">{formatKes(template.priceKes)}<span className="text-sm font-normal text-muted">/mo</span></p>
+                    <p className="mt-2 flex-1 text-sm leading-relaxed text-muted">{template.outcome}</p>
+                    <p className="mt-5 font-display text-xl font-semibold text-foreground">{formatKes(template.priceKes)}<span className="text-sm font-normal text-muted">/mo</span></p>
                     <p className="text-xs text-muted">about {formatUsd(template.priceUsd)}/mo{template.setupFeeKes > 0 ? ` · setup ${formatKes(template.setupFeeKes)} included` : ""}</p>
                   </button>
                 );
@@ -204,7 +207,7 @@ export function BuffetBuilder({ templates, initialPack }: { templates: PricedTem
         )}
       </div>
       <aside data-clear-cluster="" className="sticky bottom-[max(1rem,env(safe-area-inset-bottom))] z-30 self-start lg:top-24 lg:bottom-auto">
-        <div className="sleek-card max-h-[min(58vh,28rem)] overflow-y-auto overscroll-contain rounded-3xl p-5 lg:max-h-[min(calc(100dvh-12.5rem),40rem)]">
+        <div className="sleek-card max-h-[min(58vh,28rem)] overflow-y-auto overscroll-contain rounded-3xl p-6 lg:max-h-[min(calc(100dvh-12.5rem),40rem)]">
           <h2 className="font-display text-lg font-semibold text-foreground">Your bundle</h2>
           {!quote || quote.count === 0 ? (
             <p className="mt-2 text-sm text-muted">Tick the automations you need. The total updates as you go.</p>
@@ -248,22 +251,22 @@ export function BuffetBuilder({ templates, initialPack }: { templates: PricedTem
               type="button"
               disabled={!quote || quote.count === 0}
               onClick={() => setStep("setup")}
-              className="mt-4 inline-flex h-11 w-full items-center justify-center rounded-2xl bg-accent text-sm font-semibold text-background disabled:opacity-50"
+              className="price-btn price-btn-primary mt-5 w-full"
             >
               Continue
             </button>
           ) : (
             <div className="mt-4 space-y-2">
-              <button type="button" disabled={!!loading} onClick={() => void checkout("trial")} className="inline-flex h-11 w-full items-center justify-center rounded-2xl bg-accent text-sm font-semibold text-background disabled:opacity-50">
+              <button type="button" disabled={!!loading} onClick={() => void checkout("trial")} className="price-btn price-btn-primary w-full">
                 {loading === "trial" ? "Starting…" : `Start ${trialDays} days free`}
               </button>
               <p className="text-center text-xs text-muted">Free for {trialDays} days, no card needed. See our <Link href="/privacy" className="text-accent">privacy policy</Link>.</p>
               {paystackOn && (
-                <button type="button" disabled={!!loading} onClick={() => void checkout("paystack")} className="inline-flex h-11 w-full items-center justify-center rounded-2xl bg-surface-elevated/80 text-sm font-semibold text-foreground disabled:opacity-50">
+                <button type="button" disabled={!!loading} onClick={() => void checkout("paystack")} className="price-btn price-btn-secondary w-full">
                   {loading === "paystack" ? "Starting Paystack…" : "Pay with Paystack"}
                 </button>
               )}
-              <button type="button" disabled={!!loading} onClick={() => void checkout("invoice")} className="inline-flex h-11 w-full items-center justify-center rounded-2xl bg-surface-elevated/80 text-sm font-semibold text-foreground disabled:opacity-50">
+              <button type="button" disabled={!!loading} onClick={() => void checkout("invoice")} className="price-btn price-btn-secondary w-full">
                 {loading === "invoice" ? "Sending…" : "Request invoice"}
               </button>
             </div>
