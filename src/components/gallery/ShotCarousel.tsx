@@ -26,6 +26,9 @@ export function ShotCarousel({
   const track = useRef<HTMLDivElement>(null);
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
+  const root = useRef<HTMLDivElement>(null);
+  /** Load the next slide early once the carousel is close to the viewport. */
+  const [near, setNear] = useState(false);
   const strip = useRef<HTMLDivElement>(null);
   const useThumbs = !compact && shots.length > 8;
   const drag = useRef<{ x: number; left: number; moved: boolean } | null>(null);
@@ -41,6 +44,19 @@ export function ShotCarousel({
     },
     [shots.length]
   );
+
+  useEffect(() => {
+    const el = root.current;
+    if (!el || near) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) setNear(true);
+      },
+      { rootMargin: "600px 0px" }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [near]);
 
   useEffect(() => {
     const el = track.current;
@@ -78,6 +94,7 @@ export function ShotCarousel({
 
   return (
     <div
+      ref={root}
       className={`pg-carousel ${compact ? "pg-carousel-compact" : ""}`}
       role="region"
       aria-roledescription="carousel"
@@ -132,10 +149,10 @@ export function ShotCarousel({
           >
             {onOpen ? (
               <button type="button" className="pg-slide-btn" onClick={() => onOpen(i)} aria-label={`Open ${s.caption} full size`}>
-                <DeviceFrame shot={s} sizes={compact ? "(min-width: 768px) 520px, 92vw" : "(min-width: 1024px) 760px, 92vw"} className={s.device === "mobile" ? "pg-slide-phone" : ""} />
+                <DeviceFrame shot={s} sizes={compact ? "(min-width: 768px) 520px, calc(100vw - 5rem)" : "(min-width: 1024px) 760px, 92vw"} eager={i === 0 || (near && (i === index + 1 || i === index))} first={i === 0} className={s.device === "mobile" ? "pg-slide-phone" : ""} />
               </button>
             ) : (
-              <DeviceFrame shot={s} sizes={compact ? "(min-width: 768px) 520px, 92vw" : "(min-width: 1024px) 760px, 92vw"} className={s.device === "mobile" ? "pg-slide-phone" : ""} />
+              <DeviceFrame shot={s} sizes={compact ? "(min-width: 768px) 520px, calc(100vw - 5rem)" : "(min-width: 1024px) 760px, 92vw"} eager={i === 0 || (near && (i === index + 1 || i === index))} first={i === 0} className={s.device === "mobile" ? "pg-slide-phone" : ""} />
             )}
             {!compact ? <p className="pg-caption">{s.caption}</p> : null}
           </div>

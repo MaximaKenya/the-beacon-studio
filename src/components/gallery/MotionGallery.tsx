@@ -15,7 +15,7 @@ type ProductChip = { id: string; name: string };
 
 /**
  * Motion gallery: marquee rows + a bento grid of every screen. Tiles mount in batches as you
- * scroll (never all at once), images lazy-load with blur placeholders and fixed boxes (no CLS).
+ * scroll (never all at once), images lazy-load into fixed boxes (no CLS).
  * Spring hover with pointer tilt, staggered bouncy reveal, lightbox on click. Reduced motion: static.
  */
 export function MotionGallery({
@@ -144,8 +144,6 @@ export function MotionGallery({
                     height={s.height}
                     sizes="240px"
                     loading="lazy"
-                    placeholder="blur"
-                    blurDataURL={s.blurDataURL}
                     className={`mg-marquee-img ${s.device === "mobile" ? "is-mobile" : ""}`}
                     draggable={false}
                   />
@@ -194,8 +192,6 @@ export function MotionGallery({
                     height={s.height}
                     sizes={s.device === "mobile" ? "(min-width: 768px) 200px, 45vw" : "(min-width: 1024px) 400px, (min-width: 768px) 46vw, 92vw"}
                     loading="lazy"
-                    placeholder="blur"
-                    blurDataURL={s.blurDataURL}
                     className="mg-img"
                     draggable={false}
                   />

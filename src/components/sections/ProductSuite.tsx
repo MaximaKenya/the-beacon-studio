@@ -65,11 +65,11 @@ function ProductCard({ product, wide }: { product: Product; wide: boolean }) {
 
   return (
     <article
-      className={`sleek-card ps-card flex h-full overflow-hidden rounded-3xl bg-surface ${
+      className={`sleek-card ps-card flex h-full w-full min-w-0 max-w-full overflow-hidden rounded-3xl bg-surface ${
         wide ? "flex-col md:flex-row" : "flex-col"
       } ${featured ? "ps-featured" : ""}`}
     >
-      <div className={`ps-media ${wide ? "md:w-[54%] md:shrink-0" : ""}`}>
+      <div className={`ps-media min-w-0 max-w-full ${wide ? "md:w-[54%] md:shrink-0" : ""}`}>
         {all.length > 0 ? (
           <>
             <div className="ps-toggle">
@@ -81,7 +81,7 @@ function ProductCard({ product, wide }: { product: Product; wide: boolean }) {
           <ProductVisual product={product} />
         )}
       </div>
-      <div className={`flex flex-1 flex-col p-6 sm:p-7 ${wide ? "md:justify-center md:p-9" : ""}`}>
+      <div className={`ps-body flex min-w-0 flex-1 flex-col p-5 sm:p-7 ${wide ? "md:justify-center md:p-9" : ""}`}>
         <div className="flex flex-wrap items-center gap-2">
           <p className="text-xs font-medium uppercase tracking-wide text-accent">{product.statusLabel}</p>
           {featured ? (
@@ -93,17 +93,17 @@ function ProductCard({ product, wide }: { product: Product; wide: boolean }) {
         </div>
         <h3 className="text-heading mt-2 font-display text-2xl font-semibold tracking-tight">{product.name}</h3>
         <p className="mt-1 text-sm font-medium text-foreground/90">{product.tagline}</p>
-        <p className="mt-3 text-sm leading-relaxed text-muted">{product.description}</p>
+        <p className="mt-3 break-words text-sm leading-relaxed text-muted">{product.description}</p>
         <ul className={`mt-4 gap-2 ${wide ? "grid lg:grid-cols-2 lg:gap-x-6" : "space-y-2"}`}>
           {product.features.map((feature) => (
-            <li key={feature} className="flex gap-2 text-sm leading-relaxed text-foreground">
+            <li key={feature} className="flex min-w-0 gap-2 break-words text-sm leading-relaxed text-foreground">
               <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-accent" aria-hidden />
-              {feature}
+              <span className="min-w-0 flex-1">{feature}</span>
             </li>
           ))}
         </ul>
 
-        <div className="mt-6 flex flex-wrap items-center gap-2.5">
+        <div className="ps-actions mt-6">
           {isOpen ? (
             <a
               href={product.liveUrl}

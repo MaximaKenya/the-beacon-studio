@@ -38,8 +38,6 @@ export function DeviceTour({
             sizes={sizes}
             priority={priorityFirst && i === 0}
             loading={priorityFirst && i === 0 ? undefined : "lazy"}
-            placeholder="blur"
-            blurDataURL={s.blurDataURL}
             className="block w-full"
           />
         </div>

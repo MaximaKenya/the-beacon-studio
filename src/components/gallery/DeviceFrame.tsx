@@ -5,13 +5,17 @@ type Props = {
   shot: ProductShot;
   sizes: string;
   priority?: boolean;
+  /** Load now instead of lazily (first slide, or the next one up). */
+  eager?: boolean;
+  /** First slide of a carousel: ask the browser to fetch it ahead of other images. */
+  first?: boolean;
   /** Fixed-aspect viewport; tall shots pan inside it. */
   className?: string;
   label?: string;
 };
 
 /** Frosted browser or phone chrome around a screenshot. No outlines, shadow only. */
-export function DeviceFrame({ shot, sizes, priority = false, className = "", label }: Props) {
+export function DeviceFrame({ shot, sizes, priority = false, eager = false, first = false, className = "", label }: Props) {
   const img = (
     <Image
       src={shot.file}
@@ -20,10 +24,10 @@ export function DeviceFrame({ shot, sizes, priority = false, className = "", lab
       height={shot.height}
       sizes={sizes}
       priority={priority}
-      loading={priority ? undefined : "lazy"}
-      placeholder="blur"
-      blurDataURL={shot.blurDataURL}
-      className="block h-full w-full object-cover object-top"
+      loading={priority ? undefined : eager ? "eager" : "lazy"}
+      fetchPriority={priority || first ? "high" : undefined}
+      decoding="async"
+      className="pg-shot block h-full w-full object-cover object-top"
       draggable={false}
     />
   );
