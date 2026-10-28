@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Image from "next/image";
 import { Maximize2 } from "lucide-react";
 import type { ProductShot } from "@/data/product-shots";
@@ -9,9 +9,19 @@ import { Lightbox, withViewTransition } from "./Lightbox";
 import { Reveal } from "./Reveal";
 
 /** Carousel section placed after "How it works". Slides open the lightbox. */
-export function GalleryCarousel({ shots, name }: { shots: ProductShot[]; name: string }) {
+type DeviceFilter = "all" | "desktop" | "mobile";
+const FILTERS: { id: DeviceFilter; label: string }[] = [
+  { id: "all", label: "All" },
+  { id: "desktop", label: "Desktop" },
+  { id: "mobile", label: "Mobile" },
+];
+
+export function GalleryCarousel({ shots: allShots, name }: { shots: ProductShot[]; name: string }) {
   const [open, setOpen] = useState<number | null>(null);
-  if (shots.length === 0) return null;
+  const [device, setDevice] = useState<DeviceFilter>("all");
+  const hasBoth = allShots.some((s) => s.device === "desktop") && allShots.some((s) => s.device === "mobile");
+  const shots = useMemo(() => (device === "all" ? allShots : allShots.filter((s) => s.device === device)), [allShots, device]);
+  if (allShots.length === 0) return null;
   return (
     <section aria-labelledby="screens-heading" className="pg-section">
       <div className="pg-aurora" aria-hidden />
@@ -19,8 +29,23 @@ export function GalleryCarousel({ shots, name }: { shots: ProductShot[]; name: s
         Inside {name}
       </h2>
       <p className="mt-2 text-sm text-muted">Real screens. Swipe, use the arrows, or tap to enlarge.</p>
+      {hasBoth ? (
+        <div className="pg-filter mt-4" role="group" aria-label="Show screens for">
+          {FILTERS.map((f) => (
+            <button
+              key={f.id}
+              type="button"
+              className="pg-filter-btn"
+              aria-pressed={device === f.id}
+              onClick={() => { setOpen(null); setDevice(f.id); }}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+      ) : null}
       <div className="mt-6">
-        <ShotCarousel shots={shots} name={name} onOpen={(i) => withViewTransition(() => setOpen(i))} />
+        <ShotCarousel key={device} shots={shots} name={name} onOpen={(i) => withViewTransition(() => setOpen(i))} />
       </div>
       <Lightbox shots={shots} index={open} onIndex={setOpen} onClose={() => withViewTransition(() => setOpen(null))} name={name} />
     </section>
@@ -28,16 +53,20 @@ export function GalleryCarousel({ shots, name }: { shots: ProductShot[]; name: s
 }
 
 /** Bento grid of every screen with captions, near the FAQ/CTA. Tiles open the lightbox. */
+const BENTO_INITIAL = 12;
+
 export function BentoGallery({ shots, name }: { shots: ProductShot[]; name: string }) {
   const [open, setOpen] = useState<number | null>(null);
+  const [expanded, setExpanded] = useState(false);
   if (shots.length === 0) return null;
+  const visible = expanded ? shots : shots.slice(0, BENTO_INITIAL);
   return (
     <section aria-labelledby="gallery-heading">
       <h2 id="gallery-heading" className="text-heading font-display text-2xl font-semibold tracking-tight">
         Every screen
       </h2>
       <Reveal className="pg-bento mt-6">
-        {shots.map((s, i) => (
+        {visible.map((s, i) => (
           <figure
             key={s.file}
             data-reveal-item
@@ -68,6 +97,13 @@ export function BentoGallery({ shots, name }: { shots: ProductShot[]; name: stri
           </figure>
         ))}
       </Reveal>
+      {shots.length > visible.length ? (
+        <div className="mt-6 flex justify-center">
+          <button type="button" className="pg-more" onClick={() => setExpanded(true)}>
+            Show all {shots.length} screens
+          </button>
+        </div>
+      ) : null}
       <Lightbox shots={shots} index={open} onIndex={setOpen} onClose={() => withViewTransition(() => setOpen(null))} name={name} />
     </section>
   );
@@ -76,7 +112,9 @@ export function BentoGallery({ shots, name }: { shots: ProductShot[]; name: stri
 /** Infinite screen strip (duplicated list, CSS marquee, pauses on hover). Decorative. */
 export function ScreenMarquee({ shots }: { shots: ProductShot[] }) {
   if (shots.length < 3) return null;
-  const row = [...shots, ...shots];
+  // Cap the decorative strip so large galleries don't add dozens of extra images.
+  const picked = shots.slice(0, 12);
+  const row = [...picked, ...picked];
   return (
     <div className="pg-marquee" aria-hidden>
       <div className="pg-marquee-row">
