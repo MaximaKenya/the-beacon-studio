@@ -5,6 +5,8 @@
  * all third-party APIs (Resend, Paystack, Groq, Africa's Talking, Meta) are
  * called from the server, and Paystack checkout is a full-page redirect.
  */
+import { assetBase } from "./asset-base";
+
 export const NONCE_HEADER = "x-nonce";
 
 /** Client-site pages and embed scripts that other sites may frame or load. */
@@ -20,17 +22,20 @@ export function createNonce(): string {
   return btoa(bin);
 }
 
-export function buildCsp(nonce: string, opts: { embeddable?: boolean; dev?: boolean } = {}): string {
-  const script = [`'self'`, `'nonce-${nonce}'`, `'strict-dynamic'`, ...(opts.dev ? [`'unsafe-eval'`] : [])];
+export function buildCsp(nonce: string, opts: { embeddable?: boolean; dev?: boolean; assetBase?: string } = {}): string {
+  // Static-asset CDN host (NEXT_PUBLIC_ASSET_BASE). Empty means same-origin only.
+  const base = opts.assetBase ?? assetBase();
+  const cdn = base ? [base] : [];
+  const script = [`'self'`, ...cdn, `'nonce-${nonce}'`, `'strict-dynamic'`, ...(opts.dev ? [`'unsafe-eval'`] : [])];
   const directives: Record<string, string[]> = {
     "default-src": [`'self'`],
     "script-src": script,
     // framer-motion and Tailwind set inline style attributes.
-    "style-src": [`'self'`, `'unsafe-inline'`],
+    "style-src": [`'self'`, ...cdn, `'unsafe-inline'`],
     // Admin mailbox shows remote images in received email; html2canvas uses data/blob.
     "img-src": [`'self'`, "data:", "blob:", "https:"],
-    "font-src": [`'self'`, "data:"],
-    "connect-src": [`'self'`, ...(opts.dev ? ["ws:"] : [])],
+    "font-src": [`'self'`, ...cdn, "data:"],
+    "connect-src": [`'self'`, ...cdn, ...(opts.dev ? ["ws:"] : [])],
     "media-src": [`'self'`, "blob:"],
     "frame-src": [`'self'`],
     "worker-src": [`'self'`, "blob:"],

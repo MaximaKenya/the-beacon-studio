@@ -1,4 +1,8 @@
 import type { NextConfig } from "next";
+import { assetBase } from "./src/lib/asset-base";
+
+/** Static assets (/_next/static, /_next/image) from the CDN host when NEXT_PUBLIC_ASSET_BASE is set at build time. */
+const ASSET_BASE = assetBase();
 
 const SECURITY_HEADERS = [
   { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
@@ -12,11 +16,13 @@ const FRAME_HEADERS = [{ key: "X-Frame-Options", value: "DENY" }];
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  ...(ASSET_BASE ? { assetPrefix: ASSET_BASE } : {}),
   // `pg` talks to Postgres from the Node server. Leave it unbundled.
   serverExternalPackages: ["pg"],
   images: {
     formats: ["image/avif", "image/webp"],
     minimumCacheTTL: 60 * 60 * 24 * 30,
+    ...(ASSET_BASE ? { path: `${ASSET_BASE}/_next/image` } : {}),
   },
   experimental: {
     optimizePackageImports: ["lucide-react", "framer-motion"],
