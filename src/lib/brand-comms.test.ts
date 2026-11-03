@@ -29,10 +29,10 @@ test("SMS sign-offs are GSM-7 and short for the studio and every sister app", ()
     assert.ok(isGsm7(s), s);
     assert.ok(gsm7Length(s) <= SMS_SIGNOFF_MAX, `${s} is ${gsm7Length(s)}`);
     assert.ok(s.startsWith("- "));
-    assert.match(s, /The Beacon Studio/);
+    assert.match(s, /Beacon Creek/);
   }
-  assert.equal(smsSignoff(), "- The Beacon Studio, support@thebeaconstudio.co.ke");
-  assert.match(smsSignoff({ appName: "ConfiRent" }), /^- ConfiRent by The Beacon Studio/);
+  assert.equal(smsSignoff(), "- Beacon Creek, support@thebeaconstudio.co.ke");
+  assert.match(smsSignoff({ appName: "ConfiRent" }), /^- ConfiRent by Beacon Creek/);
 });
 
 test("SMS length counts GSM-7 extension chars and segments", () => {
@@ -55,13 +55,13 @@ test("client SMS and WhatsApp sign-offs use the client's name", () => {
   assert.match(smsSignoff({ client: { name: "Acme Dental", phone: "0712 000 000" } }), /^- Acme Dental/);
   const wa = whatsappSignoff({ client: { name: "Acme Dental" } });
   assert.match(wa, /\*Acme Dental\*/);
-  assert.match(wa, /_Powered by The Beacon Studio_/);
+  assert.match(wa, /_Powered by Beacon Creek_/);
 });
 
 test("WhatsApp sign-off has a Regards block and appends once", () => {
   const wa = whatsappSignoff();
   assert.match(wa, /^Regards,/);
-  assert.match(wa, /\*The Beacon Studio\*/);
+  assert.match(wa, /\*Beacon Creek\*/);
   assert.match(wa, /0706 397 373/);
   const msg = withWhatsappSignoff("Hello");
   assert.equal(withWhatsappSignoff(msg), msg);
@@ -77,7 +77,7 @@ test("signatures carry the mailbox address, phone and site", () => {
     assert.match(html, new RegExp(`mailto:${id}@thebeaconstudio\\.co\\.ke`));
     assert.doesNotMatch(html, /border:\s*1px/);
   }
-  assert.match(emailSignatureText("support", { appName: "Convoria" }), /Convoria by The Beacon Studio/);
+  assert.match(emailSignatureText("support", { appName: "Convoria" }), /Convoria by Beacon Creek/);
 });
 
 test("withSignature swaps mailboxes without duplicating or eating forwards", () => {
@@ -100,7 +100,7 @@ test("email shell has preheader, dark mode, CTA and no secrets/placeholders", ()
   assert.doesNotMatch(html, /yourusername|example\.com/);
   assert.match(text, /Body/);
   const client = renderEmailShell({ heading: "Hi", paragraphs: ["x"], client: { name: "Acme" } });
-  assert.match(client.html, /Powered by The Beacon Studio/);
+  assert.match(client.html, /Powered by Beacon Creek/);
 });
 
 test("welcome email explains each mailbox, trial counter and links", () => {

@@ -56,7 +56,7 @@ function letter(subject: string, text: string, client?: ClientBrand): { html: st
     greeting: "Hello,",
     paragraphs: text.split(/\n{2,}/).filter((part) => part.trim()),
     // Messages to a client's own customers carry the client's branding and a small
-    // "Powered by The Beacon Studio" line. Studio tests to the owner keep the portal link.
+    // "Powered by Beacon Creek" line. Studio tests to the owner keep the portal link.
     ...(client ? { client } : { actions: [{ label: "Open your portal", href: `${origin}/portal` }] }),
   });
 }

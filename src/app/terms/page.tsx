@@ -4,7 +4,7 @@ import { pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata({
   title: "Terms of use",
-  description: "Short terms for using The Beacon Studio website, trials and automations.",
+  description: "Short terms for using Beacon Creek website, trials and automations.",
   path: "/terms",
 });
 

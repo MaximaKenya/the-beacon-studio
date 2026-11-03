@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="292 264 604 770" fill="none">
-  <title>The Beacon Studio</title>
+  <title>Beacon Creek</title>
   <defs><filter id="final-glow-blur" x="-180%" y="-180%" width="460%" height="460%" color-interpolation-filters="sRGB">
       <feGaussianBlur stdDeviation="28" result="b"/>
       <feComponentTransfer in="b"><feFuncA type="linear" slope="2"/></feComponentTransfer>

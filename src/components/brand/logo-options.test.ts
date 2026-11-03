@@ -177,7 +177,7 @@ describe("final starburst logo", () => {
     const lightStacked = readFileSync("public/logo-options/final-stacked-light.svg", "utf8");
     for (const svg of [darkHorizontal, lightHorizontal, darkStacked, lightStacked, animated]) {
       assert.doesNotMatch(svg, /<image\b/);
-      assert.match(svg, /<title>The Beacon Studio<\/title>/);
+      assert.match(svg, /<title>Beacon Creek<\/title>/);
       assert.ok(svg.includes("#64BDC5"));
     }
     assert.match(darkHorizontal, /#1E0A32/);
@@ -193,8 +193,8 @@ describe("final starburst logo", () => {
     assert.match(favicon, /#1E0A32/);
     assert.match(favicon, /#7EE8DC/);
     const live = readFileSync("public/brand/beacon-mark.svg", "utf8");
-    assert.match(live, /viewBox="292 264 604 770"/);
-    assert.match(live, /#7EE8DC/);
+    assert.match(live, /viewBox="0 0 64 64"/);
+    assert.match(live, /Beacon Creek/);
   });
 });
 

@@ -1,12 +1,12 @@
-# The Beacon Studio
+# Beacon Creek
 
-Premium product studio site for **The Beacon Studio** — cloud products & custom software. Founded by Maximillian (Max) in Nairobi, Kenya.
+Premium product studio site for **Beacon Creek** — cloud products & custom software. Founded by Maximillian (Max) in Nairobi, Kenya.
 
 ## Brand
 
-**Display / legal:** The Beacon Studio  
+**Display / legal:** Beacon Creek  
 **Short form:** Beacon (tight UI, after first mention)  
-**Lockup:** The Beacon Studio — cloud products & custom software  
+**Lockup:** Beacon Creek — cloud products & custom software  
 **Assistant:** Glow  
 **Tagline:** Cloud products & custom software.  
 **Mark:** **Signal A** (`BeaconMark` + `BeaconWordmark`) — rounded studio tile with the distinctive Beacon A and a solid teal signal dot. Typography-led lockup. Solid shapes only (no glow). Works on light and dark via `currentColor` + accent.
@@ -28,7 +28,7 @@ Favicon, Apple icon, PDF headers, Header, Footer, Hero, Admin, and Portal all us
 
 [thebeaconstudios.com](https://thebeaconstudios.com/) is a **film / media production** company in Bakersfield, California (video, photography, studio rental). **Different industry** from this Nairobi software product studio.
 
-**Recommendation: keep “The Beacon Studio”** with a stronger unique lockup (“cloud products & custom software”) and footer disambiguation. A full rename (e.g. Beacon Ridge Studio, Beacon Soft) is optional SEO insurance — not required unless you later see serious search confusion or trademark conflict in software. Prefer differentiation first; do not rebrand solely because of the media company name collision.
+**Recommendation: keep “Beacon Creek”** with a stronger unique lockup (“cloud products & custom software”) and footer disambiguation. A full rename (e.g. Beacon Ridge Studio, Beacon Soft) is optional SEO insurance — not required unless you later see serious search confusion or trademark conflict in software. Prefer differentiation first; do not rebrand solely because of the media company name collision.
 
 ### Product suite
 
@@ -86,7 +86,7 @@ Custom software deposits are **`payments.depositPercent = 30`**. That is industr
    - **Needs attention:** unified inbox; mark resolved
    - **Payments:** mark paid (creates receipt)
 4. **Client projects** panel: edit milestones, %, next payment date, timeline updates, and chat — clients see live data on `/portal` refresh.
-5. **Download PDF** — light branded analytics PDF (`Beacon-Studio-Analytics-…-EAT.pdf`) with signal mark header (no black flash).
+5. **Download PDF** — light branded analytics PDF (`Beacon-Creek-Analytics-…-EAT.pdf`) with signal mark header (no black flash).
 6. **Print** — separate control; opens `/admin/report?print=1`.
 7. Data files: `data/bookings.json`, `intakes.json`, `subscribers.json`, `payments.json`, `contacts.json`, `analytics.json`, `clients.json`, `projects.json`, `messages.json`, `quotations.json`, `receipts.json`, `portal-codes.json`.
 
@@ -134,9 +134,9 @@ Email + OTP  → data/portal-codes.json (15 min) → same cookie session
 
 | Type | When | Filename |
 |------|------|----------|
-| **Quotation** | After intake (and admin “Send quotation”) | `Beacon-Studio-Quotation-{client}-{YYYYMMDD}.pdf` |
-| **Receipt** | Payment success (Paystack webhook or admin mark-paid) | `Beacon-Studio-Receipt-{ref}-{YYYYMMDD}.pdf` |
-| **Analytics** | Admin Download PDF | `Beacon-Studio-Analytics-{stamp}-EAT.pdf` |
+| **Quotation** | After intake (and admin “Send quotation”) | `Beacon-Creek-Quotation-{client}-{YYYYMMDD}.pdf` |
+| **Receipt** | Payment success (Paystack webhook or admin mark-paid) | `Beacon-Creek-Receipt-{ref}-{YYYYMMDD}.pdf` |
+| **Analytics** | Admin Download PDF | `Beacon-Creek-Analytics-{stamp}-EAT.pdf` |
 
 All PDFs use Beacon mark / wordmark in the header. Timestamps: **Africa/Nairobi**. Download and Print are separate controls.
 
@@ -186,4 +186,4 @@ Hero, four product cards, two services, three-step “How we work”, pricing, a
 - 30% deposits via Paystack (card or M-Pesa through Paystack)
 - Client portal + admin ops E2E
 
-The Beacon Studio — cloud products & custom software.
+Beacon Creek — cloud products & custom software.

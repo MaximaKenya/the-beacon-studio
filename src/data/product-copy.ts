@@ -41,7 +41,7 @@ export const TRIAL_30_DAY =
 
 /** Shared strip: what every Beacon app includes. */
 export const EVERY_APP_INCLUDES: { title: string; detail: string }[] = [
-  { title: "Built by one Kenyan studio", detail: "Every app is built and supported by The Beacon Studio in Nairobi." },
+  { title: "Built by one Kenyan studio", detail: "Every app is built and supported by Beacon Creek in Nairobi." },
   { title: "Paystack-ready payments", detail: "Payments are set up for Paystack and M-Pesa. Checkout opens app by app as it goes live." },
   { title: "Branded email", detail: "Email under each app's own name. SMS and WhatsApp are rolling out." },
   { title: "Kenya Data Protection Act aligned", detail: "Privacy is written for Kenya's Data Protection Act, 2019." },

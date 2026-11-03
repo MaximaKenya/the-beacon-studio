@@ -8,7 +8,7 @@ import { siteConfig } from "@/data/site";
 export const metadata: Metadata = {
   title: "Brand mark",
   description:
-    "The Beacon Studio lighthouse mark, for light and dark backgrounds.",
+    "Beacon Creek lighthouse mark, for light and dark backgrounds.",
   robots: { index: false, follow: false },
 };
 
@@ -17,7 +17,7 @@ export default function BrandPage() {
     <main className="mx-auto max-w-4xl px-4 py-16 sm:px-6">
       <p className="text-xs font-medium uppercase tracking-[0.18em] text-accent">Brand</p>
       <h1 className="mt-2 font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-        The Beacon Studio mark
+        Beacon Creek mark
       </h1>
       <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted sm:text-base">
         The live mark is the spiral lighthouse: a traced tower, a short teal starburst, and a

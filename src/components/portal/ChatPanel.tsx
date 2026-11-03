@@ -77,7 +77,7 @@ export function ChatPanel({
           Direct messages
         </p>
         <p className="text-[11px] text-muted">
-          {viewer === "admin" ? "Reply to client" : "Chat with Beacon studio"} · live refresh
+          {viewer === "admin" ? "Reply to client" : "Chat with Beacon Creek"} · live refresh
         </p>
       </div>
       <div className="flex-1 space-y-3 overflow-y-auto px-4 py-3">

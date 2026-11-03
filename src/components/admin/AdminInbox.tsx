@@ -41,7 +41,7 @@ function sourceLabel(source: string) {
     case "lead-magnet":
       return "Checklist";
     case "beacon-ai":
-      return "The Beacon Studio AI";
+      return "Beacon Creek AI";
     case "invoice-request":
       return "Invoice request";
     case "audit-booking":

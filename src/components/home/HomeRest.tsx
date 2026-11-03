@@ -28,7 +28,7 @@ export function HomeRest() {
         <MotionGallery
           shots={productShots}
           products={siteConfig.products.map((p) => ({ id: p.id, name: p.name }))}
-          name="The Beacon Studio"
+          name="Beacon Creek"
           title="Every screen, in motion"
           description={`${productShots.length} real screens from all ${siteConfig.products.length} products. Filter, hover, tap to enlarge.`}
         />

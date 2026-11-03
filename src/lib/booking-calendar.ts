@@ -95,7 +95,7 @@ export function buildBookingIcs(input: BookingCalendarInput): string {
   const lines = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//The Beacon Studio//Booking//EN",
+    "PRODID:-//Beacon Creek//Booking//EN",
     "CALSCALE:GREGORIAN",
     `METHOD:${method}`,
     "BEGIN:VTIMEZONE",

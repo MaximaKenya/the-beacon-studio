@@ -3,7 +3,7 @@
 All outbound comms come from one module: `src/lib/brand-comms.ts`. You can preview it at **/admin/brand-preview**, which is admin only.
 
 ## Brand rules
-- Use the full name **The Beacon Studio** and the lighthouse mark (`public/email/beacon-mark.png`).
+- Use the full name **Beacon Creek** and the lighthouse mark (`public/email/beacon-mark.png`).
 - Teal in light mode and purple in dark mode (`prefers-color-scheme`). Use frosted soft cards and shadows, with no outlines.
 - Contact details come from `src/data/site.ts`: phone 0706 397 373, WhatsApp wa.me/254706397373, plus the mailboxes below.
 - Placeholders are config-driven (`BRAND_POSTAL_ADDRESS`, `BRAND_REGISTRATION_NO`, `BRAND_KRA_PIN`, `BRAND_LINKEDIN_URL`, `BRAND_PRIVACY_URL`). An unset value is hidden, never invented. See GO_LIVE.md.
@@ -27,8 +27,8 @@ All outbound comms come from one module: `src/lib/brand-comms.ts`. You can previ
 | Welcome | `welcomeEmail({...})`. `sendTrialWelcome` sends it once per signup (`trial.welcomed` flag + Resend idempotency key). |
 
 ## Co-branding
-- **Sister apps:** pass `appName` (ConfiRent, CadenceApp, LookFinesse, ConfiLearn, Convoria, ConfiTrade). This renders "ConfiRent by The Beacon Studio".
-- **A client's customers:** pass `client` (from `clientBrandFromConfig(businessName, instance.config)`, with optional `brandName`, `brandLogoUrl`, `brandColor`, `brandEmail` and `brandPhone`). The client's brand leads, with a small "Powered by The Beacon Studio" line.
+- **Sister apps:** pass `appName` (ConfiRent, CadenceApp, LookFinesse, ConfiLearn, Convoria, ConfiTrade). This renders "ConfiRent by Beacon Creek".
+- **A client's customers:** pass `client` (from `clientBrandFromConfig(businessName, instance.config)`, with optional `brandName`, `brandLogoUrl`, `brandColor`, `brandEmail` and `brandPhone`). The client's brand leads, with a small "Powered by Beacon Creek" line.
 
 ## Where it is applied
 - **All `renderBrandEmail` and `brandedEmail` callers:** bookings, portal magic links, ROI, lifecycle/trial and automations.

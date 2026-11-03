@@ -1685,3 +1685,8 @@ h4 {
   .pg-carousel-compact .pg-controls { justify-content: flex-start; padding-right: 3.5rem; }
 }
 .ps-actions > .price-btn-primary { height: 2.75rem; }
+
+/* Beacon Creek mark: teal in light, purple in dark. */
+.bc-mark-light { display: none; }
+[data-theme="light"] .bc-mark-light { display: block; }
+[data-theme="light"] .bc-mark-dark { display: none; }

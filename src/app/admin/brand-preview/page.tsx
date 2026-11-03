@@ -98,7 +98,7 @@ export default function BrandPreviewPage() {
         title: "Proposal: WhatsApp lead follow-up",
         reference: "Q-2026-0142",
         preparedFor: "Amina Bakery Ltd",
-        preparedBy: "Max · The Beacon Studio",
+        preparedBy: "Max · Beacon Creek",
         bodyHtml: "<p>Scope: reply to new WhatsApp enquiries within a minute and log each lead.</p><table><tr><td>Setup</td><td style='text-align:right'>KES 0</td></tr><tr><td>Monthly</td><td style='text-align:right'>KES 4,500</td></tr></table>",
       }),
     [co]
@@ -128,9 +128,9 @@ export default function BrandPreviewPage() {
           <label className="text-muted">
             App{" "}
             <select value={app} onChange={(e) => setApp(e.target.value)} className="ml-1 rounded-xl px-3 py-1.5">
-              <option value="">The Beacon Studio</option>
+              <option value="">Beacon Creek</option>
               {SISTER_APPS.map((name) => (
-                <option key={name} value={name}>{name} by The Beacon Studio</option>
+                <option key={name} value={name}>{name} by Beacon Creek</option>
               ))}
             </select>
           </label>

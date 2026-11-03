@@ -10,7 +10,7 @@ import {
   clusterPlacement,
 } from "./action-cluster";
 
-const ASSISTANT_NAME = "The Beacon Studio AI";
+const ASSISTANT_NAME = "Beacon Creek AI";
 
 describe("action cluster", () => {
   it("names the assistant once and offers each contact action once", () => {

@@ -34,7 +34,7 @@ export function buildAssistantSystemPrompt(): string {
   const projects = siteConfig.projects
     .map(
       (p) =>
-        `- ${p.title}${p.comingSoon ? " (coming soon)" : ""}: ${p.description} [${p.tags.join(", ")}]`
+        `- ${p.title}${p.comingSoon ? "" : ""}: ${p.description} [${p.tags.join(", ")}]`
     )
     .join("\n");
 

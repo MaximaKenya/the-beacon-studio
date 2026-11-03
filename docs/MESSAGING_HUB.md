@@ -1,6 +1,6 @@
 # Beacon Messaging Hub v0 (contract for sister apps)
 
-Shared SMS/WhatsApp hub hosted by The Beacon Studio at `https://thebeaconstudio.co.ke`.
+Shared SMS/WhatsApp hub hosted by Beacon Creek at `https://thebeaconstudio.co.ke`.
 Sister apps (cadenceapp, confirent, lookfinesse, confilearn, convoria, confitrade) never hold provider keys; they call the hub.
 
 **Status: v0 is queue-only.** Providers are not chosen yet (SMS: Belio / Mobitech / Africa's Talking; WhatsApp: Meta Cloud API; voice: Africa's Talking / SIP, not in v0). Accepted messages stay `queued` until `HUB_SENDING_ENABLED=true` **and** an adapter is configured. Build and test your integration now; delivery starts later without contract changes.

@@ -171,7 +171,7 @@ export async function createQuotation(input: {
     depositPercent,
     depositAmount,
     currency: "USD",
-    filename: `Beacon-Studio-Quotation-${clientSlug}-${dateStamp}.pdf`,
+    filename: `Beacon-Creek-Quotation-${clientSlug}-${dateStamp}.pdf`,
   };
 
   const all = await listQuotations();
@@ -218,7 +218,7 @@ export async function createReceiptFromPayment(input: {
     clientName: client?.name,
     clientEmail: client?.email,
     tierName: payment.tierName,
-    filename: `Beacon-Studio-Receipt-${slugifyFilename(ref)}-${dateStamp}.pdf`,
+    filename: `Beacon-Creek-Receipt-${slugifyFilename(ref)}-${dateStamp}.pdf`,
   };
 
   const all = await listReceipts();

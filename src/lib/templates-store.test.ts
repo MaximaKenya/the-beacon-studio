@@ -9,7 +9,7 @@ test("every free template renders a branded file", () => {
     const file = templateFile(template.id);
     assert.ok(file, template.id);
     assert.equal(file!.filename, template.filename);
-    assert.match(file!.body, /The Beacon Studio/);
+    assert.match(file!.body, /Beacon Creek/);
     assert.match(file!.contentType, template.format === "csv" ? /text\/csv/ : /text\/markdown/);
   }
   assert.equal(templateFile("missing"), null);

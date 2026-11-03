@@ -16,7 +16,7 @@ export async function GET(request: Request, { params }: Params) {
   }
   const origin = new URL(request.url).origin;
   const src = JSON.stringify(`${origin}/a/${instance.slug}/${page}`);
-  const title = JSON.stringify(instance.businessName || "The Beacon Studio");
+  const title = JSON.stringify(instance.businessName || "Beacon Creek");
   const script = `(function(){
     var frame = document.createElement("iframe");
     frame.title = ${title};

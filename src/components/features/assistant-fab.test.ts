@@ -29,12 +29,12 @@ function assertClear(box: Box, obstacles: Box[], gap = ASSISTANT_FAB_GAP) {
 
 describe("assistant brand", () => {
   it("uses the studio name and a small AI assistant subtitle", () => {
-    assert.equal(ASSISTANT_BRAND_NAME, "The Beacon Studio AI");
+    assert.equal(ASSISTANT_BRAND_NAME, "Beacon Creek AI");
     assert.equal(ASSISTANT_BRAND_NAME, siteConfig.assistant.name);
     assert.equal(ASSISTANT_SUBTITLE, "AI assistant");
 
     const header = renderToString(createElement(AssistantPanelHeader, { onClose() {} }));
-    assert.match(header, /The Beacon Studio/);
+    assert.match(header, /Beacon Creek/);
     assert.match(header, /AI assistant/);
     assert.match(header, /\/brand\/beacon-mark\.svg/);
     assert.doesNotMatch(header, /border/);
@@ -48,14 +48,14 @@ describe("assistant brand", () => {
     assert.match(pill, /sleek-card/);
     assert.match(pill, /rounded-full/);
     assert.match(pill, /data-assistant-name=""/);
-    assert.match(pill, /The Beacon Studio/);
+    assert.match(pill, /Beacon Creek/);
     assert.match(pill, /\/brand\/beacon-mark\.svg/);
     assert.doesNotMatch(pill, /border/);
 
     const mark = renderToString(createElement(AssistantFabButton, { mode: "mark", onClick() {} }));
     assert.match(mark, /data-assistant-fab-mode="mark"/);
     assert.equal(mark.includes("data-assistant-name"), false);
-    assert.match(mark, /aria-label="The Beacon Studio AI assistant"/);
+    assert.match(mark, /aria-label="Beacon Creek AI assistant"/);
     assert.match(mark, /\/brand\/beacon-mark\.svg/);
   });
 });

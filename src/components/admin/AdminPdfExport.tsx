@@ -98,7 +98,7 @@ export function AdminPdfExport({ summary }: { summary: AnalyticsSummary }) {
       }
 
       const stamp = fileStamp();
-      pdf.save(`Beacon-Studio-Analytics-${stamp}-EAT.pdf`);
+      pdf.save(`Beacon-Creek-Analytics-${stamp}-EAT.pdf`);
     } catch (err) {
       console.error(err);
       alert("PDF download failed. Try Print instead, or refresh and retry.");
@@ -596,7 +596,7 @@ export function AdminPdfExport({ summary }: { summary: AnalyticsSummary }) {
           <br />
           Generated {generatedAt} ({TZ}) · Range {range}
           <br />
-          File: Beacon-Studio-Analytics-{stamp}-EAT.pdf
+          File: Beacon-Creek-Analytics-{stamp}-EAT.pdf
         </div>
       </div>
     </>

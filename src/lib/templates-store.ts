@@ -1,6 +1,6 @@
 import { leadTemplates, siteConfig, type LeadTemplate } from "@/data/site";
 
-const BRAND = "The Beacon Studio";
+const BRAND = "Beacon Creek";
 
 function csv(rows: string[][]): string {
   return rows.map((row) => row.map((cell) => (/[",\n]/.test(cell) ? `"${cell.replace(/"/g, '""')}"` : cell)).join(",")).join("\n") + "\n";

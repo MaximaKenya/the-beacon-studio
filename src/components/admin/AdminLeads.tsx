@@ -256,7 +256,7 @@ export function AdminLeads() {
                   <td className="px-3 py-2 text-foreground">{lead.name || "—"}</td>
                   <td className="px-3 py-2" onClick={(event) => event.stopPropagation()}>
                     <div className="space-y-1">
-                      <LeadEmailButton email={lead.email} subject="Hello from The Beacon Studio" />
+                      <LeadEmailButton email={lead.email} subject="Hello from Beacon Creek" />
                       <LeadPhoneLinks phone={lead.phone} />
                     </div>
                   </td>
@@ -281,7 +281,7 @@ export function AdminLeads() {
           <h3 className="mt-1 font-display text-lg font-semibold text-foreground">{selected.name}</h3>
           <div className="mt-2 space-y-1">
             <p>
-              <LeadEmailButton email={selected.email} subject="Hello from The Beacon Studio" />
+              <LeadEmailButton email={selected.email} subject="Hello from Beacon Creek" />
             </p>
             <p>
               <LeadPhoneLinks phone={selected.phone} />

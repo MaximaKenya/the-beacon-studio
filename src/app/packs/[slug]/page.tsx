@@ -37,7 +37,7 @@ export default async function PackPage({ params }: Props) {
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Service",
-    name: `${pack.name} · The Beacon Studio`,
+    name: `${pack.name} · Beacon Creek`,
     description: pack.summary,
     areaServed: "KE",
     url: absoluteUrl(`/packs/${pack.id}`),
