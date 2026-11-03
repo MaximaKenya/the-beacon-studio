@@ -29,7 +29,7 @@ export default async function AutomationStartedPage({
   return (
     <div className="mx-auto max-w-xl px-6 py-28 pb-32" data-clear-cluster="">
       <article className="sleek-card rounded-3xl p-8">
-        <p className="text-xs font-semibold uppercase tracking-widest text-accent">The Beacon Studio</p>
+        <p className="text-xs font-semibold uppercase tracking-widest text-accent">Beacon Creek</p>
         <h1 className="mt-2 font-display text-3xl font-semibold text-foreground">
           {live ? `${days} days remaining` : "Payment not completed"}
         </h1>

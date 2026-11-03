@@ -337,7 +337,7 @@ function formatSkills(): string {
 
 function formatProjects(): string {
   return projects
-    .map((p) => `${p.title}${p.comingSoon ? " (coming soon)" : ""} — ${p.description}`)
+    .map((p) => `${p.title}${p.comingSoon ? "" : ""} — ${p.description}`)
     .join("\n• ");
 }
 

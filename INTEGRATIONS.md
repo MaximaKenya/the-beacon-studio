@@ -1,4 +1,4 @@
-# External integrations — The Beacon Studio
+# External integrations — Beacon Creek
 
 Everything you need to configure for email, payments, AI, auth, and analytics.
 Leave a key unset and the site stays usable with graceful fallbacks (on-screen OTP, coming-soon pay messages, local knowledge base).

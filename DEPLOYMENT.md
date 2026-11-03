@@ -1,8 +1,8 @@
-# Deployment & Launch Guide — The Beacon Studio
+# Deployment & Launch Guide — Beacon Creek
 
-Practical steps to ship **The Beacon Studio** (cloud product suite + custom development studio) and turn it into a client pipeline.
+Practical steps to ship **Beacon Creek** (cloud product suite + custom development studio) and turn it into a client pipeline.
 
-**Brand:** The Beacon Studio is Maximillian’s product studio. Founder story lives in About; conversion lives in Products, Services, Pricing, Start a Project, and Book/Contact.
+**Brand:** Beacon Creek is Maximillian’s product studio. Founder story lives in About; conversion lives in Products, Services, Pricing, Start a Project, and Book/Contact.
 
 ## Domain
 
@@ -37,20 +37,20 @@ Copy any env examples you use for OpenAI (optional chat upgrade), then set:
 - [ ] Swap trust-strip placeholder logos for real clients when ready  
 - [ ] Test Start a Project → `data/intakes.json`  
 - [ ] Test Book a Call, newsletter, ⌘K palette, product drawer, constellation, FAQ  
-- [ ] `manifest.json` — The Beacon Studio PWA name  
+- [ ] `manifest.json` — Beacon Creek PWA name  
 - [ ] Favicon shows signal-beacon mark (`src/app/icon.tsx` + `apple-icon.tsx`)  
 
 ## SEO
 
-Target phrases: The Beacon Studio, Beacon, Beacon Studio, custom software development, cloud apps, SaaS studio Kenya, Nairobi software studio.
+Target phrases: Beacon Creek, Beacon, Beacon Creek, custom software development, cloud apps, SaaS studio Kenya, Nairobi software studio.
 
 JSON-LD ships Organization + Person + SoftwareApplication (`OrganizationJsonLd`) and FAQPage (`FaqJsonLd`).
 
 ## Launch messaging
 
-- LinkedIn: “The Beacon Studio · Product studio · Nairobi” + featured site link.  
+- LinkedIn: “Beacon Creek · Product studio · Nairobi” + featured site link.  
 - Soft launch to warm network → then public post with suite + Start a Project CTA.
 
 ## After launch
 
-Ship The Beacon Studio, then tell people it exists. Iterate products in `site.ts` without redesigning the site — the suite UI scales with `products.length`.
+Ship Beacon Creek, then tell people it exists. Iterate products in `site.ts` without redesigning the site — the suite UI scales with `products.length`.

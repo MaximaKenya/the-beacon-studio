@@ -4,7 +4,7 @@ import { REFERRAL_CREDIT_EXPIRY_DAYS, REFERRAL_COOKIE_DAYS } from "@/lib/referra
 
 export const metadata = pageMetadata({
   title: "Referral programme terms",
-  description: "Refer a business to The Beacon Studio. They get an extra free month; you earn a free month after their first paid month.",
+  description: "Refer a business to Beacon Creek. They get an extra free month; you earn a free month after their first paid month.",
   path: "/referrals",
 });
 

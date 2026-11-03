@@ -21,7 +21,7 @@ export const studioComparison: StudioComparison[] = [
   },
   {
     id: "beacon",
-    title: "The Beacon Studio",
+    title: "Beacon Creek",
     line: "One workflow on the tools you already use. A free 20-minute audit, then a monthly automation you can pause.",
     fit: "We watch it. You keep the conversations that need a person.",
     emphasis: true,

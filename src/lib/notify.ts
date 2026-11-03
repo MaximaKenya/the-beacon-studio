@@ -110,7 +110,7 @@ export async function notifyBooking(notice: BookingNotice, fetcher: Fetcher = fe
       : notice.kind === "follow-up"
         ? "has finished"
         : "is coming up";
-  const message = `${notice.name}, your Beacon Studio call ${verb}: ${notice.when}.`;
+  const message = `${notice.name}, your Beacon Creek call ${verb}: ${notice.when}.`;
   const [sms, whatsapp] = await Promise.all([
     sendSms(phone, message, fetcher),
     sendWhatsApp(phone, message, fetcher),

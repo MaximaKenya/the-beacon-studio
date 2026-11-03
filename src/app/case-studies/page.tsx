@@ -3,7 +3,7 @@ import { pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata({
   title: "Case studies",
-  description: "Client results from The Beacon Studio. Coming soon.",
+  description: "Client results from Beacon Creek.",
   path: "/case-studies",
 });
 
@@ -17,7 +17,7 @@ export default function CaseStudiesPage() {
       <h1 className="mt-2 font-display text-4xl font-semibold tracking-tight text-heading">Case studies.</h1>
       {CASE_STUDIES.length === 0 ? (
         <div className="sleek-card mt-10 rounded-3xl p-6">
-          <h2 className="font-display text-lg font-semibold text-heading">Coming soon</h2>
+          <h2 className="font-display text-lg font-semibold text-heading">Results on request</h2>
           <p className="mt-1 text-sm text-muted">
             We publish results only with client approval. Meanwhile, see <Link href="/work" className="text-accent">our work</Link>.
           </p>

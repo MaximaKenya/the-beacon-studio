@@ -154,7 +154,7 @@ describe("industry workflows and comparison", () => {
       studioComparison.map((item) => item.id),
       ["hire", "freelancer", "beacon"]
     );
-    assert.match(studioComparison.map((item) => item.title).join(" "), /The Beacon Studio/);
+    assert.match(studioComparison.map((item) => item.title).join(" "), /Beacon Creek/);
   });
 });
 

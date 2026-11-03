@@ -67,7 +67,7 @@ export default function PublicAutomationPage() {
   return (
     <div className="mx-auto max-w-lg px-6 py-28 pb-32" data-clear-cluster="">
       <form onSubmit={(event) => void onSubmit(event)} className="sleek-card space-y-3 rounded-3xl p-6">
-        <p className="text-xs font-semibold uppercase tracking-widest text-accent">{business || "The Beacon Studio"}</p>
+        <p className="text-xs font-semibold uppercase tracking-widest text-accent">{business || "Beacon Creek"}</p>
         <h1 className="font-display text-2xl font-semibold text-foreground">{title}</h1>
         <input required value={name} onChange={(event) => setName(event.target.value)} placeholder="Name" className="field h-11 px-3 text-sm" />
         <input value={email} onChange={(event) => setEmail(event.target.value)} placeholder="Email" type="email" className="field h-11 px-3 text-sm" />

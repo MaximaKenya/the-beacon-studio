@@ -55,7 +55,7 @@ async function improveWithOpenAI(brief: string, projectType?: string): Promise<s
           {
             role: "system",
             content:
-              "You improve software project briefs for The Beacon Studio. Expand and clarify in plain English for SMEs, schools, churches, NGOs, and founders. Keep under 180 words. Structure: summary, audience, must-haves, success criteria. Do not invent fake company names or fake budgets.",
+              "You improve software project briefs for Beacon Creek. Expand and clarify in plain English for SMEs, schools, churches, NGOs, and founders. Keep under 180 words. Structure: summary, audience, must-haves, success criteria. Do not invent fake company names or fake budgets.",
           },
           {
             role: "user",

@@ -1,10 +1,10 @@
 import { CONFILEARN_URL, CONVORIA_URL, LOOKFINESSE_URL } from "@/data/product-copy";
 /**
- * The Beacon Studio site configuration — edit this file to customize brand, products, services, and intake.
+ * Beacon Creek site configuration — edit this file to customize brand, products, services, and intake.
  *
  * Product suite: add/remove objects in `products[]` — UI and counts scale automatically.
  *
- * Brand: "The Beacon Studio" (display/legal) · short form "Beacon" · founder Maximillian / Max.
+ * Brand: "Beacon Creek" (display/legal) · short form "Beacon" · founder Maximillian / Max.
  */
 
 export type ProductStatus = "live" | "coming-soon" | "beta";
@@ -458,10 +458,10 @@ const products: Product[] = [
 export const siteConfig = {
   brand: {
     /** Primary display lockup — hero, header, footer, SEO */
-    name: "The Beacon Studio",
+    name: "Beacon Creek",
     /** Short form for tight UI after first mention */
     shortName: "Beacon",
-    legalName: "The Beacon Studio",
+    legalName: "Beacon Creek",
     /** Legacy initials (favicon now uses the signal mark) */
     initials: "Be",
     /** Short brand line (hero can use a stronger business headline) */
@@ -469,7 +469,7 @@ export const siteConfig = {
     /** Unique lockup — differentiates from similarly named creative agencies */
     lockup: "products and custom software",
     description:
-      "The Beacon Studio is a software studio in Nairobi. We build our own products, and we take on AI automation, custom software, and outsourced IT.",
+      "Beacon Creek is a software studio in Nairobi. We build our own products, and we take on AI automation, custom software, and outsourced IT.",
     /** Footer / legal disambiguation (not a film or media production company) */
     disambiguation:
       "A software studio in Nairobi — products and custom software. Not affiliated with film or media production companies of a similar name.",
@@ -479,16 +479,16 @@ export const siteConfig = {
     name: "Maximillian",
     shortName: "Max",
     role: "Founder & Product Builder",
-    bio: `I'm Max, founder of The Beacon Studio. I build software from Nairobi for people anywhere.`,
+    bio: `I'm Max, founder of Beacon Creek. I build software from Nairobi for people anywhere.`,
     location: "Nairobi, Kenya",
     timezone: "Africa/Nairobi",
   },
 
   /** Brand display name used in header / footer / SEO */
-  name: "The Beacon Studio",
+  name: "Beacon Creek",
   role: "Software studio",
   tagline: "Products and custom software.",
-  bio: `I'm Max, founder of The Beacon Studio. I build software from Nairobi for people anywhere.`,
+  bio: `I'm Max, founder of Beacon Creek. I build software from Nairobi for people anywhere.`,
 
   /** LinkedIn and Twitter are still placeholders and stay off the public pages. */
   email: "hello@thebeaconstudio.co.ke",
@@ -499,7 +499,7 @@ export const siteConfig = {
   location: "Nairobi, Kenya",
 
   profileImage: "/images/profile/profile.jpg",
-  profileImageAlt: "Maximillian, founder of The Beacon Studio",
+  profileImageAlt: "Maximillian, founder of Beacon Creek",
 
   /** Kept for assets; About UI shows founder photo only */
   aboutImages: [] as { src: string; alt: string }[],
@@ -524,11 +524,11 @@ export const siteConfig = {
     siteUrl: "https://thebeaconstudio.co.ke",
     ogImage: "/opengraph-image",
     twitterHandle: "" as string,
-    title: "The Beacon Studio — Products and custom software",
+    title: "Beacon Creek — Products and custom software",
     description:
       "Nairobi studio for AI automation, custom software, and managed IT. ConfiRent, Convoria, CadenceApp, ConfiLearn and LookFinesse are live.",
     keywords: [
-      "The Beacon Studio",
+      "Beacon Creek",
       "Beacon",
       "ConfiRent",
       "property management Kenya",
@@ -1405,9 +1405,9 @@ export const siteConfig = {
 
   assistant: {
     enabled: true,
-    name: "The Beacon Studio AI",
+    name: "Beacon Creek AI",
     greeting:
-      "Hi, I'm The Beacon Studio AI. Tell me what you need, your budget, and when you want it. I can quote from our price list and book a free 20-minute audit.",
+      "Hi, I'm Beacon Creek AI. Tell me what you need, your budget, and when you want it. I can quote from our price list and book a free 20-minute audit.",
     suggestedQuestions: [
       "What is ConfiRent?",
       "What is CadenceApp?",
@@ -1444,10 +1444,10 @@ export const siteConfig = {
     {
       id: "exp-1",
       role: "Founder",
-      company: "The Beacon Studio",
+      company: "Beacon Creek",
       period: "2024 — Present",
       description:
-        "Builds The Beacon Studio products and takes on AI automation and custom software.",
+        "Builds Beacon Creek products and takes on AI automation and custom software.",
       tags: ["Products", "Automation", "Custom software"],
       accent: "cyan" as const,
       current: true,
@@ -1483,21 +1483,21 @@ export const siteConfig = {
       title: "Why we build with TypeScript first",
       excerpt: "Strong types aren't bureaucracy — they're empathy for your future self and teammates.",
       tag: "Engineering",
-      date: "Coming soon",
+      date: "In progress",
     },
     {
       id: "note-2",
       title: "Designing for Nairobi's mobile-first users",
       excerpt: "Lessons from shipping products where connectivity and context look different.",
       tag: "Product",
-      date: "Coming soon",
+      date: "In progress",
     },
     {
       id: "note-3",
-      title: "Inside The Beacon Studio stack",
+      title: "Inside Beacon Creek stack",
       excerpt: "Next.js, careful motion, and a site that feels alive without being heavy.",
       tag: "Studio",
-      date: "Coming soon",
+      date: "In progress",
     },
   ],
 
@@ -1705,7 +1705,7 @@ export const leadTemplates: LeadTemplate[] = [
 
 /** Paid template slots. Edit when a template is ready. */
 export const paidTemplateSlots = [
-  { id: "paid-sacco-pack", title: "SACCO operations pack", status: "Coming soon" },
-  { id: "paid-clinic-pack", title: "Clinic front-desk pack", status: "Coming soon" },
-  { id: "paid-landlord-pack", title: "Landlord finance pack", status: "Coming soon" },
+  { id: "paid-sacco-pack", title: "SACCO operations pack", status: "In progress" },
+  { id: "paid-clinic-pack", title: "Clinic front-desk pack", status: "In progress" },
+  { id: "paid-landlord-pack", title: "Landlord finance pack", status: "In progress" },
 ];

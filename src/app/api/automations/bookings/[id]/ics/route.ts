@@ -27,7 +27,7 @@ export async function GET(_request: Request, { params }: Params) {
     time,
     durationMinutes: Number(instance.config.slotMinutes) || 30,
     title: `${instance.businessName} appointment`,
-    description: `Booked with ${instance.businessName}. The Beacon Studio · hello@thebeaconstudio.co.ke · thebeaconstudio.co.ke. Times are Africa/Nairobi.`,
+    description: `Booked with ${instance.businessName}. Beacon Creek · hello@thebeaconstudio.co.ke · thebeaconstudio.co.ke. Times are Africa/Nairobi.`,
     location: instance.businessName,
     organizerEmail: siteConfig.email,
     attendeeEmail: booking.email || instance.ownerEmail,

@@ -122,18 +122,15 @@ describe("homepage splash", () => {
 });
 
 describe("full wordmark", () => {
-  it("keeps The Beacon Studio as a stacked lockup", () => {
-    assert.deepEqual(wordmarkLines("The Beacon Studio"), {
-      title: "The Beacon",
-      studio: "Studio",
-    });
+  it("keeps Beacon Creek as one line", () => {
+    assert.deepEqual(wordmarkLines("Beacon Creek"), { title: "Beacon Creek", studio: "" });
     assert.deepEqual(wordmarkLines("Beacon"), { title: "Beacon", studio: "" });
   });
 
   it("does not swap the header lockup to the short name", () => {
     const source = readFileSync("src/components/brand/BeaconWordmark.tsx", "utf8");
     assert.match(source, /wordmarkLines\(siteConfig\.brand\.name\)/);
-    assert.match(readFileSync("src/components/brand/wordmark.ts", "utf8"), /Studio/);
+    assert.match(readFileSync("src/components/brand/wordmark.ts", "utf8"), /Beacon Creek/);
     assert.doesNotMatch(source, /sm:hidden/);
     assert.doesNotMatch(source, /shortName/);
     assert.match(source, /whitespace-nowrap/);

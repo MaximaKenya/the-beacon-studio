@@ -9,7 +9,7 @@ type BeaconWordmarkProps = {
   /**
    * compact — tighter header lockup.
    * full — footer and brand lockup.
-   * Both keep “The Beacon” / “Studio” at every width.
+   * One line, “Beacon Creek”, at every width.
    */
   variant?: "compact" | "full";
   className?: string;
@@ -37,7 +37,7 @@ const sizeMap = {
 } as const;
 
 /**
- * Lighthouse mark plus the full name. The lockup stays “The Beacon” / “Studio”
+ * Lighthouse mark plus the full name. The lockup reads “Beacon Creek”
  * at every width — headers never swap in the short name.
  */
 export function BeaconWordmark({

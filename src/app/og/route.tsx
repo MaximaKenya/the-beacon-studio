@@ -9,7 +9,7 @@ function clean(value: string | null, max: number, fallback: string): string {
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const title = clean(searchParams.get("title"), 90, "The Beacon Studio");
+  const title = clean(searchParams.get("title"), 90, "Beacon Creek");
   const subtitle = clean(
     searchParams.get("subtitle"),
     160,

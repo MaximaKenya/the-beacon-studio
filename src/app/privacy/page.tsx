@@ -4,7 +4,7 @@ import { pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata({
   title: "Privacy policy",
-  description: "How The Beacon Studio collects, uses and protects personal data under the Kenya Data Protection Act, 2019.",
+  description: "How Beacon Creek collects, uses and protects personal data under the Kenya Data Protection Act, 2019.",
   path: "/privacy",
 });
 
@@ -106,7 +106,7 @@ export default function PrivacyPage() {
       <p className="text-xs font-medium uppercase tracking-wide text-muted">Last updated {LAST_UPDATED}</p>
       <h1 className="mt-2 font-display text-4xl font-semibold tracking-tight text-heading">Privacy policy</h1>
       <p className="mt-3 text-sm leading-relaxed text-muted">
-        How The Beacon Studio, a Nairobi software studio, handles personal data under the Kenya Data Protection Act, 2019.
+        How Beacon Creek, a Nairobi software studio, handles personal data under the Kenya Data Protection Act, 2019.
       </p>
 
       <div className="mt-8 space-y-4">
@@ -136,7 +136,7 @@ export default function PrivacyPage() {
             complaint@odpc.go.ke, 020 780 1800, Britam Tower, 12th Floor, Hospital Road, Upper Hill, Nairobi.
           </p>
           <p className="mt-3 text-sm leading-relaxed text-muted">
-            The Beacon Studio, {contact.city}
+            Beacon Creek, {contact.city}
             {legal.length > 0 && <> · {legal.join(" · ")}</>}
           </p>
         </section>

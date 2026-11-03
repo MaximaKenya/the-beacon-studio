@@ -26,7 +26,7 @@ const faqs = [
 export const metadata = pageMetadata({
   title: "Book a free 20-minute AI automation audit",
   description:
-    "Pick a weekday slot for a free 20-minute automation audit with The Beacon Studio in Nairobi. AI automation Kenya.",
+    "Pick a weekday slot for a free 20-minute automation audit with Beacon Creek in Nairobi. AI automation Kenya.",
   path: "/book",
   keywords: ["AI automation Kenya", "free automation audit", "Nairobi", siteConfig.brand.name],
 });

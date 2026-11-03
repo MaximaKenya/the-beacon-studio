@@ -19,7 +19,7 @@ const wordmark = Fraunces({
 
 export const metadata: Metadata = {
   title: "Logo options",
-  description: "The Beacon Studio lighthouse: smoothed wave and starburst, lockups, and the live mark.",
+  description: "Beacon Creek lighthouse: smoothed wave and starburst, lockups, and the live mark.",
   robots: { index: false, follow: false },
 };
 

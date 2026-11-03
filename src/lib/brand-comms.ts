@@ -1,12 +1,12 @@
 /**
- * The Beacon Studio — brand communications kit.
+ * Beacon Creek — brand communications kit.
  *
  * One source for every outbound touchpoint: the HTML email shell, per-mailbox
  * signatures, SMS and WhatsApp sign-offs, and the document letterhead.
  * Sister apps (ConfiRent, CadenceApp, LookFinesse, ConfiLearn, Convoria,
- * ConfiTrade) pass `appName` and get "ConfiRent by The Beacon Studio" with the
+ * ConfiTrade) pass `appName` and get "ConfiRent by Beacon Creek" with the
  * same layout. Automation messages to a client's own customers pass `client`
- * and carry the client's name with a small "Powered by The Beacon Studio" line.
+ * and carry the client's name with a small "Powered by Beacon Creek" line.
  *
  * Pure functions only: no network, no env secrets. Safe in client and server.
  * Copy guide for other apps: docs/BRAND_COMMS.md.
@@ -17,7 +17,7 @@ import { siteConfig } from "@/data/site";
 /* Constants                                                          */
 /* ------------------------------------------------------------------ */
 
-export const BRAND_NAME = "The Beacon Studio";
+export const BRAND_NAME = "Beacon Creek";
 export const BRAND_DOMAIN = "thebeaconstudio.co.ke";
 /** Canonical public origin. Logos in email are always hosted here (never the Heroku URL). */
 export const BRAND_SITE_URL = "https://thebeaconstudio.co.ke";
@@ -118,13 +118,13 @@ export type ClientBrand = {
 };
 
 export type CoBrand = {
-  /** Sister app. Shows "ConfiRent by The Beacon Studio". */
+  /** Sister app. Shows "ConfiRent by Beacon Creek". */
   appName?: SisterApp | string;
   /** A client's own branding for messages to that client's customers. */
   client?: ClientBrand;
 };
 
-/** "The Beacon Studio", "ConfiRent by The Beacon Studio", or the client's name. */
+/** "Beacon Creek", "ConfiRent by Beacon Creek", or the client's name. */
 export function brandDisplayName(co: CoBrand = {}): string {
   if (co.client?.name?.trim()) return co.client.name.trim();
   if (co.appName?.trim()) return `${co.appName.trim()} by ${BRAND_NAME}`;
@@ -294,7 +294,7 @@ export function toGsm7(text: string): string {
 
 /**
  * Short SMS "regards" line, GSM-7 only, <= 70 chars.
- * Studio: "- The Beacon Studio, support@thebeaconstudio.co.ke".
+ * Studio: "- Beacon Creek, support@thebeaconstudio.co.ke".
  * Falls back to "- <name> +254706397373" when the mailbox does not fit.
  */
 export function smsSignoff(opts: CoBrand & { mailbox?: BrandMailbox; contact?: BrandContact } = {}): string {

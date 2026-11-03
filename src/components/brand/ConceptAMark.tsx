@@ -114,7 +114,7 @@ export function ConceptALockup({
   const type = (
     <div className={wordmarkClassName} style={{ fontVariationSettings: '"opsz" 72, "SOFT" 30, "WONK" 0' }}>
       <div className="font-medium leading-none tracking-[-0.03em]" style={{ fontSize: layout === "horizontal" ? "1.7rem" : "1.85rem" }}>
-        The Beacon
+        Beacon Creek
       </div>
       <div
         className="mt-1.5 font-medium uppercase leading-none tracking-[0.28em]"
