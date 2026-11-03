@@ -1,6 +1,6 @@
 /**
  * Client-side branded PDF helpers for quotations & receipts.
- * Uses jspdf; the header places the lighthouse tile from /email/beacon-mark.png.
+ * Uses jspdf; the header places the Beacon Creek mark from /email/beacon-mark.png.
  * Pages always start on a light branded background (no black flash).
  */
 
