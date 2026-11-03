@@ -1071,6 +1071,326 @@ export const productShots: ProductShot[] = [
     "blurDataURL": "data:image/webp;base64,UklGRoYAAABXRUJQVlA4IHoAAADQBACdASoQACMAPt1cpU2opSOiNUgBEBuJZQDCgywCS98OegYlXPWMJk+y6rAC0AD339gcc51EHM4FeAhrGSqyo7rh5pA7etHEUwRtGTQVD0of2qwC+RIfp5ACHIWhqScHY+ZmZlRATEaq2hRbDm9zA6DbsCcp/zMAAA=="
   },
   {
+    "slug": "confilearn",
+    "file": "/products/confilearn/school-01-home-desktop.webp",
+    "device": "desktop",
+    "width": 1280,
+    "height": 1852,
+    "caption": "School admin home: next-step card, my day, notices, stats and the setup checklist",
+    "alt": "ConfiLearn school home screen on desktop (Mwangaza Demo Academy, demo data)",
+    "blurDataURL": "data:image/webp;base64,UklGRk4AAABXRUJQVlA4IEIAAADwAgCdASoQABcAPu1iqU2ppaOiMAgBMB2JZwDA3C0kAAD+8IBfqna21YrJHi+PjwBCUyqzbPI4h1x6PpYkIzBheAA="
+  },
+  {
+    "slug": "confilearn",
+    "file": "/products/confilearn/school-01-home-mobile.webp",
+    "device": "mobile",
+    "width": 390,
+    "height": 3157,
+    "caption": "School admin home: next-step card, my day, notices, stats and the setup checklist",
+    "alt": "ConfiLearn school home screen on mobile (Mwangaza Demo Academy, demo data)",
+    "blurDataURL": "data:image/webp;base64,UklGRgoBAABXRUJQVlA4IP4AAABQBwCdASoQAIIAPu1mqlGppSOiqrVcATAdiWUAz2WJkArSqLtXILZaHPquUR3ZazDOamxoxzWtH03fF7nnU6ylpuLwAP7tYjLWcCZ8NKTtLUZAB1eRBrp5GLQhFQ/CVpb3lXAcLP/LJ2b1Gt8U5RBu3PCQlZTiRiHX1svMvX1c395SoCV+umcvrLnaBnhl8k7VqcG1vf3mcWFVji6b5i51c0Z59wEZVrRIYSxRYZpXNM28AbII6eJRWcnMrHN4NIECMt2WpfS1En0kzFg+vdCxwEgCC+3oNtwgjZEYQYj5nAianjVQ3P2YRyj4y1BNSJJKrqA4pVM3Qd1KGJAAAA=="
+  },
+  {
+    "slug": "confilearn",
+    "file": "/products/confilearn/school-02-structure-desktop.webp",
+    "device": "desktop",
+    "width": 1280,
+    "height": 1902,
+    "caption": "Set up years, terms, grades and streams",
+    "alt": "ConfiLearn school structure screen on desktop (Mwangaza Demo Academy, demo data)",
+    "blurDataURL": "data:image/webp;base64,UklGRk4AAABXRUJQVlA4IEIAAAAQAwCdASoQABgAPu1iqU2ppaOiMAgBMB2JZwC+SDKHHiAA/vCXGx/6ennKo8Aoa/8JhTwHPHsjWck2H48QASQAAAA="
+  },
+  {
+    "slug": "confilearn",
+    "file": "/products/confilearn/school-02-structure-mobile.webp",
+    "device": "mobile",
+    "width": 390,
+    "height": 3370,
+    "caption": "Set up years, terms, grades and streams",
+    "alt": "ConfiLearn school structure screen on mobile (Mwangaza Demo Academy, demo data)",
+    "blurDataURL": "data:image/webp;base64,UklGRioBAABXRUJQVlA4IB4BAABwBwCdASoQAIoAPu1mrE4ppaSiKqwBMB2JZWASkHPIs7H/8CE6XItE+jWSDOGj0yinU7Ef71OHaUGutJ4K2qffRbjiAAD+7WIxEWmKwyqerXcpzflnf3MKEbcRrCQ6l4rSdOWUTOZ1hSA6alABUQPFqI/NbOrNpXJPTFNavv4mzaU8YLXyody/pfCWwXsWoffgbxCUszI8YII+Ij2tx1v1bTBeI/48S/QOP5kFbywhuHJpFN5Myxa5v1fr4bwgB3KATaW22NeDjAtiN7PnCjFu1AS8wJCaytEHz4gFni+VnQHg6rmwcytrZmxApjJ/VAkKHOB1O9AO3a2bkZTYOsyCV7uA+yrWKlRiCKJsSmcuE540e3RrnzGRlqYA/+AA"
+  },
+  {
+    "slug": "confilearn",
+    "file": "/products/confilearn/school-03-people-desktop.webp",
+    "device": "desktop",
+    "width": 1280,
+    "height": 1991,
+    "caption": "Learner list with parent invites, fee payments and bulk invites",
+    "alt": "ConfiLearn school people screen on desktop (Mwangaza Demo Academy, demo data)",
+    "blurDataURL": "data:image/webp;base64,UklGRkQAAABXRUJQVlA4IDgAAADwAgCdASoQABkAPu1iqk2ppaQmMAgBMB2JZwDCgC0kAAD+8JZhBxmQNswDLA2y/5bR+oZkdj1wAA=="
+  },
+  {
+    "slug": "confilearn",
+    "file": "/products/confilearn/school-03-people-mobile.webp",
+    "device": "mobile",
+    "width": 390,
+    "height": 3600,
+    "caption": "Learner list with parent invites, fee payments and bulk invites",
+    "alt": "ConfiLearn school people screen on mobile (Mwangaza Demo Academy, demo data)",
+    "blurDataURL": "data:image/webp;base64,UklGRgQBAABXRUJQVlA4IPgAAADQBgCdASoQAJYAPu1sr1OppSQipngJATAdiWdojSudIHxPBCwFoHzFGZ0meTWZHSRvnasds1NXgd5i+doCWuAA/u1iMNCaS61ftNF43laehEbMkWb6WhNY4MSeEzafZelUsX9XBEABqGXNmRDULXFr2DKhwppmsF8uDW5sNa3drgSQTdQobdag2RAv6PxeirzBaxNeficoIrDI3DzAFy9+i3nxUXUMLlXfUGjV5yvi1mbWSHfQa4CmxKvKTPgWyp2WMM6nAnug50T1hm9mA9ulfLvBiq+K16DF0rHoiFyt27bf98IJ9w9PMlUQYnRo4oq/g6A4ESIAAA=="
+  },
+  {
+    "slug": "confilearn",
+    "file": "/products/confilearn/school-04-invite-flow-desktop.webp",
+    "device": "desktop",
+    "width": 1136,
+    "height": 749,
+    "caption": "Invite staff and parents by email or phone and track each invite",
+    "alt": "ConfiLearn invite people screen on desktop (Mwangaza Demo Academy, demo data)",
+    "blurDataURL": "data:image/webp;base64,UklGRiwAAABXRUJQVlA4ICAAAAAwAQCdASoQAAsAA4BaJZwAA3AA/vSAAkjWM9xN8CAAAA=="
+  },
+  {
+    "slug": "confilearn",
+    "file": "/products/confilearn/school-04-invite-flow-mobile.webp",
+    "device": "mobile",
+    "width": 358,
+    "height": 1099,
+    "caption": "Invite staff and parents by email or phone and track each invite",
+    "alt": "ConfiLearn invite people screen on mobile (Mwangaza Demo Academy, demo data)",
+    "blurDataURL": "data:image/webp;base64,UklGRpoAAABXRUJQVlA4II4AAADQBACdASoQADEAPu1qrVCppaQiqAqpMB2JZwDMWBEPt2Lv7TpgL/lvd6l42RWcAAD+7+JXOm6A8QLhb0MZs4fP453SlXE94mRlMyDj0Xi7YvQP45CQATgydJAu9/VAbEdEBpYLHg62jSYiSyUmBXnXMfnCXatI5s66b7CTb1vAGo2dZlW1OfixyDpiAAAA"
+  },
+  {
+    "slug": "confilearn",
+    "file": "/products/confilearn/school-04c-invite-join-preview-mobile.webp",
+    "device": "mobile",
+    "width": 390,
+    "height": 978,
+    "caption": "Invitees see the school and their role before joining",
+    "alt": "ConfiLearn invite join preview screen on mobile (Mwangaza Demo Academy, demo data)",
+    "blurDataURL": "data:image/webp;base64,UklGRoIAAABXRUJQVlA4IHYAAACQAwCdASoQACgAPt1cpE2opSOiNUgBEBuJZAC7ACa+ItU+NYlMAP7v2CzZ2FUyVadQ6hmBb8aeqNZ+jhGfAF/jg6cNBo5HPahBCF2iTxI5K1mHIxtluUL5vXy2bH5gvlAN7eWGGjLz6PZa4PyHh02XSgXGaAAA"
+  },
+  {
+    "slug": "confilearn",
+    "file": "/products/confilearn/school-04d-invite-accepted-desktop.webp",
+    "device": "desktop",
+    "width": 1280,
+    "height": 1484,
+    "caption": "Accepted invites land straight in the school",
+    "alt": "ConfiLearn invite accepted screen on desktop (Mwangaza Demo Academy, demo data)",
+    "blurDataURL": "data:image/webp;base64,UklGRkoAAABXRUJQVlA4ID4AAAAQAwCdASoQABMAPu1iqk2ppaQiMAgBMB2JZ2fkVLMV8gAA/vCAawWZkYyBqmz6H2zAGThjRX25zxKaUAAAAA=="
+  },
+  {
+    "slug": "confilearn",
+    "file": "/products/confilearn/school-05-timetable-desktop.webp",
+    "device": "desktop",
+    "width": 1280,
+    "height": 1232,
+    "caption": "Weekly timetable by stream",
+    "alt": "ConfiLearn timetable screen on desktop (Mwangaza Demo Academy, demo data)",
+    "blurDataURL": "data:image/webp;base64,UklGRjoAAABXRUJQVlA4IC4AAACwAQCdASoQAA8AA4BaJZwAAtz1Ja/wAP73DvtOoUE31cY5IVxNSPTA4QVbYAAA"
+  },
+  {
+    "slug": "confilearn",
+    "file": "/products/confilearn/school-05-timetable-mobile.webp",
+    "device": "mobile",
+    "width": 390,
+    "height": 3061,
+    "caption": "Weekly timetable by stream",
+    "alt": "ConfiLearn timetable screen on mobile (Mwangaza Demo Academy, demo data)",
+    "blurDataURL": "data:image/webp;base64,UklGRsgAAABXRUJQVlA4ILwAAAAwBgCdASoQAH4APu1yrlOppqOipApJMB2JZwDRvAiOe+b44Vowzr3+7nblIci/cefgZUSKYPzTA8AAAP7tYjDQmkutX7TReQ/Z14nODqIVo0ZF+ZfOei3lS6ePvV5e6BrNt0pLj9wNAI40VlBRk810COOfxfE71uD8d4yOym+X56gvkAbnEa6jeSes7Y1uPbpMCA4z1DeZQYQ6Ax58BrgYSKUqIf+cNFCJa7jguq2A50lZznnXxaQVbw0AAA=="
+  },
+  {
+    "slug": "confilearn",
+    "file": "/products/confilearn/school-06-admissions-pipeline-desktop.webp",
+    "device": "desktop",
+    "width": 1280,
+    "height": 932,
+    "caption": "Admissions pipeline: applications grouped by status",
+    "alt": "ConfiLearn admissions pipeline screen on desktop (Mwangaza Demo Academy, demo data)",
+    "blurDataURL": "data:image/webp;base64,UklGRjgAAABXRUJQVlA4ICwAAACwAQCdASoQAAwAA4BaJZwAAudPqKvAAP73B2VxdOYfIkO1Y4omtTaBbmQAAA=="
+  },
+  {
+    "slug": "confilearn",
+    "file": "/products/confilearn/school-06-admissions-pipeline-mobile.webp",
+    "device": "mobile",
+    "width": 390,
+    "height": 1592,
+    "caption": "Admissions pipeline: applications grouped by status",
+    "alt": "ConfiLearn admissions pipeline screen on mobile (Mwangaza Demo Academy, demo data)",
+    "blurDataURL": "data:image/webp;base64,UklGRn4AAABXRUJQVlA4IHIAAABQAwCdASoQAEEAPu1oqlAppaOipm35MB2JZ2iTXKuHlTO6AAD+8C73dBVpGr2DNs2PgRkC1UiY6GPrA0UJMwkNQYiMK/BsKGHw0gZ+1TbrnL8DJ+cBPVaGqhfvGdjQBCeNW1prbtjfTdF6t29OEM6RSAA="
+  },
+  {
+    "slug": "confilearn",
+    "file": "/products/confilearn/school-07-public-apply-desktop.webp",
+    "device": "desktop",
+    "width": 1280,
+    "height": 1082,
+    "caption": "Public application form: a branded 4-step wizard",
+    "alt": "ConfiLearn online application screen on desktop (Mwangaza Demo Academy, demo data)",
+    "blurDataURL": "data:image/webp;base64,UklGRjIAAABXRUJQVlA4ICYAAABwAQCdASoQAA4AA4BaJZwC7AF1AAD+85hiwPnZvCzfy7oq04AAAA=="
+  },
+  {
+    "slug": "confilearn",
+    "file": "/products/confilearn/school-07-public-apply-mobile.webp",
+    "device": "mobile",
+    "width": 390,
+    "height": 1652,
+    "caption": "Public application form: a branded 4-step wizard",
+    "alt": "ConfiLearn online application screen on mobile (Mwangaza Demo Academy, demo data)",
+    "blurDataURL": "data:image/webp;base64,UklGRqQAAABXRUJQVlA4IJgAAAAQBQCdASoQAEQAPu1qrE+ppiQiLMgBMB2JZQC5IBsp20O/2A3DH7OMCnTGoVTpMgQAAP7tbs6IG3J+NjNFkIipGTn3vEcwSU1wy5utQx8ySl6BHrnae0Qpo6/dY4NV4CBDBHc4ZALy2uMy/Dgh9JiByaA9j1gYToJfl8OMcuAtHL5NzbTvHnxg4pSS+HowTIrE7zkC7fNAAA=="
+  },
+  {
+    "slug": "confilearn",
+    "file": "/products/confilearn/school-08-status-page-desktop.webp",
+    "device": "desktop",
+    "width": 1280,
+    "height": 800,
+    "caption": "Applicants check their application status online",
+    "alt": "ConfiLearn application status screen on desktop (Mwangaza Demo Academy, demo data)",
+    "blurDataURL": "data:image/webp;base64,UklGRjIAAABXRUJQVlA4ICYAAABQAQCdASoQAAoAA4BaJZwABAAAAP7zXI/Fex8q5YD+Y0YLiNwEAA=="
+  },
+  {
+    "slug": "confilearn",
+    "file": "/products/confilearn/school-08-status-page-mobile.webp",
+    "device": "mobile",
+    "width": 390,
+    "height": 920,
+    "caption": "Applicants check their application status online",
+    "alt": "ConfiLearn application status screen on mobile (Mwangaza Demo Academy, demo data)",
+    "blurDataURL": "data:image/webp;base64,UklGRnYAAABXRUJQVlA4IGoAAAAQBACdASoQACYAPt1Yo02opSMiNUgBEBuJYwCw7C+rWboCKTDXQ/wYgAD+7/naPdpFfd/ugWw2vXm2TaZBYsQZ0SeQAxMEWVz635cmOBgx2yuw2gsV91+wWcJCttmWIbmT2eIGYGUmqAAA"
+  },
+  {
+    "slug": "confilearn",
+    "file": "/products/confilearn/school-09-attendance-desktop.webp",
+    "device": "desktop",
+    "width": 1280,
+    "height": 988,
+    "caption": "Take the class register in a few taps",
+    "alt": "ConfiLearn attendance screen on desktop (Mwangaza Demo Academy, demo data)",
+    "blurDataURL": "data:image/webp;base64,UklGRk4AAABXRUJQVlA4IEIAAAAQAgCdASoQAAwAA4BaJZgC7AYqNwn3DJvAAP73CP6exoebAwsDqRtXdbxYDgyqHfBEapGrb8WAXpETrjHzEaJ6AAA="
+  },
+  {
+    "slug": "confilearn",
+    "file": "/products/confilearn/school-09-attendance-mobile.webp",
+    "device": "mobile",
+    "width": 390,
+    "height": 1543,
+    "caption": "Take the class register in a few taps",
+    "alt": "ConfiLearn attendance screen on mobile (Mwangaza Demo Academy, demo data)",
+    "blurDataURL": "data:image/webp;base64,UklGRt4AAABXRUJQVlA4INIAAADwBQCdASoQAD8APtFYok2oJSMiN+gBABoJTB1rPMMA3jA5qzDJhLMZpc13djZKMEo7TxPJ/O6AUAD+8PRufu8TOJw4On+UybhtGPBDEDir7YVacJAF3WrwnieLOwNVsI+Hrc/U4HaOK6OxC1mM4Gi17HwHGU+ePJc05gHRQPr8QPCk89VMQC5Me0mb28NWb/4hFpF0hzOWjiG/MQmjlNs/8+hh25eXMnafzr+c/U6GDF7UQKC5D6CDOF6e0ssgZa8i1rcOuWCNxBtgy0vTvI3gAAA="
+  },
+  {
+    "slug": "confilearn",
+    "file": "/products/confilearn/school-10-analytics-desktop.webp",
+    "device": "desktop",
+    "width": 1280,
+    "height": 2400,
+    "caption": "School analytics: admissions, enrolment, attendance and fees",
+    "alt": "ConfiLearn school analytics screen on desktop (Mwangaza Demo Academy, demo data)",
+    "blurDataURL": "data:image/webp;base64,UklGRpgAAABXRUJQVlA4IIwAAADwAwCdASoQAB8APu1iqU2ppaQiMAgBMB2JQBdiP/wXgc4p7L/DKrIAAP79fa5cMaGTzIFStrUql8YlDz02W1W8Un3N08Q17U7t/UZPDxF78Xa5xCro75VAuM2YqMefSkLyJQXj86QKym5oKQFpJsB8KPTgzz51c5CCv3Q63FN9Bb5DVCjm8CkKCcBQAA=="
+  },
+  {
+    "slug": "confilearn",
+    "file": "/products/confilearn/school-10-analytics-mobile.webp",
+    "device": "mobile",
+    "width": 390,
+    "height": 3600,
+    "caption": "School analytics: admissions, enrolment, attendance and fees",
+    "alt": "ConfiLearn school analytics screen on mobile (Mwangaza Demo Academy, demo data)",
+    "blurDataURL": "data:image/webp;base64,UklGRmoCAABXRUJQVlA4IF4CAADQDQCdASoQAOUAPuVepU2pJSOiNVZrMSAciWYAwJhilP4B+2p55nTdN5DaZHtNlwQ/TQpa8NjVQBJByLSBga4TcbPWzIhpGf1Yho+h/yqS1AUl7l84aXY1w4c3ENmXQ3pMf+Jjzvvsh1woi2M1okCa7urK//WxIAD+84OCOHWa5ka7dULKucB5Z4f4Y4Nxbse7fq3EcTsJE1XiFu2zYz90thlrkg+IrcPcQF3a6rHeQMJmPNWtZUIgd1jDoHKuP7MKeghrg7MJpJ4pDEbCU8VHSi4Bn9AFT9d6/52xEoMIu2YzE4a3uuBxJHp2bu2VR1WFM2+RzWtQHndIIoLsNVNQm3qeE+nc0QKP4QejZYZ1XchRP6EH01/KLYmdiqncxmDd2+8YLKwXaBNv6BHS5jL2F2USuzBH4RE9uD/8XGPSHGqW529UJhbjHFGzH63yn+EzpoWThrjIqOnqv5MkkXRXQ9T/Njdas1+7DkJm6qnOyaPIAqc3veAuoN8dH7HnCEL/x3fWHqk5Bc/L3uWvgAbFuHcUU28MEc1Q87PSbWibwmMcGaiFly2AB+dcjKkLKwFZVjgLNA+rP5wh1k85LBoBvJ2oXzCQONKuZ8VB8ch8Ecs/CUMjPDr8i4vliklu3u3FwyeJmZaXejfU0KVPd/9Vu73Z6yIcDlonAO1NFXs/Q71YUAoCepOt77kf9jurTIXPX4GU1ipnpdGzdGgerySii1Tga/oWG6BRtSq7klCMsdMBmW/Oy/Qn0giIcZBFFpmSr9Dtje0kFx5Yumo0TGDjw57Wu/9ztj5yHQcagAA="
+  },
+  {
+    "slug": "confilearn",
+    "file": "/products/confilearn/school-11-branding-desktop.webp",
+    "device": "desktop",
+    "width": 1280,
+    "height": 925,
+    "caption": "Pick the school's brand colour and logo",
+    "alt": "ConfiLearn school branding screen on desktop (Mwangaza Demo Academy, demo data)",
+    "blurDataURL": "data:image/webp;base64,UklGRj4AAABXRUJQVlA4IDIAAADwAQCdASoQAAwAA4BaJZwAAudmXQhyPgAA/vcFakDJXSaJ3GIv+Dq/ZdIa7vBnnQoAAA=="
+  },
+  {
+    "slug": "confilearn",
+    "file": "/products/confilearn/school-11-branding-mobile.webp",
+    "device": "mobile",
+    "width": 390,
+    "height": 1899,
+    "caption": "Pick the school's brand colour and logo",
+    "alt": "ConfiLearn school branding screen on mobile (Mwangaza Demo Academy, demo data)",
+    "blurDataURL": "data:image/webp;base64,UklGRsgAAABXRUJQVlA4ILwAAAAQBQCdASoQAE4APuFgpk2opaOiMygBEBwJY1nyWPaQsCswsBZRIDV4n0gTT4+jcTGAAP7wfNl9qZ0rFksBqPtycIBvgcKy4rzNZwfVjiXFX9Ly612ftJ3IqkbumDYoBNVyE1ysq8dOFtAkCKK8GjVtU7ZRTPHyzyy37SSLETmaF+3Ugfm3gwRkXa+SbNHCy1atJrUSC8fKou3Bgeyn3pgE45Prnv3DOTKGo7S5l7CfCaMGpV9weKVd2IAAAA=="
+  },
+  {
+    "slug": "confilearn",
+    "file": "/products/confilearn/school-12-landing-desktop.webp",
+    "device": "desktop",
+    "width": 1280,
+    "height": 800,
+    "caption": "Public school page with admissions, classes offered and sign-in",
+    "alt": "ConfiLearn school landing page screen on desktop (Mwangaza Demo Academy, demo data)",
+    "blurDataURL": "data:image/webp;base64,UklGRjIAAABXRUJQVlA4ICYAAABQAQCdASoQAAoAA4BaJZwABAAAAP7zXN+cx2JOPHywKn3FE21CAA=="
+  },
+  {
+    "slug": "confilearn",
+    "file": "/products/confilearn/school-12-landing-mobile.webp",
+    "device": "mobile",
+    "width": 390,
+    "height": 1090,
+    "caption": "Public school page with admissions, classes offered and sign-in",
+    "alt": "ConfiLearn school landing page screen on mobile (Mwangaza Demo Academy, demo data)",
+    "blurDataURL": "data:image/webp;base64,UklGRpYAAABXRUJQVlA4IIoAAACwBACdASoQAC0APt1epU2opaOiNUgBEBuJYwC4MC+rCPY5oe0QiKgiD+YNtb6AAP7v+do92lNyDfTBW79c2sivquAwRSWJGLr7d+zuZuZEa6zaWK1n6c3T1e6OBXmVC5864gPybkrdneaIQigy0O6Jy3LUAMYZ99mV7+W8yC7oAzGxZyba4AOGAAA="
+  },
+  {
+    "slug": "confilearn",
+    "file": "/products/confilearn/school-13-guardian-portal-desktop.webp",
+    "device": "desktop",
+    "width": 1280,
+    "height": 1529,
+    "caption": "Guardian portal: attendance, fee balance, latest report card and today's lessons",
+    "alt": "ConfiLearn guardian portal screen on desktop (Mwangaza Demo Academy, demo data)",
+    "blurDataURL": "data:image/webp;base64,UklGRkIAAABXRUJQVlA4IDYAAADwAgCdASoQABMAPu1iqU2ppaQiMAgBMB2JZwC7ADKUAAD+8Jc1S1lUhDBtMEIlygAtTagTgAA="
+  },
+  {
+    "slug": "confilearn",
+    "file": "/products/confilearn/school-13-guardian-portal-mobile.webp",
+    "device": "mobile",
+    "width": 390,
+    "height": 2175,
+    "caption": "Guardian portal: attendance, fee balance, latest report card and today's lessons",
+    "alt": "ConfiLearn guardian portal screen on mobile (Mwangaza Demo Academy, demo data)",
+    "blurDataURL": "data:image/webp;base64,UklGRs4AAABXRUJQVlA4IMIAAADQBQCdASoQAFkAPu1or1KppSQiqrgIATAdiWcAzUgLK2Jaoyz7+G/Iuvy0GJbrYQKEBQL8Y/oAAP7tYjERaYrDKp6r4ZaTjdcp1nZl6ytg7x05VgXc3h/5vYCzxRkvbubcbyNiGfKycESfJCrfTO+U+ZI+VACiaOegSSx+x1xiFCfVsHBvJ3pLCrQE0QGUGc8ibsKwW+ceBaeXRYIcUsVDAODaNOum9puYNZgyIvmIVEVd1EBYLC8r8PnKPB6o+jQAAA=="
+  },
+  {
+    "slug": "confilearn",
+    "file": "/products/confilearn/school-14-teacher-today-desktop.webp",
+    "device": "desktop",
+    "width": 1280,
+    "height": 1745,
+    "caption": "Teacher's day: lessons, registers to take and quick links",
+    "alt": "ConfiLearn teacher today screen on desktop (Mwangaza Demo Academy, demo data)",
+    "blurDataURL": "data:image/webp;base64,UklGRkwAAABXRUJQVlA4IEAAAAAQAwCdASoQABYAPu1iqk2ppaQiMAgBMB2JZw22BWBxN0AA/vCWxwl25OdERKDPdcnBegb3LQ63f8bx2w4iGwAA"
+  },
+  {
+    "slug": "confilearn",
+    "file": "/products/confilearn/school-14-teacher-today-mobile.webp",
+    "device": "mobile",
+    "width": 390,
+    "height": 3071,
+    "caption": "Teacher's day: lessons, registers to take and quick links",
+    "alt": "ConfiLearn teacher today screen on mobile (Mwangaza Demo Academy, demo data)",
+    "blurDataURL": "data:image/webp;base64,UklGRgoBAABXRUJQVlA4IP4AAABwBwCdASoQAH4APu1qr1KppSQiqBgJWTAdiWcAzrW59oyA8k/LxTyEGlevAB/qrala272ZwEIBlAMw6j677YbUnjpp2AD+7WKNBmYgx1IanEkM+oKXaTrzO9Ix6Jy71++ij6p+4azvw0nT9TYS+B/HoPxx5gyee2yVfJy1I9rhu49hDaG5EaEAkYO4f8Z4ohAPrEM0O5Sn3z4wUiKL4KZyNqbZxgdRVkQCrHbO1LXTJRtpCOTlS/vWu9lYwkN5wG1zbBIgqshPXG/ZFvT8DdAlnh8FwAYlC/j/t3KnaILgtbDDzX7Q3tXrCVIJLkgQiXy+4a9tm7PRXfV4MmgAAA=="
+  },
+  {
+    "slug": "confilearn",
+    "file": "/products/confilearn/school-15-admin-all-schools-desktop.webp",
+    "device": "desktop",
+    "width": 1280,
+    "height": 852,
+    "caption": "Platform admin overview of all schools, read-only",
+    "alt": "ConfiLearn all schools screen on desktop (Mwangaza Demo Academy, demo data)",
+    "blurDataURL": "data:image/webp;base64,UklGRjYAAABXRUJQVlA4ICoAAACQAQCdASoQAAsAA4BaJZ2HgU0AqkAA/vMYla5Y6ER6etmajb6ctiiM+AA="
+  },
+  {
+    "slug": "confilearn",
+    "file": "/products/confilearn/school-15-admin-all-schools-mobile.webp",
+    "device": "mobile",
+    "width": 390,
+    "height": 1565,
+    "caption": "Platform admin overview of all schools, read-only",
+    "alt": "ConfiLearn all schools screen on mobile (Mwangaza Demo Academy, demo data)",
+    "blurDataURL": "data:image/webp;base64,UklGRogAAABXRUJQVlA4IHwAAABQBACdASoQAEAAPu1mqk8ppaOiKA1RMB2JZ2VuWPGLGxFTkA5irolMt1dgAP7v8yWb6RDYlOzu1PiTL/xUrNbgWUsdAzTDbUK2E/XI0y8xGP4OsZMeynddFSkPrVvWXo0c7TEDjg6oXXcCsFAoW7y/OYRGf7Ul5VWg9HAA"
+  },
+  {
     "slug": "lookfinesse",
     "file": "/products/lookfinesse/home-desktop.webp",
     "device": "desktop",
