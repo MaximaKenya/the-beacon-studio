@@ -5,7 +5,7 @@ import { pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata({
   title: "Partner and reseller programme",
-  description: "Resell The Beacon Studio automations under your brand at wholesale prices. Apply to become a partner.",
+  description: "Resell Beacon Creek automations under your brand at wholesale prices. Apply to become a partner.",
   path: "/partners",
 });
 

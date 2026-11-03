@@ -1,6 +1,6 @@
 /**
  * Client-side branded PDF helpers for quotations & receipts.
- * Uses jspdf; the header places the lighthouse tile from /email/beacon-mark.png.
+ * Uses jspdf; the header places the Beacon Creek mark from /email/beacon-mark.png.
  * Pages always start on a light branded background (no black flash).
  */
 
@@ -285,7 +285,7 @@ export async function downloadReceiptPdf(receipt: ReceiptRecord): Promise<void> 
   y += 16;
   pdf.setFontSize(8);
   pdf.setTextColor(MUTED.r, MUTED.g, MUTED.b);
-  pdf.text("Thank you — The Beacon Studio. All times Africa/Nairobi (EAT).", 40, y);
+  pdf.text("Thank you — Beacon Creek. All times Africa/Nairobi (EAT).", 40, y);
 
   footer(pdf, `${siteConfig.brand.name} · Billing`);
   pdf.save(receipt.filename);

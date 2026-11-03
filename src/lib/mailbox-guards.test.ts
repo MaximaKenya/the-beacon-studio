@@ -21,7 +21,7 @@ test("mailbox labels come from the studio addresses", () => {
 
 test("send from a chosen address, unknown falls back to hello", () => {
   assert.equal(fromHeaderFor("billing").address, "billing@thebeaconstudio.co.ke");
-  assert.equal(fromHeaderFor("billing").header, "The Beacon Studio <billing@thebeaconstudio.co.ke>");
+  assert.equal(fromHeaderFor("billing").header, "Beacon Creek <billing@thebeaconstudio.co.ke>");
   assert.equal(fromHeaderFor("evil@attacker.com").address, "hello@thebeaconstudio.co.ke");
 });
 

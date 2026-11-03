@@ -24,7 +24,7 @@ test("each purpose sends from its mailbox, replies return there", () => {
   assert.equal(senderFor("leadAlert").address, `admin@${D}`);
   assert.equal(senderFor("contact").address, `hello@${D}`);
   assert.equal(mailboxForPurpose("trialEnded"), "billing");
-  assert.match(senderFor("receipt").header, /The Beacon Studio <billing@/);
+  assert.match(senderFor("receipt").header, /Beacon Creek <billing@/);
 });
 
 test("env overrides change one mailbox only", () => {

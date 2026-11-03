@@ -6,7 +6,7 @@ import { Resend } from "resend";
 import { siteConfig } from "@/data/site";
 import { senderFor, type MailPurpose } from "@/lib/mail-addresses";
 
-export const DEFAULT_FROM = "The Beacon Studio <hello@thebeaconstudio.co.ke>";
+export const DEFAULT_FROM = "Beacon Creek <hello@thebeaconstudio.co.ke>";
 
 export type ResendAttachment = {
   filename: string;
@@ -53,7 +53,7 @@ export function replyToAddress(override?: string): string | undefined {
 }
 
 export async function sendResendEmail(opts: {
-  /** Full From header on the verified domain, e.g. "The Beacon Studio <support@…>". */
+  /** Full From header on the verified domain, e.g. "Beacon Creek <support@…>". */
   from?: string;
   /** What the email is for. Picks the From and Reply-To mailbox from mail-addresses. */
   purpose?: MailPurpose;

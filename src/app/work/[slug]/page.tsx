@@ -17,7 +17,7 @@ export async function generateMetadata({ params }: Props) {
     title: study.title,
     description: study.description,
     path: study.path,
-    keywords: [study.title, "Nairobi", "The Beacon Studio"],
+    keywords: [study.title, "Nairobi", "Beacon Creek"],
   });
 }
 

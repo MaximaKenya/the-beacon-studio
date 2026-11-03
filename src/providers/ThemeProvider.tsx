@@ -5,7 +5,7 @@ import {
   useCallback,
   useContext,
   useEffect,
-  useState,
+  useSyncExternalStore,
   type ReactNode,
 } from "react";
 
@@ -21,26 +21,42 @@ const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 const STORAGE_KEY = "portfolio-theme";
 
-export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setTheme] = useState<Theme>("dark");
-  const [mounted, setMounted] = useState(false);
+const THEME_EVENT = "portfolio-theme-change";
 
+function readTheme(): Theme {
+  const stored = localStorage.getItem(STORAGE_KEY) as Theme | null;
+  if (stored) return stored;
+  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+}
+
+function subscribeTheme(onChange: () => void) {
+  window.addEventListener(THEME_EVENT, onChange);
+  window.addEventListener("storage", onChange);
+  return () => {
+    window.removeEventListener(THEME_EVENT, onChange);
+    window.removeEventListener("storage", onChange);
+  };
+}
+
+const getServerTheme = (): Theme => "dark";
+const noopSubscribe = () => () => {};
+const getMounted = () => true;
+const getServerMounted = () => false;
+
+export function ThemeProvider({ children }: { children: ReactNode }) {
+  const theme = useSyncExternalStore(subscribeTheme, readTheme, getServerTheme);
+  const mounted = useSyncExternalStore(noopSubscribe, getMounted, getServerMounted);
+
+  // Sync React state out to the DOM (external system); no setState here.
   useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY) as Theme | null;
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    const initial = stored ?? (prefersDark ? "dark" : "light");
-    setTheme(initial);
-    document.documentElement.setAttribute("data-theme", initial);
-    setMounted(true);
-  }, []);
+    document.documentElement.setAttribute("data-theme", theme);
+  }, [theme]);
 
   const toggleTheme = useCallback(() => {
-    setTheme((prev) => {
-      const next = prev === "dark" ? "light" : "dark";
-      localStorage.setItem(STORAGE_KEY, next);
-      document.documentElement.setAttribute("data-theme", next);
-      return next;
-    });
+    const next: Theme = readTheme() === "dark" ? "light" : "dark";
+    localStorage.setItem(STORAGE_KEY, next);
+    document.documentElement.setAttribute("data-theme", next);
+    window.dispatchEvent(new Event(THEME_EVENT));
   }, []);
 
   return (

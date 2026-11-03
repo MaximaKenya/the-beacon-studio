@@ -172,7 +172,7 @@ export async function sweepTrials(doc: AutomationDoc, origin: string, now = new 
       subject: `${bucket.days} day${bucket.days === 1 ? "" : "s"} left on your trial`,
       heading: `${bucket.days} days remaining`,
       paragraphs: [
-        `Your free month on The Beacon Studio ends soon.`,
+        `Your free month on Beacon Creek ends soon.`,
         bucket.names.join(", "),
         "Choose a plan or request an invoice from the portal. Nothing is deleted.",
       ],

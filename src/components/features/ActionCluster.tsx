@@ -10,6 +10,7 @@ import { useFeatures } from "@/providers/FeatureProvider";
 import { trackEvent } from "@/lib/analytics";
 import { phoneHref, trackCallClick, whatsappHref, whatsappPrefill } from "@/lib/contact-actions";
 import {
+  ASSISTANT_COMPACT_LABEL,
   CLUSTER_ACTION_LABELS,
   clusterActions,
   clusterPlacement,
@@ -191,17 +192,21 @@ export function ActionCluster() {
     >
       <button
         type="button"
-        className="action-pill inline-flex h-14 items-center gap-2 rounded-full py-1 pl-2 pr-3.5 sm:gap-2.5 sm:pr-4"
+        className="action-pill inline-flex h-11 items-center gap-1.5 rounded-full py-1 pl-1.5 pr-3 sm:h-14 sm:gap-2.5 sm:pl-2 sm:pr-4"
         aria-label={menuOpen ? `Close ${name} menu` : `Open ${name} menu`}
         aria-expanded={menuOpen}
         aria-haspopup="menu"
         aria-controls={menuOpen ? menuId : undefined}
         onClick={() => setMenuOpen((current) => !current)}
       >
-        <span className="flex h-10 w-10 items-center justify-center">
-          <FinalMark size={38} />
+        <span className="flex h-8 w-8 items-center justify-center sm:h-10 sm:w-10">
+          <FinalMark size={38} className="h-8 w-8 sm:h-[38px] sm:w-[38px]" />
         </span>
-        <span className="whitespace-nowrap text-sm font-semibold tracking-tight text-heading">{name}</span>
+        {/* Phones get the short label so the launcher stays clear of carousel controls and card buttons. */}
+        <span className="whitespace-nowrap text-sm font-semibold tracking-tight text-heading sm:hidden" aria-hidden>
+          {ASSISTANT_COMPACT_LABEL}
+        </span>
+        <span className="hidden whitespace-nowrap text-sm font-semibold tracking-tight text-heading sm:inline">{name}</span>
       </button>
 
       {menuOpen && (

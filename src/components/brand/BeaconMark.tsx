@@ -45,16 +45,13 @@ export function BeaconMark({
     );
   }
 
+  // Beacon Creek mark: teal file in light mode, purple file in dark mode (swapped by CSS on data-theme).
   return (
-    // The mark has to stay a vector. next/image would rasterize it.
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      src="/brand/beacon-mark.svg"
-      width={size}
-      height={height}
-      alt=""
-      draggable={false}
-      className={`beacon-mark ${className}`}
-    />
+    <span className={`beacon-mark relative inline-block ${className}`} style={{ width: size, height: size }}>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/brand/beacon-mark.svg" width={size} height={size} alt="" draggable={false} className="bc-mark-light absolute inset-0" />
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/brand/beacon-mark-on-dark.svg" width={size} height={size} alt="" draggable={false} className="bc-mark-dark absolute inset-0" />
+    </span>
   );
 }

@@ -20,7 +20,7 @@ export type InvoiceView = {
   status: string;
 };
 
-const BRAND = "The Beacon Studio";
+const BRAND = "Beacon Creek";
 
 export function studioInvoice(input: {
   id: string;
@@ -78,7 +78,7 @@ export function chargeInvoice(input: {
     due: input.due || "On receipt",
     lines: [{ label: input.note || "Balance", amountKes: input.amountKes }],
     totalKes: input.amountKes,
-    note: "Issued for the business above by The Beacon Studio.",
+    note: "Issued for the business above by Beacon Creek.",
     status: input.status === "paid" ? "Paid" : "Unpaid",
   };
 }

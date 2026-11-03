@@ -64,13 +64,6 @@ export function BookingModal() {
     siteConfig.booking.meetingTypes[0]?.id ?? ""
   );
 
-  useEffect(() => {
-    if (!bookingOpen) {
-      setMeetingType(siteConfig.booking.meetingTypes[0]?.id ?? "");
-      return;
-    }
-    if (bookingMeetingType) setMeetingType(bookingMeetingType);
-  }, [bookingOpen, bookingMeetingType]);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -90,17 +83,53 @@ export function BookingModal() {
     }
   }, []);
 
-  useEffect(() => {
-    if (bookingOpen) {
-      fetchBooked();
-      setStep("calendar");
-      setSelectedDate(null);
-      setSelectedTime(null);
-      setError("");
-      setResult(null);
-      if (bookingNote) setMessage(bookingNote);
+  // Reset modal state when it opens/closes or its preset changes. Done while
+  // rendering (React's "adjust state on prop change" pattern) instead of in an effect.
+  const [prevOpen, setPrevOpen] = useState<boolean | undefined>(undefined);
+  const [prevMeetingType, setPrevMeetingType] = useState<typeof bookingMeetingType | undefined>(
+    undefined
+  );
+  const [prevNote, setPrevNote] = useState<typeof bookingNote | undefined>(undefined);
+  if (
+    prevOpen !== bookingOpen ||
+    prevMeetingType !== bookingMeetingType ||
+    prevNote !== bookingNote
+  ) {
+    const openOrNoteChanged = prevOpen !== bookingOpen || prevNote !== bookingNote;
+    setPrevOpen(bookingOpen);
+    setPrevMeetingType(bookingMeetingType);
+    setPrevNote(bookingNote);
+    if (!bookingOpen) {
+      setMeetingType(siteConfig.booking.meetingTypes[0]?.id ?? "");
+    } else {
+      if (bookingMeetingType) setMeetingType(bookingMeetingType);
+      if (openOrNoteChanged) {
+        setStep("calendar");
+        setSelectedDate(null);
+        setSelectedTime(null);
+        setError("");
+        setResult(null);
+        if (bookingNote) setMessage(bookingNote);
+      }
     }
-  }, [bookingOpen, fetchBooked, bookingNote]);
+  }
+
+  // Load booked slots from the API whenever the modal opens (external sync).
+  useEffect(() => {
+    if (!bookingOpen) return;
+    let cancelled = false;
+    fetchWithTimeout("/api/book", {}, 10_000)
+      .then((res) => res.json())
+      .then((data) => {
+        if (!cancelled) setBooked(data.slots ?? []);
+      })
+      .catch(() => {
+        if (!cancelled) setBooked([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [bookingOpen, bookingNote]);
 
   const monthDays = useMemo(
     () => getMonthDays(viewDate.getFullYear(), viewDate.getMonth()),

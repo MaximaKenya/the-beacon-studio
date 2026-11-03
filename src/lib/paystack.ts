@@ -13,7 +13,7 @@ export type PaystackCurrency = "KES" | "USD";
 
 export const BEACON_PAYSTACK_APP = "beacon-studio";
 
-/** Beacon Studio Paystack references are `BS-<payment id>`. */
+/** Beacon Creek Paystack references are `BS-<payment id>`. */
 export function beaconPaystackReference(id: string): string {
   return id.startsWith("BS-") ? id : `BS-${id}`;
 }

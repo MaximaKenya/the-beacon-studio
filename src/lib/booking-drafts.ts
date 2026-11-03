@@ -124,14 +124,14 @@ export function composeAbandonedEmail(draft: BookingDraft): { html: string; text
     preview: "You started a booking and did not finish it. One note, then we stop.",
     greeting: `Hi ${draft.name || "there"},`,
     paragraphs: [
-      "You started a booking with The Beacon Studio and did not finish it. The free 20-minute audit is still open on weekday mornings and afternoons, Nairobi time.",
+      "You started a booking with Beacon Creek and did not finish it. The free 20-minute audit is still open on weekday mornings and afternoons, Nairobi time.",
       "If now is not the time, you can ignore this. We will not send another note about this draft.",
     ],
     actions: [{ label: "Pick a time", href: `${origin}/book` }],
     unsubscribeUrl: unsubscribe,
     unsubscribeNote: "from notes about an unfinished booking.",
   });
-  return { ...letter, subject: "Still want that call? — The Beacon Studio" };
+  return { ...letter, subject: "Still want that call? — Beacon Creek" };
 }
 
 async function sendAbandonedEmail(draft: BookingDraft): Promise<boolean> {

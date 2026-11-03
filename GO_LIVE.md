@@ -1,4 +1,4 @@
-﻿# Go-live checklist — The Beacon Studio
+﻿# Go-live checklist — Beacon Creek
 
 What must be true before calling the site live for clients. Full setup: `INTEGRATIONS.md`, `DEPLOYMENT.md`.
 
@@ -109,7 +109,7 @@ Env vars:
 | Var | Example | Role |
 |---|---|---|
 | `RESEND_API_KEY` | `re_...` | Send and fetch inbound bodies |
-| `RESEND_FROM_EMAIL` | `hello@<domain>` | Verified from address. `The Beacon Studio <hello@<domain>>` is also fine |
+| `RESEND_FROM_EMAIL` | `hello@<domain>` | Verified from address. `Beacon Creek <hello@<domain>>` is also fine |
 | `RESEND_REPLY_TO` | `hello@<domain>` | Reply-To on outbound mail so answers hit inbound |
 | `RESEND_WEBHOOK_SECRET` | `whsec_...` | Verifies `POST /api/email/inbound` |
 
@@ -212,7 +212,7 @@ One Paystack account can serve every product. `POST /api/paystack/webhook` is th
 3. Route the event:
    - `data.metadata.app` wins when it is set.
    - Otherwise use the reference prefix (the letters before the first `-`).
-4. Beacon Studio stays on this app. Every Beacon Studio transaction is created with reference `BS-<payment id>` and `metadata.app` = `beacon-studio`. A reference with no prefix is treated as Beacon Studio so older checkouts still record.
+4. Beacon Creek stays on this app. Every Beacon Creek transaction is created with reference `BS-<payment id>` and `metadata.app` = `beacon-studio`. A reference with no prefix is treated as Beacon Creek so older checkouts still record.
 5. Every other product is forwarded. The router returns 200 to Paystack immediately, then POSTs the **same raw body** and the **original** `x-paystack-signature` header to the URL in `PAYSTACK_FORWARD_<SLUG>`. The forward and its HTTP status are written to the server log (`[paystack/router]`).
 
 | Prefix | `metadata.app` | Env var |

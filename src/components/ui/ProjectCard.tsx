@@ -85,7 +85,7 @@ export function ProjectCard({ project, index }: ProjectCardProps) {
                 </div>
                 <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-accent/80">
                   <AnimatedIcon icon={Sparkles} size="xs" animation="none" />
-                  Coming Soon
+                  In progress
                 </div>
               </>
             ) : (

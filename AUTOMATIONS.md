@@ -1,6 +1,6 @@
 # Automations
 
-The Beacon Studio hosts the automation buffet. A client picks automations, gets 30 free days, and runs them from the portal. The length of the trial is `TRIAL_DAYS` in `src/lib/automations/trial.ts`.
+Beacon Creek hosts the automation buffet. A client picks automations, gets 30 free days, and runs them from the portal. The length of the trial is `TRIAL_DAYS` in `src/lib/automations/trial.ts`.
 
 ## For a client
 
@@ -74,7 +74,7 @@ While `AT_USERNAME` / `AT_API_KEY` or `WHATSAPP_TOKEN` / `WHATSAPP_PHONE_ID` are
 
 ## Invoices and files
 
-Invoices, receipts, and the booking `.ics` use the lighthouse mark and the name The Beacon Studio, with hello@thebeaconstudio.co.ke and thebeaconstudio.co.ke. Each invoice has a number, lines, a total, the trial line, a due date, **Download PDF**, and **Copy link**.
+Invoices, receipts, and the booking `.ics` use the lighthouse mark and the name Beacon Creek, with hello@thebeaconstudio.co.ke and thebeaconstudio.co.ke. Each invoice has a number, lines, a total, the trial line, a due date, **Download PDF**, and **Copy link**.
 
 ## Keys still needed
 

@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { buildCsp, createNonce, isEmbeddablePath } from "./csp";
+import { assetBase } from "./asset-base";
 import { healthBody, healthDetailAllowed } from "./health";
 import { postLimitFor } from "./rate-limit";
 import { brandContact, letterheadLines, renderEmailShell } from "./brand-comms";
@@ -16,6 +17,17 @@ describe("csp", () => {
     }
     assert.ok(!/script-src[^;]*unsafe-inline/.test(csp));
     assert.ok(!csp.includes("unsafe-eval"));
+  });
+  it("allows the asset CDN host only when configured", () => {
+    const csp = buildCsp("x", { assetBase: "https://cdn.example.com" });
+    for (const d of ["script-src", "style-src", "font-src", "connect-src"]) {
+      assert.ok(new RegExp(`${d} [^;]*https://cdn\\.example\\.com`).test(csp), d);
+    }
+    assert.ok(!buildCsp("x", { assetBase: "" }).includes("cdn.example.com"));
+    assert.equal(assetBase("https://cdn.example.com/"), "https://cdn.example.com");
+    assert.equal(assetBase("http://cdn.example.com"), "");
+    assert.equal(assetBase("https://cdn.example.com/x"), "");
+    assert.equal(assetBase(""), "");
   });
   it("lets client embeds be framed", () => {
     assert.ok(isEmbeddablePath("/a/acme/book"));

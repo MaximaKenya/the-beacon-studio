@@ -10,7 +10,7 @@
  * personal inbox); the sender stays admin@.
  */
 export const MAIL_DOMAIN = "thebeaconstudio.co.ke";
-export const MAIL_BRAND = "The Beacon Studio";
+export const MAIL_BRAND = "Beacon Creek";
 
 export const MAILBOX_IDS = ["hello", "support", "billing", "admin"] as const;
 export type MailboxId = (typeof MAILBOX_IDS)[number];

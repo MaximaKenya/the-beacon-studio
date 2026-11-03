@@ -33,7 +33,7 @@ function byPrefix(prefix: string): PaystackRoute | undefined {
   return ROUTES.find((route) => route.prefix === prefix.toUpperCase());
 }
 
-/** metadata.app wins. Otherwise the reference prefix (BS-, CR-, …). Unprefixed references stay on Beacon Studio. */
+/** metadata.app wins. Otherwise the reference prefix (BS-, CR-, …). Unprefixed references stay on Beacon Creek. */
 export function routePaystackEvent(event: {
   data?: { reference?: string; metadata?: unknown };
 }): { route: PaystackRoute; reference: string; legacy: boolean } | null {

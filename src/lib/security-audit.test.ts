@@ -72,7 +72,7 @@ describe("paystack webhook", () => {
     assert.equal(beaconPaymentIdFromReference("BS-abc"), "abc");
     assert.equal(beaconPaystackMetadata({ tierId: "x" }).app, "beacon-studio");
   });
-  it("routes BS- and metadata.app=beacon to Beacon Studio", () => {
+  it("routes BS- and metadata.app=beacon to Beacon Creek", () => {
     assert.equal(routePaystackEvent({ data: { reference: "BS-1" } })?.route.app, "beacon-studio");
     assert.equal(routePaystackEvent({ data: { reference: "CR-1", metadata: { app: "beacon" } } })?.route.local, true);
     assert.equal(routePaystackEvent({ data: { reference: "CR-1" } })?.route.local, false);

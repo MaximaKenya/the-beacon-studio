@@ -1,5 +1,5 @@
 /**
- * Earlier logo concepts for The Beacon Studio.
+ * Earlier logo concepts for Beacon Creek.
  * The shipped mark is the lighthouse in BeaconMark.tsx. These four stay on /brand
  * as directions that were not chosen.
  */
