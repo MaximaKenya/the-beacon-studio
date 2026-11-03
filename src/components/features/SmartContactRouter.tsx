@@ -1,17 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import { Calendar, Mail, Sparkles } from "lucide-react";
 import { detectContactIntent } from "@/lib/contact-routing";
 import { useFeatures } from "@/providers/FeatureProvider";
 
 export function SmartContactRouter({ message }: { message: string }) {
   const { openBooking, openNewsletter } = useFeatures();
-  const [intent, setIntent] = useState<ReturnType<typeof detectContactIntent>>(null);
-
-  useEffect(() => {
-    setIntent(detectContactIntent(message));
-  }, [message]);
+  const intent = useMemo(() => detectContactIntent(message), [message]);
 
   if (!intent) return null;
 
