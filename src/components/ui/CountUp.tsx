@@ -37,11 +37,11 @@ export function CountUp({ value, suffix = "", duration = 1.8, className = "" }: 
   const numeric = parseFloat(value.replace(/[^0-9.]/g, ""));
   const isNumeric = !Number.isNaN(numeric) && value !== "∞";
 
+  const animate = inView && isNumeric && !reducedMotion;
+  const staticDisplay = isNumeric ? formatNumber(value) : value;
+
   useEffect(() => {
-    if (!inView || !isNumeric || reducedMotion) {
-      setDisplay(isNumeric ? formatNumber(value) : value);
-      return;
-    }
+    if (!animate) return;
 
     let start: number | null = null;
     let frame: number;
@@ -56,11 +56,11 @@ export function CountUp({ value, suffix = "", duration = 1.8, className = "" }: 
 
     frame = requestAnimationFrame(step);
     return () => cancelAnimationFrame(frame);
-  }, [inView, isNumeric, numeric, value, duration, reducedMotion]);
+  }, [animate, numeric, duration]);
 
   return (
     <span ref={ref} className={className}>
-      {display}
+      {animate ? display : staticDisplay}
       {suffix && <span className="text-accent">{suffix}</span>}
     </span>
   );
