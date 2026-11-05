@@ -4,7 +4,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { Calendar, MessageCircle, MessageSquare, Phone } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { FinalMark } from "@/components/brand/FinalMark";
+import { BeaconCreekMark } from "@/components/brand/BeaconCreekMark";
 import { siteConfig } from "@/data/site";
 import { useFeatures } from "@/providers/FeatureProvider";
 import { trackEvent } from "@/lib/analytics";
@@ -200,7 +200,7 @@ export function ActionCluster() {
         onClick={() => setMenuOpen((current) => !current)}
       >
         <span className="flex h-8 w-8 items-center justify-center sm:h-10 sm:w-10">
-          <FinalMark size={38} className="h-8 w-8 sm:h-[38px] sm:w-[38px]" />
+          <BeaconCreekMark size={38} className="h-8 w-8 sm:h-[38px] sm:w-[38px]" />
         </span>
         {/* Phones get the short label so the launcher stays clear of carousel controls and card buttons. */}
         <span className="whitespace-nowrap text-sm font-semibold tracking-tight text-heading sm:hidden" aria-hidden>

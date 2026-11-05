@@ -223,3 +223,18 @@ describe("artistic logo studies", () => {
     }
   });
 });
+
+describe("animated Beacon Creek mark", () => {
+  it("ships intro, loop and static variants with reduced-motion guard", () => {
+    const src = readFileSync("src/components/brand/BeaconCreekMark.tsx", "utf8");
+    assert.match(src, /prefers-reduced-motion: no-preference/);
+    for (const k of ["bcm-rise", "bcm-light", "bcm-sweep", "bcm-flow", "bcm-shimmer"]) assert.match(src, new RegExp(k));
+    assert.match(src, /"static" \| "intro" \| "loop"/);
+    assert.doesNotMatch(src, /The Beacon Studio/);
+    for (const f of ["src/components/home/HomeSplash.tsx", "src/components/features/ActionCluster.tsx", "src/components/brand/LighthouseSpinner.tsx"]) {
+      const s = readFileSync(f, "utf8");
+      assert.match(s, /BeaconCreekMark/, f);
+      assert.doesNotMatch(s, /FinalMark/, f);
+    }
+  });
+});

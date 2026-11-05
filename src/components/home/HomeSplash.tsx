@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { FINAL_MOTION, FinalMark } from "@/components/brand/FinalMark";
+import { BEACON_CREEK_MOTION, BeaconCreekMark } from "@/components/brand/BeaconCreekMark";
 import { wordmarkLines } from "@/components/brand/wordmark";
 import { siteConfig } from "@/data/site";
 import {
@@ -148,14 +148,14 @@ export function HomeSplash() {
       }`}
       style={{ transitionDuration: leaving ? `${view.exitMs}ms` : "0ms" }}
     >
-      <style>{`${FINAL_MOTION}${WORDMARK_MOTION}`}</style>
+      <style>{`${BEACON_CREEK_MOTION}${WORDMARK_MOTION}`}</style>
       <div
         className="flex h-full flex-col items-center justify-center px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[max(1.5rem,env(safe-area-inset-top))]"
         aria-hidden
       >
-        <FinalMark
+        <BeaconCreekMark
           size={300}
-          animated={!view.reduced}
+          variant={view.reduced ? "static" : "intro"}
           className="h-auto w-[min(68vw,300px)]"
         />
         <div className="splash-wordmark mt-5 text-center text-heading">

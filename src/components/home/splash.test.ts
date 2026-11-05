@@ -102,7 +102,9 @@ describe("homepage splash", () => {
     assert.match(splash, /splashAlreadySeen/);
     assert.match(splashLogic, /sessionStorage/);
     assert.match(splash, /prefers-reduced-motion/);
-    assert.match(splash, /FinalMark/);
+    assert.match(splash, /BeaconCreekMark/);
+    assert.doesNotMatch(splash, /FinalMark/);
+    assert.doesNotMatch(splash, /The Beacon Studio/);
     assert.match(splash, /onClick=\{skip\}/);
 
     const allowed = new Set([
@@ -110,6 +112,7 @@ describe("homepage splash", () => {
       "src/components/home/HomeSplash.tsx",
       "src/components/home/HomeSplashGate.tsx",
       "src/components/home/splash.test.ts",
+      "src/components/brand/logo-options.test.ts",
     ]);
     const hits = walk("src")
       .filter((file) =>

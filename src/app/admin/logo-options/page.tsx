@@ -6,7 +6,8 @@ import { CONCEPT_A, type ConceptVariant } from "@/components/brand/conceptA";
 import { CONCEPT_A_MOTION, ConceptALockup, ConceptAMark } from "@/components/brand/ConceptAMark";
 import { CONCEPT_B, type ConceptBVariant } from "@/components/brand/conceptB";
 import { CONCEPT_B_MOTION, ConceptBLockup, ConceptBMark } from "@/components/brand/ConceptBMark";
-import { FINAL_MOTION, FinalLockup, FinalMark } from "@/components/brand/FinalMark";
+import { FINAL_MOTION, FinalLockup } from "@/components/brand/FinalMark";
+import { BeaconCreekMark } from "@/components/brand/BeaconCreekMark";
 import { ARTISTIC_PATHS } from "@/components/brand/artisticPaths";
 import { ArtisticMark } from "@/components/brand/artisticMarks";
 import { LOGO_OPTIONS } from "@/components/brand/logoOptions";
@@ -127,7 +128,7 @@ export default function LogoOptionsPage() {
               <p className="self-start text-[10px] font-semibold uppercase tracking-[0.16em] opacity-70">
                 Vector
               </p>
-              <FinalMark size={400} animated className="mt-3" />
+              <BeaconCreekMark size={400} variant="intro" label="Beacon Creek" className="mt-3" />
             </div>
           </div>
           <div className="mt-3 grid gap-3 lg:grid-cols-2">
